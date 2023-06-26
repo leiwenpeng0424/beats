@@ -3,10 +3,13 @@ import { tryReadConfigFromRoot } from "./configuration";
 import { applyPlugins, bundle, externalsGenerator } from "./rollup";
 import esbuild from "./plugins/esbuild.plugin";
 import nodePath from "node:path";
-import { Plugin, RollupOptions } from "rollup";
-import dts from "./plugins/dts.plugin";
+import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
+import dtsGen from "./plugins/dtsGen.plugin";
 import { fileSystem } from "@nfts/utils";
 import { IPackageJson } from "@nfts/pkg-json";
+import binGen from "./plugins/binGen.plugin";
+import eslint from "@rollup/plugin-eslint";
+import { ms } from "@nfts/utils";
 
 const packageFilePath = "package.json";
 
@@ -19,6 +22,7 @@ const cli = async (args: string[]) => {
         sourcemap?: boolean;
         configFile?: string;
         project?: string;
+        verbose?: boolean;
     }>(_args);
 
     const config = await tryReadConfigFromRoot({
@@ -47,17 +51,39 @@ const cli = async (args: string[]) => {
     const externalsFn = externalsGenerator(externals, pkgJson);
 
     if (config.bundle) {
-        const rollupOptionsArr = config.bundle.map((bundle) => {
+        const bundles = config.bundle.reduce((options, bundle) => {
             const { input: input_, ...otherProps } = bundle;
 
-            return {
+            const option = {
                 input: input_ || input,
-                output: [otherProps],
-                plugins: rollupPlugins,
+                output: [{ ...otherProps, sourcemap }],
+                plugins: rollupPlugins.concat(eslint({})),
                 external: externalsFn,
                 ...rollup,
-            };
-        }) as RollupOptions[];
+            } as RollupOptions;
+
+            if (options.length === 0) {
+                return [option];
+            }
+
+            const i = options.findIndex(
+                // FIXME: Better condition judgment?
+                (o) => o.input?.toString() === option.input?.toString(),
+            );
+
+            if (i === -1) {
+                options.push(option);
+            } else {
+                options[i] = Object.assign({}, options[i], {
+                    output: [
+                        ...(options[i].output as OutputOptions[]),
+                        { ...otherProps, sourcemap },
+                    ],
+                });
+            }
+
+            return options;
+        }, [] as RollupOptions[]);
 
         if (config.dtsRollup) {
             if (config.dtsRollup && !pkgJson.types) {
@@ -66,12 +92,12 @@ const cli = async (args: string[]) => {
                 );
             }
 
-            rollupOptionsArr.push({
+            bundles.push({
                 input: "src/index",
                 output: { file: pkgJson.types, format: "esm" },
                 external: externalsFn,
                 plugins: [
-                    dts({
+                    dtsGen({
                         tsConfigFile: "tsconfig.json",
                         dtsFileName: pkgJson.types,
                     }),
@@ -81,15 +107,30 @@ const cli = async (args: string[]) => {
             });
         }
 
-        const bundleTasks = await bundle(rollupOptionsArr);
+        if (pkgJson.bin) {
+            rollupPlugins.push(binGen());
+        }
 
-        await Promise.all(bundleTasks.map((task) => task()));
+        const bundleTasks = await bundle(bundles);
+
+        return await Promise.all(bundleTasks.map((task) => task()));
     }
 };
 
 cli(process.argv.slice(1))
-    .then(() => {
-        console.log("finished");
+    .then((rollupOutputs) => {
+        console.log("");
+        rollupOutputs?.forEach((out) => {
+            const [output] = out.output;
+            const { input } = out;
+            console.log(input.toString());
+            console.log(
+                new Array(input.toString().length - 1)
+                    .fill(0)
+                    .reduce((a) => a + " ", ""),
+                `|- ${output.fileName}`,
+            );
+        });
     })
     .catch((e) => {
         console.error(e);

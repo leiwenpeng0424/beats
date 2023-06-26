@@ -56,7 +56,7 @@ const getOutputFromPackageJson = (
     );
 };
 
-const configs = ["beats.config.js", "beats.config.ts", "beats.config.json"];
+const Configs = ["beats.config.js", "beats.config.ts", "beats.config.json"];
 
 export type TBundleConfig = {
     input?: RollupOptions["input"];
@@ -65,27 +65,41 @@ export type TBundleConfig = {
     format?: ModuleFormat;
     globals?: string[];
     plugins?: Plugin[];
-};
-
-export type TBin = {
-    file: string;
+    paths?: {
+        [K: string]: string;
+    };
 };
 
 export interface Config {
+    /**
+     * Entry file for all bundle output. If you not specified in bundle item.
+     * this would be the default input.
+     */
     input: string | string[] | Record<string, string>;
-    // output?: OutputOptions[];
 
-    bin?: TBin;
-
+    /**
+     * Should generate .d.ts file for bundle.
+     */
     dtsRollup?: boolean;
 
+    /**
+     * Dependencies should be exclude during bundle.
+     */
     externals?: string[];
 
-    //
+    /**
+     * esbuild options.
+     */
     esbuild?: TRollupTransformOptions;
+
+    /**
+     * Extra rollup options.
+     */
     rollup?: Omit<RollupOptions, "plugins" | "output" | "input">;
 
-    // bundle config
+    /**
+     * Output options.
+     */
     bundle?: TBundleConfig[];
 }
 
@@ -103,14 +117,14 @@ export const tryReadConfigFromRoot = async ({
     let config: Config;
 
     if (!configPath) {
-        for await (const configFile of configs) {
+        for await (const configFile of Configs) {
             try {
                 const configFilePath = nodePath.join(_cwd, configFile);
                 await nodeFs.access(configFilePath);
                 configPath = configFilePath;
                 break;
             } catch (e: unknown) {
-                // TODO: Throw access error
+                // TODO: Skip error
             }
         }
     }
@@ -130,6 +144,8 @@ export const tryReadConfigFromRoot = async ({
 
         return config;
     } else {
-        throw new Error(`config file for beats is not found.`);
+        throw new Error(
+            `Config file for beats is not found or error encounter while read config`,
+        );
     }
 };

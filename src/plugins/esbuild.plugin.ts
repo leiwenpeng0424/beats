@@ -9,7 +9,7 @@ import {
     Program,
     sys,
 } from "typescript";
-import { createCompilerProgram } from "./dts.plugin";
+import { createCompilerProgram } from "./dtsGen.plugin";
 
 export type TEsbuildTsx = "react" | "react-jsx" | "react-jsxdev" | "preserve";
 

@@ -61,18 +61,13 @@ export function emitOnlyDeclarations(
     const program = createCompilerProgram(tsConfigCompilerOptions, tsconfig);
     // TODO：将同步写入优化成异步，多线程写入，优化编译时间
     if (program) {
-        program.emit(
-            undefined,
-            // (filename: string, text: string) => {
-            //     console.log(filename, text);
-            // }
-        );
+        program.emit(undefined);
     }
 }
 
 export default function dts(options?: IDtsPluginOptions): Plugin {
     let hasMultiInput = false;
-    let singleInput: string | undefined;
+    let onlyInput: string | undefined;
     let tsConfig: ITSConfigJson | undefined;
     let tsConfigPath = options?.tsConfigFile;
 
@@ -84,13 +79,15 @@ export default function dts(options?: IDtsPluginOptions): Plugin {
 
             if (inputEntries.length > 1) {
                 hasMultiInput = true;
-                // TODO: Give feedback, skip dts process.
+                console.warn(
+                    `Multipile inputs are not supported by @microsoft/api-extractor, will skip the dts bundle`,
+                );
                 return;
             }
 
             const [entry] = inputEntries;
 
-            singleInput = entry[1];
+            onlyInput = entry[1];
 
             if (options?.tsConfigFile) {
                 tsConfig = await fileSystem.readJSON(options.tsConfigFile);
@@ -132,7 +129,7 @@ export default function dts(options?: IDtsPluginOptions): Plugin {
                     },
                 );
 
-                if (singleInput && packageJsonFullPath && tsConfig) {
+                if (onlyInput && packageJsonFullPath && tsConfig) {
                     const { compilerOptions = {} } = tsConfig;
 
                     const { declaration } = compilerOptions;
@@ -143,7 +140,7 @@ export default function dts(options?: IDtsPluginOptions): Plugin {
                     }
 
                     if (!declarationDir) {
-                        declarationDir = nodePath.dirname(singleInput);
+                        declarationDir = nodePath.dirname(onlyInput);
                     }
 
                     // 生成 dts
@@ -158,8 +155,8 @@ export default function dts(options?: IDtsPluginOptions): Plugin {
                             : "./tsconfig.json",
                     );
 
-                    const basename = nodePath.basename(singleInput);
-                    const extname = nodePath.extname(singleInput);
+                    const basename = nodePath.basename(onlyInput);
+                    const extname = nodePath.extname(onlyInput);
 
                     const mainEntry = nodePath.resolve(
                         declarationDir,

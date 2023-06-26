@@ -2,12 +2,12 @@ import {
     type Plugin,
     rollup,
     type RollupOptions,
+    type RollupOutput,
     type RollupWatchOptions,
     watch,
 } from "rollup";
 import { clearScreen, cwd } from "./utils";
 import commonjs from "@rollup/plugin-commonjs";
-import eslint from "@rollup/plugin-eslint";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import styles from "rollup-plugin-styles";
 import { IPackageJson } from "@nfts/pkg-json";
@@ -78,11 +78,18 @@ export const applyPlugins = (
                 javascriptEnabled: true,
             },
         }),
-        eslint({}),
     ];
 
     return [...defaultPlugins, ...extraPlugins];
 };
+
+export type TBundleOutput = {
+    /**
+     * Duration time.(ms)
+     */
+    duration: number;
+    input: string | string[];
+} & RollupOutput;
 
 /**
  *
@@ -90,7 +97,7 @@ export const applyPlugins = (
  *
  */
 export const bundle = async (options: RollupOptions | RollupOptions[]) => {
-    let bundles: (() => Promise<void>)[] = [];
+    let bundles: (() => Promise<TBundleOutput>)[] = [];
 
     if (!Array.isArray(options)) {
         options = [options];
@@ -104,13 +111,19 @@ export const bundle = async (options: RollupOptions | RollupOptions[]) => {
                 output = [output];
             }
 
-            const bundles_: (() => Promise<void>)[] = [];
+            const bundles_: (() => Promise<TBundleOutput>)[] = [];
 
             for (const output_ of output) {
                 // Add bundle task
                 bundles_.push(async () => {
+                    const start = new Date().getTime();
                     await bundle_.generate(output_);
-                    await bundle_.write(output_);
+                    const output = await bundle_.write(output_);
+                    return {
+                        ...output,
+                        input: option.input as string | string[],
+                        duration: new Date().getTime() - start,
+                    };
                 });
             }
 
