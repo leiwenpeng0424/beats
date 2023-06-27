@@ -1,9 +1,18 @@
-import { ModuleFormat } from 'rollup';
-import { Plugin } from 'rollup';
-import { RollupOptions } from 'rollup';
-import { TransformOptions } from 'esbuild';
-
-declare interface Config {
+import { type IPackageJson } from "@nfts/pkg-json";
+import { type ModuleFormat, Plugin, type RollupOptions } from "rollup";
+import { type TRollupTransformOptions } from "./plugins/esbuild.plugin";
+export type TBundleConfig = {
+    input?: RollupOptions["input"];
+    dir?: string;
+    file?: string;
+    format?: ModuleFormat;
+    globals?: string[];
+    plugins?: Plugin[];
+    paths?: {
+        [K: string]: string;
+    };
+};
+export interface Config {
     /**
      * Entry file for all bundle output. If you not specified in bundle item.
      * this would be the default input.
@@ -30,21 +39,7 @@ declare interface Config {
      */
     bundle?: TBundleConfig[];
 }
-
-export declare function defineConfig(options: Config): Config;
-
-declare type TBundleConfig = {
-    input?: RollupOptions["input"];
-    dir?: string;
-    file?: string;
-    format?: ModuleFormat;
-    globals?: string[];
-    plugins?: Plugin[];
-    paths?: {
-        [K: string]: string;
-    };
-};
-
-declare type TRollupTransformOptions = TransformOptions;
-
-export { }
+export declare const tryReadConfigFromRoot: ({ configPath, pkgJson, }: {
+    configPath?: string | undefined;
+    pkgJson: IPackageJson;
+}) => Promise<Config>;

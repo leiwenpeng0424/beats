@@ -1,5 +1,4 @@
 bin/
 docs/
-schema/
+dist/
 node_modules/
-bundle/

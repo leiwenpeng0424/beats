@@ -1,7 +1,7 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "outDir": "dist",
+        "outDir": "bundle",
         "lib": ["es2020"],
         "module": "CommonJS",
         "target": "ESNext",
@@ -14,7 +14,7 @@
         "moduleResolution": "node",
 
         "declaration": true,
-        "declarationDir": "dist"
+        "declarationDir": ".declarations"
     },
     "include": ["src/"]
 }
