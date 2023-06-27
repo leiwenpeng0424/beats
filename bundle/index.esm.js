@@ -141,11 +141,16 @@ const tryReadConfigFromRoot = async ({
         bundle: getOutputFromPackageJson(pkgJson, config.input)
       });
     }
+    if (pkgJson.types) {
+      Object.assign(config, { dtsRollup: true });
+    }
     return config;
   } else {
-    throw new Error(
-      `Config file for beats is not found or error encounter while read config`
-    );
+    return {
+      input: defaultInputPath,
+      dtsRollup: !!pkgJson.types,
+      bundle: getOutputFromPackageJson(pkgJson, defaultInputPath)
+    };
   }
 };
 
@@ -723,3 +728,9 @@ cli(process.argv.slice(1)).then((rollupOutputs) => {
 }).catch((e) => {
   console.error(e);
 });
+
+function defineConfig(options) {
+  return options;
+}
+
+export { defineConfig };
