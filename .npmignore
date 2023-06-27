@@ -1,5 +1,5 @@
 *
 
-!dist/
-!docs/
-!bin/
+!dist/**
+!docs/**
+!bin/**
