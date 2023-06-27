@@ -1,7 +1,7 @@
 import nodePath, { extname } from 'node:path';
 import nodeFs from 'node:fs/promises';
-import { modulex, fileSystem } from '@nfts/utils';
-import { rollup } from 'rollup';
+import { modulex, ms, fileSystem } from '@nfts/utils';
+import { rollup, watch } from 'rollup';
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import styles from 'rollup-plugin-styles';
@@ -10,7 +10,9 @@ import { transform } from 'esbuild';
 import ts, { sys, createCompilerHost, createProgram, formatDiagnosticsWithColorAndContext } from 'typescript';
 import { ExtractorConfig, Extractor } from '@microsoft/api-extractor';
 import eslint from '@rollup/plugin-eslint';
+import TtyTable from 'tty-table';
 
+const clearScreen = () => process.stdout.write("\x1Bc");
 const cwd = () => process.cwd();
 const isArgFlag = (input) => /^-{1,2}/.test(input);
 const strip = (input) => input.replace(/^-{1,2}/, "");
@@ -36,6 +38,27 @@ const parser = (input) => {
     return accumulator;
   }, {});
 };
+const headers = [
+  {
+    value: "input",
+    headerColor: "cyan",
+    color: "white",
+    align: "center",
+    width: "20%"
+  },
+  {
+    value: "output",
+    width: "20%",
+    headerColor: "magenta",
+    color: "yellow"
+  },
+  {
+    value: "duration",
+    width: "20%",
+    headerColor: "cyan",
+    color: "yellow"
+  }
+];
 
 var __forAwait$1 = (obj, it, method) => {
   it = obj[Symbol.asyncIterator];
@@ -156,7 +179,6 @@ var __forAwait = (obj, it, method) => {
 };
 const EXTENSIONS = [
   ".js",
-  //
   ".jsx",
   ".ts",
   ".tsx",
@@ -241,6 +263,59 @@ const bundle = async (options) => {
     }
   }
   return bundles;
+};
+const watch_ = async (options) => {
+  const watcher = watch(options);
+  let firstRun = true;
+  let start;
+  try {
+    await new Promise((resolve, reject) => {
+      watcher.on(`event`, (e) => {
+        const code = e.code;
+        switch (code) {
+          case "START": {
+            clearScreen();
+            if (firstRun) {
+              console.log(`Start rollup watching bundle.`);
+            }
+            start = (/* @__PURE__ */ new Date()).getTime();
+            break;
+          }
+          case "BUNDLE_END": {
+            break;
+          }
+          case "BUNDLE_START": {
+            break;
+          }
+          case "END": {
+            if (firstRun) {
+              console.log(
+                `Bundle end in ${ms(
+                  ( new Date()).getTime() - start
+                )}`
+              );
+            } else {
+              console.log(
+                `Re-bundle end ${ms(
+                  ( new Date()).getTime() - start
+                )}`
+              );
+            }
+            firstRun = false;
+            break;
+          }
+          case "ERROR": {
+            console.error(`Rollup bundle error:`, e.error.message);
+            watcher.close().finally(() => {
+              reject();
+            });
+            break;
+          }
+        }
+      });
+    });
+  } catch (e) {
+  }
 };
 
 function createCompilerProgram(tsConfigCompilerOptions, tsconfig) {
@@ -549,7 +624,7 @@ const packageFilePath = "package.json";
 const cli = async (args) => {
   const [, ..._args] = args;
   const pkgJson = fileSystem.readJSONSync(packageFilePath);
-  const { sourcemap, configFile, project } = parser(_args);
+  const { sourcemap, configFile, project, watch } = parser(_args);
   const config = await tryReadConfigFromRoot({
     configPath: configFile,
     pkgJson
@@ -622,21 +697,29 @@ const cli = async (args) => {
     if (pkgJson.bin) {
       rollupPlugins.push(binGen());
     }
-    const bundleTasks = await bundle(bundles);
-    return await Promise.all(bundleTasks.map((task) => task()));
+    if (watch) {
+      return watch_(bundles);
+    } else {
+      const bundleTasks = await bundle(bundles);
+      return await Promise.all(bundleTasks.map((task) => task()));
+    }
   }
 };
 cli(process.argv.slice(1)).then((rollupOutputs) => {
-  console.log("");
-  rollupOutputs == null ? void 0 : rollupOutputs.forEach((out) => {
+  const outputs = rollupOutputs == null ? void 0 : rollupOutputs.map((out) => {
     const [output] = out.output;
-    const { input } = out;
-    console.log(input.toString());
-    console.log(
-      new Array(input.toString().length - 1).fill(0).reduce((a) => a + " ", ""),
-      `|- ${output.fileName}`
-    );
+    const { input, duration } = out;
+    return {
+      input: input.toString(),
+      output: output.fileName,
+      duration: ms(duration)
+    };
   });
+  if (outputs) {
+    const t1 = TtyTable(headers, outputs).render();
+    console.log(t1);
+    console.log("");
+  }
 }).catch((e) => {
   console.error(e);
 });

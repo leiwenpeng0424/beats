@@ -47,3 +47,25 @@ export const parser = <T extends object = Record<string, string | boolean>>(
             return accumulator;
         }, {} as T);
 };
+
+export const headers = [
+    {
+        value: "input",
+        headerColor: "cyan",
+        color: "white",
+        align: "center",
+        width: "20%",
+    },
+    {
+        value: "output",
+        width: "20%",
+        headerColor: "magenta",
+        color: "yellow",
+    },
+    {
+        value: "duration",
+        width: "20%",
+        headerColor: "cyan",
+        color: "yellow",
+    },
+];

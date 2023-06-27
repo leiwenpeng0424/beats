@@ -12,9 +12,10 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import styles from "rollup-plugin-styles";
 import { IPackageJson } from "@nfts/pkg-json";
 import Module from "node:module";
+import { ms } from "@nfts/utils";
 
 export const EXTENSIONS = [
-    ".js", //
+    ".js",
     ".jsx",
     ".ts",
     ".tsx",
@@ -146,45 +147,60 @@ export const watch_ = async (
     options: RollupWatchOptions | RollupWatchOptions[],
 ) => {
     const watcher = watch(options);
-
     let firstRun = true;
 
-    await new Promise<void>((resolve, reject) => {
-        watcher.on(`event`, (e) => {
-            const code = e.code;
-            switch (code) {
-                case "START": {
-                    clearScreen();
-                    if (firstRun) {
-                        console.log(`Start rollup watching bundle start.`);
-                    }
-                    break;
-                }
-                case "BUNDLE_END": {
-                    break;
-                }
-                case "BUNDLE_START": {
-                    if (firstRun) {
-                        console.log(`Rollup watching bundle start.`);
-                    } else {
-                        console.log(`Rollup watching bundle re-start.`);
+    let start: number;
+
+    try {
+        await new Promise<void>((resolve, reject) => {
+            watcher.on(`event`, (e) => {
+                const code = e.code;
+                switch (code) {
+                    case "START": {
+                        clearScreen();
+                        if (firstRun) {
+                            console.log(`Start rollup watching bundle.`);
+                        }
+                        start = new Date().getTime();
+                        break;
                     }
 
-                    break;
+                    case "BUNDLE_END": {
+                        break;
+                    }
+
+                    case "BUNDLE_START": {
+                        break;
+                    }
+
+                    case "END": {
+                        if (firstRun) {
+                            console.log(
+                                `Bundle end in ${ms(
+                                    new Date().getTime() - start,
+                                )}`,
+                            );
+                        } else {
+                            console.log(
+                                `Re-bundle end ${ms(
+                                    new Date().getTime() - start,
+                                )}`,
+                            );
+                        }
+                        firstRun = false;
+                        break;
+                    }
+                    case "ERROR": {
+                        console.error(`Rollup bundle error:`, e.error.message);
+                        watcher.close().finally(() => {
+                            reject();
+                        });
+                        break;
+                    }
                 }
-                case "END": {
-                    console.log("Rollup bundle end.");
-                    firstRun = false;
-                    break;
-                }
-                case "ERROR": {
-                    console.error(`Rollup bundle error:`, e.error.message);
-                    watcher.close().finally(() => {
-                        reject();
-                    });
-                    break;
-                }
-            }
+            });
         });
-    });
+    } catch (e) {
+        //
+    }
 };

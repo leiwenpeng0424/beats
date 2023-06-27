@@ -1,6 +1,6 @@
-import { cwd, parser } from "./utils";
+import { cwd, headers, parser } from "./utils";
 import { tryReadConfigFromRoot } from "./configuration";
-import { applyPlugins, bundle, externalsGenerator } from "./rollup";
+import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
 import esbuild from "./plugins/esbuild.plugin";
 import nodePath from "node:path";
 import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
@@ -10,6 +10,7 @@ import { IPackageJson } from "@nfts/pkg-json";
 import binGen from "./plugins/binGen.plugin";
 import eslint from "@rollup/plugin-eslint";
 import { ms } from "@nfts/utils";
+import TtyTable from "tty-table";
 
 const packageFilePath = "package.json";
 
@@ -18,11 +19,12 @@ const cli = async (args: string[]) => {
 
     const pkgJson = fileSystem.readJSONSync<IPackageJson>(packageFilePath);
 
-    const { sourcemap, configFile, project } = parser<{
+    const { sourcemap, configFile, project, watch } = parser<{
         sourcemap?: boolean;
         configFile?: string;
         project?: string;
         verbose?: boolean;
+        watch?: boolean;
     }>(_args);
 
     const config = await tryReadConfigFromRoot({
@@ -111,26 +113,32 @@ const cli = async (args: string[]) => {
             rollupPlugins.push(binGen());
         }
 
-        const bundleTasks = await bundle(bundles);
-
-        return await Promise.all(bundleTasks.map((task) => task()));
+        if (watch) {
+            return watch_(bundles);
+        } else {
+            const bundleTasks = await bundle(bundles);
+            return await Promise.all(bundleTasks.map((task) => task()));
+        }
     }
 };
 
 cli(process.argv.slice(1))
     .then((rollupOutputs) => {
-        console.log("");
-        rollupOutputs?.forEach((out) => {
+        const outputs = rollupOutputs?.map((out) => {
             const [output] = out.output;
-            const { input } = out;
-            console.log(input.toString());
-            console.log(
-                new Array(input.toString().length - 1)
-                    .fill(0)
-                    .reduce((a) => a + " ", ""),
-                `|- ${output.fileName}`,
-            );
+            const { input, duration } = out;
+            return {
+                input: input.toString(),
+                output: output.fileName,
+                duration: ms(duration),
+            };
         });
+
+        if (outputs) {
+            const t1 = TtyTable(headers, outputs).render();
+            console.log(t1);
+            console.log("");
+        }
     })
     .catch((e) => {
         console.error(e);
