@@ -1,21 +1,18 @@
 import { type ITSConfigJson } from "@nfts/tsc-json";
 import { fileSystem } from "@nfts/utils";
-import { type Loader, transform, type TransformOptions } from "esbuild";
+import { transform, type Loader, type TransformOptions } from "esbuild";
 import { extname } from "node:path";
 import { Plugin } from "rollup";
 import {
-    type Diagnostic,
     formatDiagnosticsWithColorAndContext,
-    Program,
     sys,
+    type Diagnostic,
+    type Program,
 } from "typescript";
 import { createCompilerProgram } from "./dtsGen.plugin";
 
 export type TEsbuildTsx = "react" | "react-jsx" | "react-jsxdev" | "preserve";
 
-/**
- * 可能需要 esbuild 处理的一些文件
- */
 const EsbuildLoaders = {
     ".js": "js",
     ".jsx": "jsx",
