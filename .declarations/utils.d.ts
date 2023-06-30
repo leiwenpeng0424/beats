@@ -1,7 +1,5 @@
 /**
- *
  * utils
- *
  */
 export declare const clearScreen: () => boolean;
 export declare const cwd: () => string;

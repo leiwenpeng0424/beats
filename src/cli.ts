@@ -52,6 +52,20 @@ const cli = async (args: string[]) => {
 
     const externalsFn = externalsGenerator(externals, pkgJson);
 
+    const {
+        dependencies = {},
+        peerDependencies = {},
+        devDependencies = {},
+    } = pkgJson;
+
+    if (
+        Object.keys(
+            Object.assign(dependencies, devDependencies, peerDependencies),
+        ).includes("eslint")
+    ) {
+        rollupPlugins.push(eslint({ throwOnWarning: true }));
+    }
+
     if (config.bundle) {
         const bundles = config.bundle.reduce((options, bundle) => {
             const { input: input_, ...otherProps } = bundle;
@@ -59,7 +73,7 @@ const cli = async (args: string[]) => {
             const option = {
                 input: input_ || input,
                 output: [{ ...otherProps, sourcemap }],
-                plugins: rollupPlugins.concat(eslint({})),
+                plugins: rollupPlugins,
                 external: externalsFn,
                 ...rollup,
             } as RollupOptions;
