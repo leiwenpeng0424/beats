@@ -1,10 +1,13 @@
-import { cwd } from "./utils";
-import nodePath from "node:path";
-import nodeFs from "node:fs/promises";
 import { type IPackageJson } from "@nfts/pkg-json";
-import { type ModuleFormat, Plugin, type RollupOptions } from "rollup";
 import { modulex } from "@nfts/utils";
+import { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
+import { RollupEslintOptions } from "@rollup/plugin-eslint";
+import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
+import nodeFs from "node:fs/promises";
+import nodePath from "node:path";
+import { Plugin, type ModuleFormat, type RollupOptions } from "rollup";
 import { type TRollupTransformOptions } from "./plugins/esbuild.plugin";
+import { cwd } from "./utils";
 
 const esmExt = [".mjs", ".mts"];
 const cjsExt = [".cjs", ".cts"];
@@ -91,6 +94,16 @@ export interface Config {
      * esbuild options.
      */
     esbuild?: TRollupTransformOptions;
+    eslint?: RollupEslintOptions & {
+        /**
+         * Disable use of configuration from .eslintrc.*
+         */
+        noEslintrc?: boolean;
+    };
+    commonjs?: RollupCommonJSOptions;
+    nodeResolve?: RollupNodeResolveOptions;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    styles?: any;
 
     /**
      * Extra rollup options.

@@ -1,5 +1,8 @@
 import { type IPackageJson } from "@nfts/pkg-json";
-import { type ModuleFormat, Plugin, type RollupOptions } from "rollup";
+import { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
+import { RollupEslintOptions } from "@rollup/plugin-eslint";
+import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
+import { Plugin, type ModuleFormat, type RollupOptions } from "rollup";
 import { type TRollupTransformOptions } from "./plugins/esbuild.plugin";
 export type TBundleConfig = {
     input?: RollupOptions["input"];
@@ -30,6 +33,15 @@ export interface Config {
      * esbuild options.
      */
     esbuild?: TRollupTransformOptions;
+    eslint?: RollupEslintOptions & {
+        /**
+         * Disable use of configuration from .eslintrc.*
+         */
+        noEslintrc?: boolean;
+    };
+    commonjs?: RollupCommonJSOptions;
+    nodeResolve?: RollupNodeResolveOptions;
+    styles?: any;
     /**
      * Extra rollup options.
      */

@@ -1,16 +1,12 @@
-import { cwd, headers, parser } from "./utils";
-import { tryReadConfigFromRoot } from "./configuration";
-import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
-import esbuild from "./plugins/esbuild.plugin";
-import nodePath from "node:path";
-import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
-import dtsGen from "./plugins/dtsGen.plugin";
-import { fileSystem } from "@nfts/utils";
 import { IPackageJson } from "@nfts/pkg-json";
-import binGen from "./plugins/binGen.plugin";
-import eslint from "@rollup/plugin-eslint";
-import { ms } from "@nfts/utils";
+import { fileSystem, ms } from "@nfts/utils";
+import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
 import TtyTable from "tty-table";
+import { tryReadConfigFromRoot } from "./configuration";
+import binGen from "./plugins/binGen.plugin";
+import dtsGen from "./plugins/dtsGen.plugin";
+import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
+import { headers, parser } from "./utils";
 
 const packageFilePath = "package.json";
 
@@ -19,7 +15,7 @@ const cli = async (args: string[]) => {
 
     const pkgJson = fileSystem.readJSONSync<IPackageJson>(packageFilePath);
 
-    const { sourcemap, configFile, project, watch } = parser<{
+    const { sourcemap, configFile, watch } = parser<{
         sourcemap?: boolean;
         configFile?: string;
         project?: string;
@@ -34,37 +30,18 @@ const cli = async (args: string[]) => {
 
     const internalPlugins: Plugin[] = [];
 
-    const rollupPlugins = applyPlugins(internalPlugins, { sourcemap });
+    const { eslint, styles, commonjs, nodeResolve } = config;
 
-    // Use esbuild for fast ts compile
-    rollupPlugins.unshift(
-        esbuild({
-            options: config.esbuild,
-            tsConfigFile: nodePath.join(cwd(), project ?? "tsconfig.json"),
-        }),
-    );
+    const rollupPlugins = applyPlugins(internalPlugins, {
+        eslint,
+        styles,
+        commonjs,
+        nodeResolve,
+    });
 
-    const {
-        rollup, //
-        externals,
-        input,
-    } = config;
+    const { rollup, externals, input } = config;
 
     const externalsFn = externalsGenerator(externals, pkgJson);
-
-    const {
-        dependencies = {},
-        peerDependencies = {},
-        devDependencies = {},
-    } = pkgJson;
-
-    if (
-        Object.keys(
-            Object.assign(dependencies, devDependencies, peerDependencies),
-        ).includes("eslint")
-    ) {
-        rollupPlugins.push(eslint({ throwOnWarning: true }));
-    }
 
     if (config.bundle) {
         const bundles = config.bundle.reduce((options, bundle) => {

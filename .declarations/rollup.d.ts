@@ -1,5 +1,6 @@
-import { type Plugin, type RollupOptions, type RollupOutput, type RollupWatchOptions } from "rollup";
 import { IPackageJson } from "@nfts/pkg-json";
+import { type Plugin, type RollupOptions, type RollupOutput, type RollupWatchOptions } from "rollup";
+import { type Config } from "./configuration";
 export declare const EXTENSIONS: string[];
 /**
  *
@@ -15,9 +16,7 @@ export declare const externalsGenerator: (externals: string[] | undefined, pkgJs
  *
  *
  **/
-export declare const applyPlugins: (extraPlugins?: Plugin[], options?: {
-    sourcemap?: boolean;
-}) => Plugin[];
+export declare const applyPlugins: (extraPlugins?: Plugin[], options?: Pick<Config, "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles">) => Plugin[];
 export type TBundleOutput = {
     /**
      * Duration time.(ms)

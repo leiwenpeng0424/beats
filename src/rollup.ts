@@ -1,18 +1,22 @@
+import { IPackageJson } from "@nfts/pkg-json";
+import { ms } from "@nfts/utils";
+import commonjs from "@rollup/plugin-commonjs";
+import eslint from "@rollup/plugin-eslint";
+import nodeResolve from "@rollup/plugin-node-resolve";
+import Module from "node:module";
+import nodePath from "node:path";
 import {
-    type Plugin,
     rollup,
+    watch,
+    type Plugin,
     type RollupOptions,
     type RollupOutput,
     type RollupWatchOptions,
-    watch,
 } from "rollup";
-import { clearScreen, cwd } from "./utils";
-import commonjs from "@rollup/plugin-commonjs";
-import nodeResolve from "@rollup/plugin-node-resolve";
 import styles from "rollup-plugin-styles";
-import { IPackageJson } from "@nfts/pkg-json";
-import Module from "node:module";
-import { ms } from "@nfts/utils";
+import { type Config } from "./configuration";
+import esbuild from "./plugins/esbuild.plugin";
+import { clearScreen, cwd } from "./utils";
 
 export const EXTENSIONS = [
     ".js",
@@ -63,22 +67,54 @@ export const externalsGenerator = (
  **/
 export const applyPlugins = (
     extraPlugins: Plugin[] = [],
-    options?: { sourcemap?: boolean },
+    options?: Pick<
+        Config,
+        "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles"
+    >,
 ) => {
     const defaultPlugins = [
-        nodeResolve({
-            rootDir: cwd(),
-            preferBuiltins: false,
-            extensions: EXTENSIONS,
-        }),
-        commonjs({ sourceMap: options?.sourcemap, extensions: EXTENSIONS }),
-        styles({
-            modules: true,
-            autoModules: true,
-            less: {
-                javascriptEnabled: true,
-            },
-        }),
+        esbuild(
+            Object.assign(
+                {},
+                {
+                    options: options?.esbuild,
+                    tsConfigFile: nodePath.join(cwd(), "tsconfig.json"),
+                },
+                options?.esbuild,
+            ),
+        ),
+        nodeResolve(
+            Object.assign(
+                {},
+                {
+                    rootDir: cwd(),
+                    preferBuiltins: false,
+                    extensions: EXTENSIONS,
+                },
+                options?.nodeResolve ?? {},
+            ),
+        ),
+        commonjs(
+            Object.assign(
+                {},
+                { extensions: EXTENSIONS },
+                options?.esbuild ?? {},
+            ),
+        ),
+        styles(
+            Object.assign(
+                {},
+                {
+                    modules: true,
+                    autoModules: true,
+                    less: {
+                        javascriptEnabled: true,
+                    },
+                },
+                options?.styles,
+            ),
+        ),
+        eslint(Object.assign({}, options?.eslint ?? {})),
     ];
 
     return [...defaultPlugins, ...extraPlugins];
