@@ -1,6 +1,4 @@
-/**
- * utils
- */
+import { RollupOptions } from "rollup";
 
 // Clear screen
 export const clearScreen = () => process.stdout.write("\x1Bc");
@@ -46,24 +44,20 @@ export const parser = <T extends object = Record<string, string | boolean>>(
         }, {} as T);
 };
 
-export const headers = [
-    {
-        value: "input",
-        headerColor: "cyan",
-        color: "white",
-        align: "center",
-        width: "20%",
-    },
-    {
-        value: "output",
-        width: "20%",
-        headerColor: "magenta",
-        color: "yellow",
-    },
-    {
-        value: "duration",
-        width: "20%",
-        headerColor: "cyan",
-        color: "yellow",
-    },
-];
+export const isSameRollupInput = (
+    input1: RollupOptions["input"],
+    input2: RollupOptions["input"],
+) => {
+    const type1 = typeof input1;
+    const type2 = typeof input2;
+
+    if (type1 !== type2) {
+        return false;
+    }
+
+    if (Array.isArray(input1) && Array.isArray(input2)) {
+        return input1.toString() === input2.toString();
+    }
+
+    return input1 === input2;
+};

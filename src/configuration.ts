@@ -34,7 +34,7 @@ const getFormatFromFileName = (output: string): ModuleFormat => {
         return "cjs";
     }
 
-    return "umd";
+    return "cjs";
 };
 
 const getOutputFromPackageJson = (

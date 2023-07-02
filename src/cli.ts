@@ -3,10 +3,11 @@ import { fileSystem, ms } from "@nfts/utils";
 import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
 import TtyTable from "tty-table";
 import { tryReadConfigFromRoot } from "./configuration";
+import { headers } from "./constants";
 import binGen from "./plugins/binGen.plugin";
 import dtsGen from "./plugins/dtsGen.plugin";
 import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
-import { headers, parser } from "./utils";
+import { isSameRollupInput, parser } from "./utils";
 
 const packageFilePath = "package.json";
 
@@ -59,9 +60,8 @@ const cli = async (args: string[]) => {
                 return [option];
             }
 
-            const i = options.findIndex(
-                // FIXME: Better condition judgment?
-                (o) => o.input?.toString() === option.input?.toString(),
+            const i = options.findIndex((o) =>
+                isSameRollupInput(o.input, option.input),
             );
 
             if (i === -1) {
@@ -105,7 +105,7 @@ const cli = async (args: string[]) => {
         }
 
         if (watch) {
-            return watch_(bundles);
+            await watch_(bundles);
         } else {
             const bundleTasks = await bundle(bundles);
             return await Promise.all(bundleTasks.map((task) => task()));
@@ -125,10 +125,12 @@ cli(process.argv.slice(1))
             };
         });
 
-        if (outputs) {
+        if (outputs && outputs.length > 0) {
             const t1 = TtyTable(headers, outputs).render();
             console.log(t1);
             console.log("");
+        } else {
+            console.log("No configuration found");
         }
     })
     .catch((e) => {

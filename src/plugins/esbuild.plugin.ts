@@ -34,7 +34,12 @@ export default function esbuild({
 }: IEsbuildPluginOptions): Plugin {
     let tsErrors: Diagnostic[] = [];
     let program: Program | undefined;
-    const tsConfigJson = fileSystem.readJSONSync<ITSConfigJson>(tsConfigFile);
+
+    let tsConfigJson: ITSConfigJson | undefined;
+
+    try {
+        tsConfigJson = fileSystem.readJSONSync<ITSConfigJson>(tsConfigFile);
+    } catch (_) {}
 
     /**
      * 目前 esbuild 支持的 tsconfig 配置

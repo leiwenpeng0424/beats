@@ -164,6 +164,7 @@ export default function dts(options?: IDtsPluginOptions): Plugin {
                             ? basename.replace(extname, ".d.ts")
                             : `${basename}.d.ts`,
                     );
+
                     const trimmedFile = options?.dtsFileName ?? "./index.d.ts";
 
                     const config = ExtractorConfig.prepare({
