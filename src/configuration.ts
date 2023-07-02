@@ -116,7 +116,7 @@ export interface Config {
     bundle?: TBundleConfig[];
 }
 
-const defaultInputPath = ["./src/index"];
+const defaultInputPath = "./src/index";
 
 export const tryReadConfigFromRoot = async ({
     configPath,
