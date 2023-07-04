@@ -1,10 +1,7 @@
 import { IPackageJson } from "@nfts/pkg-json";
-import { fileSystem, ms } from "@nfts/utils";
+import { fileSystem } from "@nfts/utils";
 import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
-import TtyTable from "tty-table";
 import { tryReadConfigFromRoot } from "./configuration";
-import { headers } from "./constants";
-import binGen from "./plugins/binGen.plugin";
 import dtsGen from "./plugins/dtsGen.plugin";
 import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
 import { isSameRollupInput, parser } from "./utils";
@@ -94,44 +91,25 @@ const cli = async (args: string[]) => {
                         tsConfigFile: "tsconfig.json",
                         dtsFileName: pkgJson.types,
                     }),
-                    ...rollupPlugins,
+                    // Exclude eslint plugin for DTS bundle.
+                    ...rollupPlugins.slice(0, -1),
                 ],
                 ...rollup,
             });
-        }
-
-        if (pkgJson.bin) {
-            rollupPlugins.push(binGen());
         }
 
         if (watch) {
             await watch_(bundles);
         } else {
             const bundleTasks = await bundle(bundles);
-            return await Promise.all(bundleTasks.map((task) => task()));
+            await Promise.all(bundleTasks.map((task) => task()));
         }
     }
 };
 
 cli(process.argv.slice(1))
-    .then((rollupOutputs) => {
-        const outputs = rollupOutputs?.map((out) => {
-            const [output] = out.output;
-            const { input, duration } = out;
-            return {
-                input: input.toString(),
-                output: output.fileName,
-                duration: ms(duration),
-            };
-        });
-
-        if (outputs && outputs.length > 0) {
-            const t1 = TtyTable(headers, outputs).render();
-            console.log(t1);
-            console.log("");
-        } else {
-            console.log("No configuration found");
-        }
+    .then(() => {
+        //
     })
     .catch((e) => {
         console.error(e);

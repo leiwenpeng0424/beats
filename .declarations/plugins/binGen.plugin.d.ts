@@ -1,2 +1,6 @@
 import { type Plugin } from "rollup";
-export default function binGen(): Plugin;
+import type { IPackageJson } from "@nfts/pkg-json";
+export type RollupBinGenOptions = {
+    bin: IPackageJson["bin"];
+};
+export default function binGen({ bin }: RollupBinGenOptions): Plugin;

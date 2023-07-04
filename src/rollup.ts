@@ -17,6 +17,8 @@ import styles from "rollup-plugin-styles";
 import { type Config } from "./configuration";
 import esbuild from "./plugins/esbuild.plugin";
 import { clearScreen, cwd } from "./utils";
+import binGen, { RollupBinGenOptions } from "./plugins/binGen.plugin";
+import bundleProgress from "./plugins/bundleProgress.plugin";
 
 export const EXTENSIONS = [
     ".js",
@@ -70,7 +72,7 @@ export const applyPlugins = (
     options?: Pick<
         Config,
         "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles"
-    >,
+    > & { binGen?: RollupBinGenOptions },
 ) => {
     const defaultPlugins = [
         esbuild(
@@ -114,8 +116,10 @@ export const applyPlugins = (
                 options?.styles,
             ),
         ),
+        bundleProgress(),
+        options?.binGen && binGen(options?.binGen),
         eslint(Object.assign({}, options?.eslint ?? {})),
-    ];
+    ].filter(Boolean);
 
     return [...defaultPlugins, ...extraPlugins];
 };
@@ -227,10 +231,10 @@ export const watch_ = async (
                         break;
                     }
                     case "ERROR": {
-                        console.error(`Rollup bundle error:`, e.error.message);
-                        watcher.close().finally(() => {
-                            reject();
-                        });
+                        console.error(`Rollup bundle error:`, e.result);
+                        // watcher.close().finally(() => {
+                        //     reject();
+                        // });
                         break;
                     }
                 }

@@ -1,4 +1,8 @@
-import { Extractor, ExtractorConfig } from "@microsoft/api-extractor";
+import {
+    Extractor,
+    ExtractorConfig,
+    ExtractorLogLevel,
+} from "@microsoft/api-extractor";
 import { type ITSConfigJson } from "@nfts/tsc-json";
 import { fileSystem } from "@nfts/utils";
 import nodePath from "node:path";
@@ -65,14 +69,14 @@ export function emitOnlyDeclarations(
     }
 }
 
-export default function dts(options?: IDtsPluginOptions): Plugin {
+export default function dtsGen(options?: IDtsPluginOptions): Plugin {
     let hasMultiInput = false;
     let onlyInput: string | undefined;
     let tsConfig: ITSConfigJson | undefined;
     let tsConfigPath = options?.tsConfigFile;
 
     return {
-        name: "dts",
+        name: "dtsGen",
         async buildStart(inputOptions) {
             const { input } = inputOptions;
             const inputEntries = Object.entries(input);
@@ -80,7 +84,7 @@ export default function dts(options?: IDtsPluginOptions): Plugin {
             if (inputEntries.length > 1) {
                 hasMultiInput = true;
                 console.warn(
-                    `Multipile inputs are not supported by @microsoft/api-extractor, will skip the dts bundle`,
+                    `Multiple inputs are not supported by @microsoft/api-extractor, will skip the dts bundle`,
                 );
                 return;
             }
@@ -188,7 +192,13 @@ export default function dts(options?: IDtsPluginOptions): Plugin {
                                 enabled: false,
                             },
                             messages: {
-                                compilerMessageReporting: {},
+                                extractorMessageReporting: {
+                                    default: {
+                                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                        // @ts-ignore
+                                        logLevel: "none",
+                                    },
+                                },
                             },
                         },
                     });

@@ -50,6 +50,12 @@ const getOutputFromPackageJson = (
             .filter<string>(Boolean)
             .map((output) => {
                 const format = getFormatFromFileName(output);
+
+                // dot fallback to ./index.js
+                if (output === ".") {
+                    output = "./index.js";
+                }
+
                 return externalOutputOptions({
                     format,
                     file: output,

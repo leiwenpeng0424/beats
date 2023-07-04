@@ -1,6 +1,7 @@
 import { IPackageJson } from "@nfts/pkg-json";
 import { type Plugin, type RollupOptions, type RollupOutput, type RollupWatchOptions } from "rollup";
 import { type Config } from "./configuration";
+import binGen, { RollupBinGenOptions } from "./plugins/binGen.plugin";
 export declare const EXTENSIONS: string[];
 /**
  *
@@ -16,7 +17,9 @@ export declare const externalsGenerator: (externals: string[] | undefined, pkgJs
  *
  *
  **/
-export declare const applyPlugins: (extraPlugins?: Plugin[], options?: Pick<Config, "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles">) => Plugin[];
+export declare const applyPlugins: (extraPlugins?: Plugin[], options?: Pick<Config, "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles"> & {
+    binGen?: RollupBinGenOptions;
+}) => (Plugin | undefined)[];
 export type TBundleOutput = {
     /**
      * Duration time.(ms)
