@@ -1,52 +1,53 @@
 import { IPackageJson } from "@nfts/pkg-json";
 import { fileSystem } from "@nfts/utils";
 import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
-import { tryReadConfigFromRoot } from "./configuration";
+import { CLIOptions, tryReadConfigFromRoot } from "./configuration";
 import dtsGen from "./plugins/dtsGen.plugin";
 import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
-import { isSameRollupInput, parser } from "./utils";
+import { isSameRollupInput, normalizeCLIInput, parser } from "./utils";
 
 const packageFilePath = "package.json";
 
 const cli = async (args: string[]) => {
     const [, ..._args] = args;
-
     const pkgJson = fileSystem.readJSONSync<IPackageJson>(packageFilePath);
+    const {
+        input: cliInput,
+        config: configPath,
+        watch,
+        verbose,
+        sourcemap,
+        project,
+    } = parser<CLIOptions>(_args);
 
-    const { sourcemap, configFile, watch } = parser<{
-        sourcemap?: boolean;
-        configFile?: string;
-        project?: string;
-        verbose?: boolean;
-        watch?: boolean;
-    }>(_args);
+    // @remarks Add verbose flag to ENV.
+    process.env.BEATS_VERBOSE = verbose ? "true" : undefined;
 
     const config = await tryReadConfigFromRoot({
-        configPath: configFile,
+        configPath,
         pkgJson,
     });
-
     const internalPlugins: Plugin[] = [];
-
     const { eslint, styles, commonjs, nodeResolve } = config;
-
     const rollupPlugins = applyPlugins(internalPlugins, {
         eslint,
         styles,
         commonjs,
         nodeResolve,
     });
-
-    const { rollup, externals, input } = config;
-
+    const { rollup, externals, input: configInput } = config;
     const externalsFn = externalsGenerator(externals, pkgJson);
-
     if (config.bundle) {
         const bundles = config.bundle.reduce((options, bundle) => {
-            const { input: input_, ...otherProps } = bundle;
+            const { input: bundleInput, ...otherProps } = bundle;
 
             const option = {
-                input: input_ || input,
+                input:
+                    bundleInput ||
+                    configInput ||
+                    (cliInput
+                        ? normalizeCLIInput(cliInput as string)
+                        : "src/index"),
                 output: [{ ...otherProps, sourcemap }],
                 plugins: rollupPlugins,
                 external: externalsFn,
@@ -88,7 +89,7 @@ const cli = async (args: string[]) => {
                 external: externalsFn,
                 plugins: [
                     dtsGen({
-                        tsConfigFile: "tsconfig.json",
+                        tsConfigFile: project ?? "tsconfig.json",
                         dtsFileName: pkgJson.types,
                     }),
                     // Exclude eslint plugin for DTS bundle.

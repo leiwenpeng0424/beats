@@ -5,7 +5,7 @@ import { RollupEslintOptions } from "@rollup/plugin-eslint";
 import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
-import { Plugin, type ModuleFormat, type RollupOptions } from "rollup";
+import { type ModuleFormat, Plugin, type RollupOptions } from "rollup";
 import { type TRollupTransformOptions } from "./plugins/esbuild.plugin";
 import { cwd } from "./utils";
 
@@ -39,7 +39,6 @@ const getFormatFromFileName = (output: string): ModuleFormat => {
 
 const getOutputFromPackageJson = (
     pkgJson: IPackageJson,
-    rollupInput: RollupOptions["input"],
     externalOutputOptions: (opt: TBundleConfig) => TBundleConfig = (o) => o,
 ): TBundleConfig[] => {
     const { main, module: m } = pkgJson;
@@ -51,15 +50,14 @@ const getOutputFromPackageJson = (
             .map((output) => {
                 const format = getFormatFromFileName(output);
 
-                // dot fallback to ./index.js
+                // dot fallback to ./index.cjs
                 if (output === ".") {
-                    output = "./index.js";
+                    output = "./index.cjs";
                 }
 
                 return externalOutputOptions({
                     format,
                     file: output,
-                    input: rollupInput,
                 });
             })
     );
@@ -80,18 +78,33 @@ export type TBundleConfig = {
     sourcemap?: boolean;
 };
 
-export interface Config {
+export interface CLIOptions {
     /**
      * Entry file for all bundle output. If you are not specified in bundle item.
      * this would be the default input.
      */
     input?: string | string[] | { [K: string]: string };
-
     /**
      * Should generate .d.ts file for bundle.
      */
     dtsRollup?: boolean;
+    /**
+     * Generate .map file for bundle output.
+     */
+    sourcemap?: boolean;
+    /**
+     * Specified beats config file path.
+     */
+    config?: string;
+    project?: string;
+    /**
+     * Print more info in terminal during bundle.
+     */
+    verbose?: boolean;
+    watch?: boolean;
+}
 
+export interface Config extends CLIOptions {
     /**
      * Dependencies should be exclude during bundle.
      */
@@ -101,6 +114,10 @@ export interface Config {
      * esbuild options.
      */
     esbuild?: TRollupTransformOptions;
+
+    /**
+     * eslint options.
+     */
     eslint?: RollupEslintOptions & {
         /**
          * Disable use of configuration from .eslintrc.*
@@ -109,7 +126,6 @@ export interface Config {
     };
     commonjs?: RollupCommonJSOptions;
     nodeResolve?: RollupNodeResolveOptions;
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     /**
      * TODO:
@@ -128,8 +144,6 @@ export interface Config {
      */
     bundle?: TBundleConfig[];
 }
-
-const defaultInputPath = "./src/index";
 
 export const tryReadConfigFromRoot = async ({
     configPath,
@@ -158,13 +172,9 @@ export const tryReadConfigFromRoot = async ({
     if (configPath) {
         config = modulex.import_<Config>(configPath);
 
-        if (!config.input) {
-            Object.assign(config, { input: defaultInputPath });
-        }
-
         if (!config.bundle) {
             Object.assign(config, {
-                bundle: getOutputFromPackageJson(pkgJson, config.input),
+                bundle: getOutputFromPackageJson(pkgJson),
             });
         }
 
@@ -175,9 +185,8 @@ export const tryReadConfigFromRoot = async ({
         return config;
     } else {
         return {
-            input: defaultInputPath,
             dtsRollup: !!pkgJson.types,
-            bundle: getOutputFromPackageJson(pkgJson, defaultInputPath),
+            bundle: getOutputFromPackageJson(pkgJson),
         };
     }
 };

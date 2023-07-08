@@ -61,3 +61,7 @@ export const isSameRollupInput = (
 
     return input1 === input2;
 };
+
+export const normalizeCLIInput = (input: string) => {
+    return input.trimStart().trimEnd().split(",").filter(Boolean);
+};
