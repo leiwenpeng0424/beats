@@ -1,8 +1,4 @@
-import {
-    Extractor,
-    ExtractorConfig,
-    ExtractorLogLevel,
-} from "@microsoft/api-extractor";
+import { Extractor, ExtractorConfig } from "@microsoft/api-extractor";
 import { type ITSConfigJson } from "@nfts/tsc-json";
 import { fileSystem } from "@nfts/utils";
 import nodePath from "node:path";

@@ -1,4 +1,4 @@
-import { IPackageJson } from "@nfts/pkg-json";
+import { type IPackageJson } from "@nfts/pkg-json";
 import { ms } from "@nfts/utils";
 import commonjs from "@rollup/plugin-commonjs";
 import eslint from "@rollup/plugin-eslint";
@@ -19,6 +19,7 @@ import esbuild from "./plugins/esbuild.plugin";
 import { clearScreen, cwd } from "./utils";
 import binGen, { RollupBinGenOptions } from "./plugins/binGen.plugin";
 import bundleProgress from "./plugins/bundleProgress.plugin";
+import cleanup from "./plugins/cleanup.plugin";
 
 export const EXTENSIONS = [
     ".js",
@@ -77,7 +78,6 @@ export const applyPlugins = (
     const defaultPlugins = [
         esbuild(
             Object.assign(
-                {},
                 {
                     options: options?.esbuild,
                     tsConfigFile: nodePath.join(cwd(), "tsconfig.json"),
@@ -87,7 +87,6 @@ export const applyPlugins = (
         ),
         nodeResolve(
             Object.assign(
-                {},
                 {
                     rootDir: cwd(),
                     preferBuiltins: false,
@@ -97,15 +96,10 @@ export const applyPlugins = (
             ),
         ),
         commonjs(
-            Object.assign(
-                {},
-                { extensions: EXTENSIONS },
-                options?.esbuild ?? {},
-            ),
+            Object.assign({ extensions: EXTENSIONS }, options?.commonjs ?? {}),
         ),
         styles(
             Object.assign(
-                {},
                 {
                     modules: true,
                     autoModules: true,
@@ -117,8 +111,18 @@ export const applyPlugins = (
             ),
         ),
         bundleProgress(),
+        cleanup(),
+        /**
+         * @OPTIONAL
+         * @NOTICE Optional plugin, only invoke when binGen exist.
+         */
         options?.binGen && binGen(options?.binGen),
-        eslint(Object.assign({}, options?.eslint ?? {})),
+
+        /**
+         * @OPTIONAL
+         * @NOTICE: Keep eslint plugins always at the bottom.
+         */
+        // eslint(Object.assign({}, options?.eslint ?? {})),
     ].filter(Boolean);
 
     return [...defaultPlugins, ...extraPlugins];

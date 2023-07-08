@@ -1,4 +1,4 @@
-import { IPackageJson } from "@nfts/pkg-json";
+import { type IPackageJson } from "@nfts/pkg-json";
 import { type Plugin, type RollupOptions, type RollupOutput, type RollupWatchOptions } from "rollup";
 import { type Config } from "./configuration";
 import binGen, { RollupBinGenOptions } from "./plugins/binGen.plugin";

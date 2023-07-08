@@ -14,6 +14,7 @@ export type TBundleConfig = {
     paths?: {
         [K: string]: string;
     };
+    sourcemap?: boolean;
 };
 export interface Config {
     /**
@@ -41,6 +42,11 @@ export interface Config {
     };
     commonjs?: RollupCommonJSOptions;
     nodeResolve?: RollupNodeResolveOptions;
+    /**
+     * TODO:
+     *  rollup-plugin-styles is no longer actively update,
+     *  Try to replace rollup-plugin-styles with new plugin.
+     */
     styles?: any;
     /**
      * Extra rollup options.
