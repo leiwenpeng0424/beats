@@ -39,37 +39,50 @@ export default function bundleProgress(): Plugin {
                         cwd(),
                         moduleInfo.id,
                     );
-                    const output = `[ModuleParse] (${status.parsed}/${status.loaded}) ${relativeModulePath}`;
+                    const output = `(${status.parsed}/${status.loaded}) ${relativeModulePath}`;
+
+                    process.stdout.clearLine(0);
                     process.stdout.cursorTo(0);
-                    process.stdout.write(output);
+                    process.stdout.write(
+                        output.length > process.stdout.columns
+                            ? output.slice(0, process.stdout.columns - 1)
+                            : output,
+                    );
                 }
             }
         },
 
-        generateBundle(options, bundle, isWrite) {
+        generateBundle() {
             if (process.stdout.isTTY) {
                 process.stdout.clearLine(0);
                 process.stdout.cursorTo(0);
             }
         },
 
-        async writeBundle(output, bundle) {
-            const files = Object.keys(bundle);
-            for (const file of files) {
-                const { facadeModuleId } = bundle[file] as OutputChunk;
-                facadeModuleId &&
-                    console.log(
-                        colors.bgGreen(
-                            colors.bold(
-                                colors.black(
-                                    nodePath.relative(cwd(), facadeModuleId),
+        writeBundle: {
+            sequential: true,
+            order: "post",
+            async handler(output, bundle) {
+                const files = Object.keys(bundle);
+                for (const file of files) {
+                    const { facadeModuleId } = bundle[file] as OutputChunk;
+                    facadeModuleId &&
+                        console.log(
+                            colors.bgGreen(
+                                colors.bold(
+                                    colors.black(
+                                        nodePath.relative(
+                                            cwd(),
+                                            facadeModuleId,
+                                        ),
+                                    ),
                                 ),
                             ),
-                        ),
-                        "➡︎",
-                        colors.cyan(file),
-                    );
-            }
+                            "➡︎",
+                            colors.cyan(file),
+                        );
+                }
+            },
         },
     };
 }

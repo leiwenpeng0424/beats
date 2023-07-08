@@ -85,7 +85,7 @@ export interface Config {
      * Entry file for all bundle output. If you are not specified in bundle item.
      * this would be the default input.
      */
-    input?: string | string[] | Record<string, string>;
+    input?: string | string[] | { [K: string]: string };
 
     /**
      * Should generate .d.ts file for bundle.

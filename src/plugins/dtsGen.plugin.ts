@@ -9,6 +9,7 @@ import ts, {
     createProgram,
     sys,
 } from "typescript";
+import { cwd } from "../utils";
 
 export interface IDtsPluginOptions {
     tsConfigFile?: string;
@@ -111,114 +112,123 @@ export default function dtsGen(options?: IDtsPluginOptions): Plugin {
             }
         },
 
-        async writeBundle(outputOptions) {
-            if (hasMultiInput) {
-                // TODO: Better message.
-                console.warn(`检查到有多个 input，无法生成 dts 文件`);
-                return;
-            }
+        writeBundle: {
+            order: "post",
+            sequential: true,
+            async handler(outputOptions) {
+                if (hasMultiInput) {
+                    // TODO: Better message.
+                    console.warn(
+                        `Multi entry file is not allowed by @microsoft/api-extractor`,
+                    );
+                    return;
+                }
 
-            const { format } = outputOptions;
+                const { format } = outputOptions;
 
-            if ([`esm`, `es`].includes(format.toLowerCase())) {
-                const [packageJsonFullPath] = await fileSystem.findFile(
-                    `package.json`,
-                    process.cwd(),
-                    {
-                        fullpath: true,
-                    },
-                );
-
-                if (onlyInput && packageJsonFullPath && tsConfig) {
-                    const { compilerOptions = {} } = tsConfig;
-
-                    const { declaration } = compilerOptions;
-                    let { declarationDir } = compilerOptions;
-
-                    if (!declaration) {
-                        return;
-                    }
-
-                    if (!declarationDir) {
-                        declarationDir = nodePath.dirname(onlyInput);
-                    }
-
-                    // 生成 dts
-                    emitOnlyDeclarations(
-                        {
-                            declaration: true,
-                            emitDeclarationOnly: true,
-                            declarationDir: declarationDir,
-                        },
-                        typeof tsConfigPath === "string"
-                            ? tsConfigPath
-                            : "./tsconfig.json",
+                if ([`esm`, `es`].includes(format.toLowerCase())) {
+                    const packageJsonFullPath = nodePath.join(
+                        cwd(),
+                        "package.json",
                     );
 
-                    const basename = nodePath.basename(onlyInput);
-                    const extname = nodePath.extname(onlyInput);
+                    if (onlyInput && packageJsonFullPath && tsConfig) {
+                        const { compilerOptions = {} } = tsConfig;
 
-                    const mainEntry = nodePath.resolve(
-                        declarationDir,
-                        extname
-                            ? basename.replace(extname, ".d.ts")
-                            : `${basename}.d.ts`,
-                    );
+                        const { declaration } = compilerOptions;
+                        let { declarationDir } = compilerOptions;
 
-                    const trimmedFile = options?.dtsFileName ?? "./index.d.ts";
+                        if (!declaration) {
+                            return;
+                        }
 
-                    const config = ExtractorConfig.prepare({
-                        configObjectFullPath: undefined,
-                        packageJsonFullPath: packageJsonFullPath,
-                        ignoreMissingEntryPoint: true,
-                        configObject: {
-                            projectFolder: process.cwd(),
-                            compiler: {
-                                tsconfigFilePath: options?.tsConfigFile,
+                        if (!declarationDir) {
+                            declarationDir = nodePath.dirname(onlyInput);
+                        }
+
+                        // 生成 dts
+                        emitOnlyDeclarations(
+                            {
+                                declaration: true,
+                                emitDeclarationOnly: true,
+                                declarationDir: declarationDir,
                             },
-                            mainEntryPointFilePath: mainEntry,
-                            dtsRollup: {
-                                enabled: true,
-                                publicTrimmedFilePath: trimmedFile,
-                            },
-                            docModel: {
-                                enabled: false,
-                            },
-                            tsdocMetadata: {
-                                enabled: false,
-                            },
-                            messages: {
-                                extractorMessageReporting: {
-                                    default: {
-                                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                        // @ts-ignore
-                                        logLevel: "none",
+                            typeof tsConfigPath === "string"
+                                ? tsConfigPath
+                                : "./tsconfig.json",
+                        );
+
+                        const basename = nodePath.basename(onlyInput);
+                        const extname = nodePath.extname(onlyInput);
+
+                        const mainEntry = nodePath.resolve(
+                            declarationDir,
+                            extname
+                                ? basename.replace(extname, ".d.ts")
+                                : `${basename}.d.ts`,
+                        );
+
+                        const trimmedFile =
+                            options?.dtsFileName ?? "./index.d.ts";
+
+                        const config = ExtractorConfig.prepare({
+                            configObjectFullPath: undefined,
+                            packageJsonFullPath: packageJsonFullPath,
+                            ignoreMissingEntryPoint: true,
+                            configObject: {
+                                projectFolder: process.cwd(),
+                                compiler: {
+                                    tsconfigFilePath: options?.tsConfigFile,
+                                },
+                                mainEntryPointFilePath: mainEntry,
+                                dtsRollup: {
+                                    enabled: true,
+                                    publicTrimmedFilePath: trimmedFile,
+                                },
+                                docModel: {
+                                    enabled: false,
+                                },
+                                tsdocMetadata: {
+                                    enabled: false,
+                                },
+                                messages: {
+                                    extractorMessageReporting: {
+                                        default: {
+                                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                            // @ts-ignore
+                                            logLevel: "none",
+                                        },
                                     },
                                 },
                             },
-                        },
-                    });
+                        });
 
-                    const extractorResult = Extractor.invoke(config, {
-                        localBuild: true,
-                        showVerboseMessages: false,
-                    });
+                        const extractorResult = Extractor.invoke(config, {
+                            localBuild: true,
+                            showDiagnostics: false,
+                            showVerboseMessages: false,
+                            typescriptCompilerFolder: nodePath.join(
+                                require.resolve("typescript"),
+                                "../..",
+                            ),
+                        });
 
-                    if (extractorResult.succeeded) {
-                        // TODO: Add verbose message
-                    } else {
-                        // TODO: Throw whe meet error
-                        // console.warn(
-                        //     `出错了`,
-                        //     `${extractorResult.errorCount} errors`,
-                        //     `${extractorResult.warningCount} warnings`,
-                        // );
+                        if (extractorResult.succeeded) {
+                            // TODO: Add verbose message
+                        } else {
+                            // TODO: Throw whe meet error
+                            // console.warn(
+                            //     `出错了`,
+                            //     `${extractorResult.errorCount} errors`,
+                            //     `${extractorResult.warningCount} warnings`,
+                            // );
+                        }
                     }
+                } else {
+                    // TODO: Add error message, dtsRollup is enabled,
+                    //  but format is not es or esm
                 }
-            } else {
-                // TODO: Add error message, dtsRollup is enabled,
-                //  but format is not es or esm
-            }
+            },
         },
     };
 }

@@ -13,7 +13,7 @@ const isArgFlag = (input: string): boolean => /^-{1,2}/.test(input);
 const strip = (input: string): string => input.replace(/^-{1,2}/, "");
 
 // Simple cmd input parser.
-export const parser = <T extends object = Record<string, string | boolean>>(
+export const parser = <T extends object = { [K: string]: string | boolean }>(
     input: string[],
 ): T => {
     const lastNonArgFlagIndex = input.findIndex((curr) => isArgFlag(curr));
