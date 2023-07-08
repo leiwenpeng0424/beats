@@ -6,16 +6,15 @@ export type RollupBinGenOptions = {
 };
 
 export default function binGen({ bin }: RollupBinGenOptions): Plugin {
-    console.log("bin ->", bin);
     return {
         name: "bin-gen",
-        async buildStart() {
+        buildStart() {
             //
         },
-        async generateBundle() {
+        generateBundle() {
             //
         },
-        async resolveId() {
+        resolveId() {
             //
         },
     };

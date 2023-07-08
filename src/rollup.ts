@@ -117,7 +117,6 @@ export const applyPlugins = (
          * @NOTICE Optional plugin, only invoke when binGen exist.
          */
         options?.binGen && binGen(options?.binGen),
-
         /**
          * @OPTIONAL
          * @NOTICE: Keep eslint plugins always at the bottom.

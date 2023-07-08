@@ -34,6 +34,7 @@ const cli = async (args: string[]) => {
         styles,
         commonjs,
         nodeResolve,
+        binGen: { bin: pkgJson.bin },
     });
     const { rollup, externals, input: configInput } = config;
     const externalsFn = externalsGenerator(externals, pkgJson);

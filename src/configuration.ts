@@ -50,9 +50,9 @@ const getOutputFromPackageJson = (
             .map((output) => {
                 const format = getFormatFromFileName(output);
 
-                // dot fallback to ./index.cjs
+                // dot fallback to ./index.js
                 if (output === ".") {
-                    output = "./index.cjs";
+                    output = "./index.js";
                 }
 
                 return externalOutputOptions({
