@@ -14,7 +14,7 @@ export type TBundleConfig = {
     paths?: {
         [K: string]: string;
     };
-    sourcemap?: boolean;
+    sourcemap?: boolean | "inline" | "hidden";
 };
 export interface CLIOptions {
     /**
@@ -31,7 +31,7 @@ export interface CLIOptions {
     /**
      * Generate .map file for bundle output.
      */
-    sourcemap?: boolean;
+    sourcemap?: boolean | "inline" | "hidden";
     /**
      * Specified beats config file path.
      */
@@ -42,6 +42,10 @@ export interface CLIOptions {
      */
     verbose?: boolean;
     watch?: boolean;
+    /**
+     * Cleanup before output write.
+     */
+    clean?: boolean;
 }
 export interface Config extends CLIOptions {
     /**

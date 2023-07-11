@@ -19,7 +19,7 @@ import esbuild from "./plugins/esbuild.plugin";
 import { clearScreen, cwd } from "./utils";
 import binGen, { RollupBinGenOptions } from "./plugins/binGen.plugin";
 import bundleProgress from "./plugins/bundleProgress.plugin";
-import cleanup from "./plugins/cleanup.plugin";
+import cleanup, { RollupCleanupOptions } from "./plugins/cleanup.plugin";
 
 export const EXTENSIONS = [
     ".js",
@@ -73,7 +73,7 @@ export const applyPlugins = (
     options?: Pick<
         Config,
         "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles"
-    > & { binGen?: RollupBinGenOptions },
+    > & { binGen?: RollupBinGenOptions; clean?: RollupCleanupOptions },
 ) => {
     const defaultPlugins = [
         esbuild(
@@ -111,7 +111,7 @@ export const applyPlugins = (
             ),
         ),
         bundleProgress(),
-        cleanup(),
+        cleanup(options?.clean),
         /**
          * @OPTIONAL
          * @NOTICE Optional plugin, only invoke when binGen exist.
@@ -121,7 +121,7 @@ export const applyPlugins = (
          * @OPTIONAL
          * @NOTICE: Keep eslint plugins always at the bottom.
          */
-        // eslint(Object.assign({}, options?.eslint ?? {})),
+        eslint(Object.assign({}, options?.eslint ?? {})),
     ].filter(Boolean);
 
     return [...defaultPlugins, ...extraPlugins];

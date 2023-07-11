@@ -4,10 +4,10 @@ import { fileSystem } from "@nfts/utils";
 import nodePath from "node:path";
 import { type Plugin } from "rollup";
 import ts, {
-    type CompilerOptions,
     createCompilerHost,
     createProgram,
     sys,
+    type CompilerOptions
 } from "typescript";
 import { cwd } from "../utils";
 

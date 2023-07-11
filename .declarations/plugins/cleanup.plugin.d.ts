@@ -2,4 +2,7 @@
  * @TBD
  */
 import { type Plugin } from "rollup";
-export default function cleanup(): Plugin;
+export interface RollupCleanupOptions {
+    active?: boolean;
+}
+export default function cleanup({ active }?: RollupCleanupOptions): Plugin;
