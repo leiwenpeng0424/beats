@@ -8,14 +8,11 @@ export type RollupBinGenOptions = {
 export default function binGen({ bin }: RollupBinGenOptions): Plugin {
     return {
         name: "bin-gen",
-        buildStart() {
-            //
+        options(input) {
+            // console.log("input", input);
         },
-        generateBundle() {
-            //
-        },
-        resolveId() {
-            //
+        outputOptions(output) {
+            // console.log("output", output);
         },
     };
 }

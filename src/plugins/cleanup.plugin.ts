@@ -20,7 +20,6 @@ export default function cleanup(
             if (active && !isWrite) {
                 if (output.file) {
                     const absPath = nodePath.join(cwd(), output.file);
-                    console.log(absPath);
                     try {
                         await nodeFs.access(absPath);
                         await nodeFs.unlink(absPath);

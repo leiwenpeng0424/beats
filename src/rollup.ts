@@ -13,7 +13,6 @@ import {
     type RollupOutput,
     type RollupWatchOptions,
 } from "rollup";
-import styles from "rollup-plugin-styles";
 import { type Config } from "./configuration";
 import esbuild from "./plugins/esbuild.plugin";
 import { clearScreen, cwd } from "./utils";
@@ -72,18 +71,15 @@ export const applyPlugins = (
     extraPlugins: Plugin[] = [],
     options?: Pick<
         Config,
-        "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles"
+        "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "clean"
     > & { binGen?: RollupBinGenOptions; clean?: RollupCleanupOptions },
 ) => {
     const defaultPlugins = [
         esbuild(
-            Object.assign(
-                {
-                    options: options?.esbuild,
-                    tsConfigFile: nodePath.join(cwd(), "tsconfig.json"),
-                },
-                options?.esbuild,
-            ),
+            Object.assign({
+                options: options?.esbuild,
+                tsConfigFile: nodePath.join(cwd(), "tsconfig.json"),
+            }),
         ),
         nodeResolve(
             Object.assign(
@@ -97,18 +93,6 @@ export const applyPlugins = (
         ),
         commonjs(
             Object.assign({ extensions: EXTENSIONS }, options?.commonjs ?? {}),
-        ),
-        styles(
-            Object.assign(
-                {
-                    modules: true,
-                    autoModules: true,
-                    less: {
-                        javascriptEnabled: true,
-                    },
-                },
-                options?.styles,
-            ),
         ),
         bundleProgress(),
         cleanup(options?.clean),

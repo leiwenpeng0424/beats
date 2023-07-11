@@ -18,7 +18,7 @@ export declare const externalsGenerator: (externals: string[] | undefined, pkgJs
  *
  *
  **/
-export declare const applyPlugins: (extraPlugins?: Plugin[], options?: Pick<Config, "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles"> & {
+export declare const applyPlugins: (extraPlugins?: Plugin[], options?: Pick<Config, "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "clean"> & {
     binGen?: RollupBinGenOptions;
     clean?: RollupCleanupOptions;
 }) => (Plugin | undefined)[];

@@ -28,12 +28,12 @@ const cli = async (args: string[]) => {
         pkgJson,
     });
     const internalPlugins: Plugin[] = [];
-    const { eslint, styles, commonjs, nodeResolve } = config;
+    const { eslint, commonjs, nodeResolve, esbuild } = config;
     const rollupPlugins = applyPlugins(internalPlugins, {
         eslint,
-        styles,
         commonjs,
         nodeResolve,
+        esbuild,
         binGen: { bin: pkgJson.bin },
     });
     const { rollup, externals, input: configInput } = config;

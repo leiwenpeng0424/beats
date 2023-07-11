@@ -107,6 +107,8 @@ export default function esbuild({
                 }
             }
 
+            console.log("esbuild options", options);
+
             const result = await transform(code, {
                 loader,
                 target: "es2017",
