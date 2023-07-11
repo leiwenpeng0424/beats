@@ -131,3 +131,6 @@ dist
 
 # Examples
 examples/
+
+# TS declaration files
+.declarations/
