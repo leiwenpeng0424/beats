@@ -9,7 +9,7 @@ import {
     type Diagnostic,
     type Program,
 } from "typescript";
-import { createCompilerProgram } from "./dtsGen.plugin";
+import { createCompilerProgram } from "./dtsGen";
 
 export type TEsbuildTsx = "react" | "react-jsx" | "react-jsxdev" | "preserve";
 

@@ -6,7 +6,7 @@ import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
 import { type ModuleFormat, Plugin, type RollupOptions } from "rollup";
-import { type TRollupTransformOptions } from "./plugins/esbuild.plugin";
+import { type TRollupTransformOptions } from "./plugins/esbuild";
 import { cwd } from "./utils";
 
 const esmExt = [".mjs", ".mts"];

@@ -2,7 +2,7 @@ import { IPackageJson } from "@nfts/pkg-json";
 import { fileSystem } from "@nfts/utils";
 import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
 import { CLIOptions, tryReadConfigFromRoot } from "./configuration";
-import dtsGen from "./plugins/dtsGen.plugin";
+import dtsGen from "./plugins/dtsGen";
 import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
 import { isSameRollupInput, normalizeCLIInput, parser } from "./utils";
 

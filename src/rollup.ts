@@ -14,11 +14,11 @@ import {
     type RollupWatchOptions,
 } from "rollup";
 import { type Config } from "./configuration";
-import esbuild from "./plugins/esbuild.plugin";
+import esbuild from "./plugins/esbuild";
 import { clearScreen, cwd } from "./utils";
-import binGen, { RollupBinGenOptions } from "./plugins/binGen.plugin";
-import bundleProgress from "./plugins/bundleProgress.plugin";
-import cleanup, { RollupCleanupOptions } from "./plugins/cleanup.plugin";
+import binGen, { RollupBinGenOptions } from "./plugins/binGen";
+import bundleProgress from "./plugins/bundleProgress";
+import cleanup, { RollupCleanupOptions } from "./plugins/cleanup";
 
 export const EXTENSIONS = [
     ".js",
