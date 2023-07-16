@@ -20,19 +20,10 @@ export default function cleanup(
             if (active && !isWrite) {
                 if (output.file) {
                     const absPath = nodePath.join(cwd(), output.file);
+                    const absDir = nodePath.dirname(absPath);
                     try {
-                        await nodeFs.access(absPath);
-                        await nodeFs.unlink(absPath);
-                    } catch (e) {
-                        //
-                    }
-
-                    const sourcemapFile =
-                        output.sourcemapFile ?? absPath + ".map";
-
-                    try {
-                        await nodeFs.access(sourcemapFile);
-                        await nodeFs.unlink(sourcemapFile);
+                        await nodeFs.access(absDir);
+                        await nodeFs.rmdir(absDir, { maxRetries: 10 });
                     } catch (e) {
                         //
                     }
