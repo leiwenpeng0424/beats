@@ -44,6 +44,7 @@
         "postcss": "^8.4.26",
         "postcss-load-config": "^4.0.1",
         "postcss-modules": "^6.0.0",
-        "rollup": "^3.26.2"
+        "rollup": "^3.26.2",
+        "rollup-plugin-styles": "^4.0.0"
     }
 }

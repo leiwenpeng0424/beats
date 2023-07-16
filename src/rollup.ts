@@ -19,7 +19,8 @@ import { clearScreen, cwd } from "./utils";
 import binGen, { RollupBinGenOptions } from "./plugins/binGen";
 import bundleProgress from "./plugins/bundleProgress";
 import cleanup, { RollupCleanupOptions } from "./plugins/cleanup";
-import postcssPlugin from "./plugins/styles";
+// import postcssPlugin from "./plugins/styles";
+import styles from "rollup-plugin-styles";
 
 export const EXTENSIONS = [
     ".js",
@@ -72,13 +73,13 @@ export const applyPlugins = (
     extraPlugins: Plugin[] = [],
     options?: Pick<
         Config,
-        "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "clean"
+        "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "clean" | "styles"
     > & { binGen?: RollupBinGenOptions; clean?: RollupCleanupOptions },
 ) => {
     const defaultPlugins = [
-        postcssPlugin({
-            cssModules: true,
-        }),
+        styles(options?.styles),
+        // @TODO
+        // postcssPlugin({ cssModules: true }),
         esbuild(
             Object.assign({
                 options: options?.esbuild,
