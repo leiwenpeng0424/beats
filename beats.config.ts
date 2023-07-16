@@ -1,6 +1,6 @@
+import { Config } from "./dist";
+
 export default {
     rollup: { treeshake: "recommended" },
-    esbuild: {
-        minify: true,
-    },
-};
+    eslint: { fix: true },
+} as Config;

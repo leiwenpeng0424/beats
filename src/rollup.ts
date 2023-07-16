@@ -19,6 +19,7 @@ import { clearScreen, cwd } from "./utils";
 import binGen, { RollupBinGenOptions } from "./plugins/binGen";
 import bundleProgress from "./plugins/bundleProgress";
 import cleanup, { RollupCleanupOptions } from "./plugins/cleanup";
+import postcssPlugin from "./plugins/styles";
 
 export const EXTENSIONS = [
     ".js",
@@ -75,6 +76,9 @@ export const applyPlugins = (
     > & { binGen?: RollupBinGenOptions; clean?: RollupCleanupOptions },
 ) => {
     const defaultPlugins = [
+        postcssPlugin({
+            cssModules: true,
+        }),
         esbuild(
             Object.assign({
                 options: options?.esbuild,
@@ -179,7 +183,7 @@ export const watch_ = async (
     let start: number;
 
     try {
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>(() => {
             watcher.on(`event`, (e) => {
                 const code = e.code;
                 switch (code) {

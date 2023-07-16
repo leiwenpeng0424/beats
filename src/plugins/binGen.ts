@@ -5,13 +5,13 @@ export type RollupBinGenOptions = {
     bin: IPackageJson["bin"];
 };
 
-export default function binGen({ bin }: RollupBinGenOptions): Plugin {
+export default function binGen({}: RollupBinGenOptions): Plugin {
     return {
         name: "bin-gen",
-        options(input) {
+        options() {
             // console.log("input", input);
         },
-        outputOptions(output) {
+        outputOptions() {
             // console.log("output", output);
         },
     };
