@@ -7,6 +7,7 @@ import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
 import { isSameRollupInput, normalizeCLIInput, parser } from "./utils";
 
 const packageFilePath = "package.json";
+const defaultEntry = "src/index";
 
 const cli = async (args: string[]) => {
     const [, ..._args] = args;
@@ -36,7 +37,11 @@ const cli = async (args: string[]) => {
         esbuild,
         binGen: { bin: pkgJson.bin },
     });
-    const { rollup, externals, input: configInput } = config;
+    const {
+        rollup,
+        externals,
+        input: configInput
+    } = config;
     const externalsFn = externalsGenerator(externals, pkgJson);
     if (config.bundle) {
         const bundles = config.bundle.reduce((options, bundle) => {
@@ -48,7 +53,7 @@ const cli = async (args: string[]) => {
                     configInput ||
                     (cliInput
                         ? normalizeCLIInput(cliInput as string)
-                        : "src/index"),
+                        : defaultEntry),
                 output: [{ ...otherProps, sourcemap }],
                 plugins: rollupPlugins,
                 external: externalsFn,
@@ -85,7 +90,7 @@ const cli = async (args: string[]) => {
             }
 
             bundles.push({
-                input: "src/index",
+                input: defaultEntry,
                 output: { file: pkgJson.types, format: "esm" },
                 external: externalsFn,
                 plugins: [

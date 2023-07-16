@@ -10,7 +10,7 @@
         "beats": "bin/beats"
     },
     "scripts": {
-        "build": "node ./dist/index.cjs.js"
+        "build": "node ./dist/index.cjs.js --clean"
     },
     "publishConfig": {
         "access": "public"

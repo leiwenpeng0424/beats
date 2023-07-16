@@ -7,7 +7,7 @@ import ts, {
     createCompilerHost,
     createProgram,
     sys,
-    type CompilerOptions
+    type CompilerOptions,
 } from "typescript";
 import { cwd } from "../utils";
 

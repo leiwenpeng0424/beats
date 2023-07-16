@@ -1,18 +1,22 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "outDir": "bundle",
+        // module
         "lib": ["es2020", "dom"],
         "module": "CommonJS",
         "target": "ESNext",
-        "importHelpers": true,
-        "strict": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true,
         "moduleResolution": "node",
 
+        // code style
+        "strict": true,
+        "alwaysStrict": true,
+        "importHelpers": false,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+
+        // declaration
         "declaration": true,
         "declarationDir": ".declarations"
     },
