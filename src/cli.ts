@@ -5,6 +5,7 @@ import { CLIOptions, tryReadConfigFromRoot } from "./configuration";
 import dtsGen from "./plugins/dtsGen";
 import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
 import { isSameRollupInput, normalizeCLIInput, parser } from "./utils";
+import { info } from "./log";
 
 const packageFilePath = "package.json";
 const defaultEntry = "src/index";
@@ -12,6 +13,7 @@ const defaultEntry = "src/index";
 const cli = async (args: string[]) => {
     const [, ..._args] = args;
     const pkgJson = fileSystem.readJSONSync<IPackageJson>(packageFilePath);
+
     const {
         input: cliInput,
         config: configPath,
@@ -22,7 +24,7 @@ const cli = async (args: string[]) => {
     } = parser<CLIOptions>(_args);
 
     // @remarks Add verbose flag to ENV.
-    process.env.BEATS_VERBOSE = verbose ? "true" : undefined;
+    process.env.NODE_DEBUG = verbose ? "verbose" : "info";
 
     const config = await tryReadConfigFromRoot({
         configPath,
@@ -37,11 +39,7 @@ const cli = async (args: string[]) => {
         esbuild,
         binGen: { bin: pkgJson.bin },
     });
-    const {
-        rollup,
-        externals,
-        input: configInput
-    } = config;
+    const { rollup, externals, input: configInput } = config;
     const externalsFn = externalsGenerator(externals, pkgJson);
     if (config.bundle) {
         const bundles = config.bundle.reduce((options, bundle) => {

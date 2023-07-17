@@ -50,7 +50,7 @@ const getOutputFromPackageJson = (
             .map((output) => {
                 const format = getFormatFromFileName(output);
 
-                // dot fallback to ./index.js
+                // dot mark fallback to ./index.js
                 if (output === ".") {
                     output = "./index.js";
                 }
@@ -84,24 +84,37 @@ export interface CLIOptions {
      * this would be the default input.
      */
     input?: string | string[] | { [K: string]: string };
+
     /**
      * Should generate .d.ts file for bundle.
      */
     dtsRollup?: boolean;
+
     /**
      * Generate .map file for bundle output.
      */
     sourcemap?: boolean | "inline" | "hidden";
+
     /**
      * Specified beats config file path.
      */
     config?: string;
+
+    /**
+     * tsconfig file path.
+     */
     project?: string;
+
     /**
      * Print more info in terminal during bundle.
      */
     verbose?: boolean;
+
+    /**
+     * Watch mode.
+     */
     watch?: boolean;
+
     /**
      * Cleanup before output write.
      */
@@ -128,8 +141,10 @@ export interface Config extends CLIOptions {
          */
         noEslintrc?: boolean;
     };
+
     commonjs?: RollupCommonJSOptions;
     nodeResolve?: RollupNodeResolveOptions;
+
     /**
      * TODO:
      *  rollup-plugin-styles is no longer actively update,
@@ -147,6 +162,11 @@ export interface Config extends CLIOptions {
      * Output options.
      */
     bundle?: TBundleConfig[];
+
+    /**
+     * Overwrite bundle config
+     */
+    bundleOverwrite?: (b: TBundleConfig) => TBundleConfig;
 }
 
 export const tryReadConfigFromRoot = async ({
@@ -178,7 +198,10 @@ export const tryReadConfigFromRoot = async ({
 
         if (!config.bundle) {
             Object.assign(config, {
-                bundle: getOutputFromPackageJson(pkgJson),
+                bundle: getOutputFromPackageJson(
+                    pkgJson,
+                    config.bundleOverwrite,
+                ),
             });
         }
 
