@@ -4,7 +4,12 @@ import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
 import { CLIOptions, tryReadConfigFromRoot } from "./configuration";
 import dtsGen from "./plugins/dtsGen";
 import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
-import { isSameRollupInput, normalizeCLIInput, parser } from "./utils";
+import {
+    coreDepsInfo,
+    isSameRollupInput,
+    normalizeCLIInput,
+    parser,
+} from "./utils";
 
 const packageFilePath = "package.json";
 const defaultEntry = "src/index";
@@ -24,6 +29,8 @@ const cli = async (args: string[]) => {
 
     // @Remark Add verbose flag to ENV.
     process.env.NODE_DEBUG = verbose ? "verbose" : "info";
+
+    coreDepsInfo();
 
     const config = await tryReadConfigFromRoot({
         configPath,

@@ -1,4 +1,8 @@
 import { RollupOptions } from "rollup";
+import nodePath from "node:path";
+import { fileSystem, colors } from "@nfts/utils";
+import { IPackageJson } from "@nfts/pkg-json";
+import { verboseLog } from "./log";
 
 // Clear screen
 export const clearScreen = () => process.stdout.write("\x1Bc");
@@ -64,4 +68,32 @@ export const isSameRollupInput = (
 
 export const normalizeCLIInput = (input: string) => {
     return input.trimStart().trimEnd().split(",").filter(Boolean);
+};
+
+export const coreDepsInfo = () => {
+    const coreDeps = ["typescript", "esbuild", "rollup"];
+
+    const depInfo = coreDeps
+        .map((dep) => {
+            const main = require.resolve(dep);
+
+            const depDir = nodePath.join(main, "../../");
+
+            const pkgJson = fileSystem.readJSONSync<IPackageJson>(
+                nodePath.join(depDir, "package.json"),
+            );
+
+            const { name, version } = pkgJson;
+
+            return {
+                name,
+                version,
+                path: depDir,
+            };
+        })
+        .reduce((infos, info) => {
+            return (infos += `${info.name}@${colors.green(info.version)} `);
+        }, "");
+
+    verboseLog(depInfo);
 };
