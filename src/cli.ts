@@ -5,7 +5,6 @@ import { CLIOptions, tryReadConfigFromRoot } from "./configuration";
 import dtsGen from "./plugins/dtsGen";
 import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
 import { isSameRollupInput, normalizeCLIInput, parser } from "./utils";
-import { info } from "./log";
 
 const packageFilePath = "package.json";
 const defaultEntry = "src/index";
@@ -23,7 +22,7 @@ const cli = async (args: string[]) => {
         project,
     } = parser<CLIOptions>(_args);
 
-    // @remarks Add verbose flag to ENV.
+    // @Remark Add verbose flag to ENV.
     process.env.NODE_DEBUG = verbose ? "verbose" : "info";
 
     const config = await tryReadConfigFromRoot({
@@ -31,15 +30,20 @@ const cli = async (args: string[]) => {
         pkgJson,
     });
     const internalPlugins: Plugin[] = [];
-    const { eslint, commonjs, nodeResolve, esbuild } = config;
+    const { eslint, commonjs, nodeResolve, esbuild, styles } = config;
     const rollupPlugins = applyPlugins(internalPlugins, {
         eslint,
         commonjs,
         nodeResolve,
         esbuild,
+        styles,
         binGen: { bin: pkgJson.bin },
     });
-    const { rollup, externals, input: configInput } = config;
+    const {
+        rollup,
+        externals,
+        input: configInput, //
+    } = config;
     const externalsFn = externalsGenerator(externals, pkgJson);
     if (config.bundle) {
         const bundles = config.bundle.reduce((options, bundle) => {

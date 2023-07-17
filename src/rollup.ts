@@ -46,20 +46,18 @@ export const externalsGenerator = (
     externals: string[] = [],
     pkgJson: IPackageJson,
 ) => {
-    const { dependencies = {}, devDependencies = {} } = pkgJson;
+    /**
+     * Default exclude deps and peerDeps
+     */
+    const { dependencies = {}, peerDependencies = {} } = pkgJson;
     const nativeModules = Module.builtinModules
         .concat(Module.builtinModules.map((m) => `node:${m}`))
-        .concat(Object.keys(dependencies).concat(Object.keys(devDependencies)));
+        .concat(
+            Object.keys(dependencies).concat(Object.keys(peerDependencies)),
+        );
 
     return (id: string) => {
-        if (externals?.includes(id)) {
-            return true;
-        }
-        let isExtractExternal = false;
-        if (nativeModules.includes(id)) {
-            isExtractExternal = true;
-        }
-        return isExtractExternal;
+        return externals?.includes(id) || nativeModules.includes(id);
     };
 };
 
