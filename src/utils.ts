@@ -1,22 +1,25 @@
 import { RollupOptions } from "rollup";
 import nodePath from "node:path";
-import { fileSystem, colors } from "@nfts/utils";
+import { colors, fileSystem } from "@nfts/utils";
 import { IPackageJson } from "@nfts/pkg-json";
 import { verboseLog } from "@/log";
 
-// Clear screen
+// Clear screen.
 export const clearScreen = () => process.stdout.write("\x1Bc");
 
-// Current working directory
+// Current working directory.
 export const cwd = () => process.cwd();
 
 // String start with '--' or '-'.
-const isArgFlag = (input: string): boolean => /^-{1,2}/.test(input);
+export const isArgFlag = (input: string): boolean => /^-{1,2}/.test(input);
 
 // Remove prefix '--' or '-'.
-const strip = (input: string): string => input.replace(/^-{1,2}/, "");
+export const strip = (input: string): string => input.replace(/^-{1,2}/, "");
 
-// Simple cmd input parser.
+/**
+ * Simple cli parser.
+ * @param input
+ */
 export const parser = <T extends object = { [K: string]: string | boolean }>(
     input: string[],
 ): T => {
@@ -66,25 +69,26 @@ export const isSameRollupInput = (
     return input1 === input2;
 };
 
-export const normalizeCLIInput = (input: string) => {
+/**
+ * Convert "x1,x2,x3" to ["x1", "x2", "x3"]
+ * @param input
+ */
+export const normalizeCliInput = (input: string) => {
     return input.trimStart().trimEnd().split(",").filter(Boolean);
 };
 
-export const coreDepsInfo = () => {
+export const depsInfo = () => {
     const coreDeps = ["typescript", "esbuild", "rollup"];
 
     const depInfo = coreDeps
         .map((dep) => {
             const main = require.resolve(dep);
-
             const depDir = nodePath.join(main, "../../");
-
             const pkgJson = fileSystem.readJSONSync<IPackageJson>(
                 nodePath.join(depDir, "package.json"),
             );
 
             const { name, version } = pkgJson;
-
             return {
                 name,
                 version,
@@ -92,8 +96,15 @@ export const coreDepsInfo = () => {
             };
         })
         .reduce((infos, info) => {
-            return (infos += `${info.name}@${colors.green(info.version)} `);
+            return (infos += `${colors.green("*")} ${info.name}@${colors.green(
+                info.version,
+            )} \n`);
         }, "");
 
+    console.log("");
     verboseLog(depInfo);
+};
+
+export const sizeMeasure = () => {
+    //
 };

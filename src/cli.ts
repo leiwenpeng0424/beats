@@ -2,8 +2,10 @@ import type { IPackageJson } from "@nfts/pkg-json";
 import { fileSystem } from "@nfts/utils";
 import { type CLIOptions, tryReadConfigFromRoot } from "@/configuration";
 import { startRollupBundle } from "@/rollup";
-import { coreDepsInfo, parser } from "@/utils";
+import { cwd, depsInfo, parser } from "@/utils";
 import type { ITSConfigJson } from "@nfts/tsc-json";
+import { debugLog } from "@/log";
+import nodePath from "node:path";
 
 const tsConfigFilePath = "tsconfig.json";
 const packageJsonFilePath = "package.json";
@@ -14,17 +16,30 @@ const cli = async (args: string[]) => {
     const {
         project,
         config: configPath,
+        debug,
+        verbose,
         ...restInputOptions
     } = parser<CLIOptions>(_args);
-    coreDepsInfo();
+
+    process.env.BEATS_VERBOSE = verbose ? String(verbose) : "undefined";
+    process.env.BEATS_DEBUG = debug ? String(debug) : "undefined";
+
+    depsInfo();
+
     const tsConfig = fileSystem.readJSONSync<ITSConfigJson>(
         tsConfigFilePath ?? project,
     );
+
+    debugLog(
+        `tsconfig -> ${nodePath.join(cwd(), tsConfigFilePath ?? project)}\n`,
+    );
+
     const config = await tryReadConfigFromRoot({
         configPath,
         pkgJson,
     });
-    await startRollupBundle({
+
+    return startRollupBundle({
         config: {
             ...config,
             ...restInputOptions,

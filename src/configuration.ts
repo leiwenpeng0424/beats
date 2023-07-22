@@ -15,6 +15,10 @@ const cjsExt = [".cjs", ".cts"];
 const esmMiddleNames = [".esm.", ".es."];
 const cjsMiddleNames = [".cjs."];
 
+/**
+ * Return output format.
+ * @param output
+ */
 const getFormatFromFileName = (output: string): ModuleFormat => {
     const ext = nodePath.extname(output);
 
@@ -37,6 +41,11 @@ const getFormatFromFileName = (output: string): ModuleFormat => {
     return "cjs";
 };
 
+/**
+ * Get outputs from package.json
+ * @param pkgJson
+ * @param externalOutputOptions
+ */
 const getOutputFromPackageJson = (
     pkgJson: IPackageJson,
     externalOutputOptions: (opt: TBundleConfig) => TBundleConfig = (o) => o,
@@ -63,6 +72,9 @@ const getOutputFromPackageJson = (
     );
 };
 
+/**
+ * Default config.
+ */
 const Configs = ["beats.config.js", "beats.config.ts", "beats.config.json"];
 
 export type TBundleConfig = {
@@ -123,6 +135,11 @@ export interface CLIOptions {
      * Confound bundle code.
      */
     minify?: boolean;
+
+    /**
+     * Show internal debug info.
+     */
+    debug?: boolean;
 }
 
 export interface Config extends CLIOptions {

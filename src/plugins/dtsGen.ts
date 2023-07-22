@@ -9,7 +9,7 @@ import ts, {
     sys,
     type CompilerOptions,
 } from "typescript";
-import { cwd } from "../utils";
+import { cwd } from "@/utils";
 
 export interface IDtsPluginOptions {
     tsConfigFile?: string;
@@ -67,7 +67,6 @@ export function emitOnlyDeclarations(
 }
 
 export default function dtsGen(options?: IDtsPluginOptions): Plugin {
-    let hasMultiInput = false;
     let onlyInput: string | undefined;
     let tsConfig: ITSConfigJson | undefined;
     let tsConfigPath = options?.tsConfigFile;
@@ -79,54 +78,45 @@ export default function dtsGen(options?: IDtsPluginOptions): Plugin {
             const inputEntries = Object.entries(input);
 
             if (inputEntries.length > 1) {
-                hasMultiInput = true;
-                console.warn(
-                    `Multiple inputs are not supported by @microsoft/api-extractor, will skip the dts bundle`,
+                this.warn(
+                    () =>
+                        `Multiple inputs are not supported by @microsoft/api-extractor, will skip the dts bundle`,
                 );
-                return;
-            }
-
-            const [entry] = inputEntries;
-
-            onlyInput = entry[1];
-
-            if (options?.tsConfigFile) {
-                tsConfig = await fileSystem.readJSON(options.tsConfigFile);
             } else {
-                const [tsConfigFile] = await fileSystem.findFile(
-                    `tsconfig.json`,
-                    process.cwd(),
-                    {
-                        fullpath: true,
-                    },
-                );
+                const [entry] = inputEntries;
+                onlyInput = entry[1];
 
-                if (tsConfigFile) {
-                    tsConfigPath = tsConfigFile;
-                    tsConfig = await fileSystem.readJSON(tsConfigFile);
+                if (options?.tsConfigFile) {
+                    tsConfig = await fileSystem.readJSON(options.tsConfigFile);
                 } else {
-                    throw Error(
-                        `Can't find tsconfig.json from current project`,
+                    const [tsConfigFile] = await fileSystem.findFile(
+                        `tsconfig.json`,
+                        process.cwd(),
+                        {
+                            fullpath: true,
+                        },
                     );
+
+                    if (tsConfigFile) {
+                        tsConfigPath = tsConfigFile;
+                        tsConfig = await fileSystem.readJSON(tsConfigFile);
+                    } else {
+                        throw Error(
+                            `Can't find tsconfig.json from current project`,
+                        );
+                    }
                 }
             }
         },
 
         writeBundle: {
-            order: "post",
-            sequential: true,
-            async handler(outputOptions) {
-                if (hasMultiInput) {
-                    // TODO: Better message.
-                    console.warn(
-                        `Multi entry file is not allowed by @microsoft/api-extractor`,
+            async handler() {
+                if (!onlyInput) {
+                    this.warn(
+                        () =>
+                            `Multi entries is not allowed by @microsoft/api-extractor`,
                     );
-                    return;
-                }
-
-                const { format } = outputOptions;
-
-                if ([`esm`, `es`].includes(format.toLowerCase())) {
+                } else {
                     const packageJsonFullPath = nodePath.join(
                         cwd(),
                         "package.json",
@@ -224,9 +214,6 @@ export default function dtsGen(options?: IDtsPluginOptions): Plugin {
                             // );
                         }
                     }
-                } else {
-                    // TODO: Add error message, dtsRollup is enabled,
-                    //  but format is not es or esm
                 }
             },
         },

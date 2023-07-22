@@ -1,7 +1,7 @@
 import { colors } from "@nfts/utils";
 import { type OutputChunk, type Plugin } from "rollup";
 import nodePath from "node:path";
-import { cwd } from "../utils";
+import { cwd } from "@/utils";
 
 export type BundleStatus = {
     loaded: number;

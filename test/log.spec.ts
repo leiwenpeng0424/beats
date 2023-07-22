@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { info, verboseLog } from "../src/log";
+import { debugLog, verboseLog } from "../src/log";
 
 describe("Should log properly", () => {
     it("should log to terminal", function () {
         expect(() => {
-            info("info");
+            debugLog("info");
         }).not.throw();
     });
 

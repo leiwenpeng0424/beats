@@ -3,7 +3,7 @@
  */
 import { type Plugin } from "rollup";
 import nodePath from "node:path";
-import { cwd } from "../utils";
+import { cwd } from "@/utils";
 import nodeFs from "node:fs/promises";
 
 export interface RollupCleanupOptions {

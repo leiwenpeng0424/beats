@@ -21,7 +21,7 @@ import {
     clearScreen,
     cwd,
     isSameRollupInput,
-    normalizeCLIInput,
+    normalizeCliInput,
 } from "@/utils";
 import binGen, { RollupBinGenOptions } from "@/plugins/binGen";
 import bundleProgress from "@/plugins/bundleProgress";
@@ -30,6 +30,7 @@ import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
 import styles from "rollup-plugin-styles";
 import alias, { RollupAliasOptions } from "@/plugins/alias";
 import dtsGen from "@/plugins/dtsGen";
+import { verboseLog } from "@/log";
 
 const defaultEntry = "src/index";
 const tsConfigFilePath = "tsconfig.json";
@@ -74,10 +75,7 @@ export const externalsGenerator = (
 };
 
 /**
- *
  * Default plugins.
- *
- *
  **/
 export const applyPlugins = (
     extraPlugins: Plugin[] = [],
@@ -164,21 +162,21 @@ export const bundle = async (options: RollupOptions | RollupOptions[]) => {
             for (const output_ of output) {
                 // Add bundle task
                 bundles_.push(async () => {
-                    const start = new Date().getTime();
+                    const start = Date.now();
                     await bundle_.generate(output_);
                     const output = await bundle_.write(output_);
+
                     return {
                         ...output,
                         input: option.input as string | string[],
-                        duration: new Date().getTime() - start,
+                        duration: Date.now() - start,
                     };
                 });
             }
 
             bundles = bundles.concat(bundles_);
         } else {
-            // TODO: Write warning to terminal
-            return [];
+            verboseLog(`Output not found for input '${option.input}', skip...`);
         }
     }
 
@@ -303,7 +301,7 @@ export const startRollupBundle = async ({
                     bundleInput ||
                     configInput ||
                     (cliInput
-                        ? normalizeCLIInput(cliInput as string)
+                        ? normalizeCliInput(cliInput as string)
                         : defaultEntry),
                 output: [{ ...otherProps, sourcemap }],
                 plugins: rollupPlugins,
