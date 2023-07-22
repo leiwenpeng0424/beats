@@ -36,8 +36,7 @@ export default function (
         return styleTag;
     }
 
-    /** @type {HTMLStyleElement} */
-    let styleTag;
+    let styleTag: any;
 
     if (singleTag) {
         let id = containers.indexOf(container);

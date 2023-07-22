@@ -11,7 +11,11 @@ const packageJsonFilePath = "package.json";
 const cli = async (args: string[]) => {
     const [, ..._args] = args;
     const pkgJson = fileSystem.readJSONSync<IPackageJson>(packageJsonFilePath);
-    const { config: configPath, project } = parser<CLIOptions>(_args);
+    const {
+        project,
+        config: configPath,
+        ...restInputOptions
+    } = parser<CLIOptions>(_args);
     coreDepsInfo();
     const tsConfig = fileSystem.readJSONSync<ITSConfigJson>(
         tsConfigFilePath ?? project,
@@ -20,7 +24,15 @@ const cli = async (args: string[]) => {
         configPath,
         pkgJson,
     });
-    await startRollupBundle({ config, pkgJson, tsConfig });
+    await startRollupBundle({
+        config: {
+            ...config,
+            ...restInputOptions,
+            project,
+        },
+        pkgJson,
+        tsConfig,
+    });
 };
 
 cli(process.argv.slice(1))

@@ -40,7 +40,7 @@ export default async function postcssLoader(
 
     const result = await postcss([
         postcssModules({
-            getJSON(filename, json) {
+            getJSON(_, json) {
                 options.cssModulesJsonById[id] = json;
             },
         }),
