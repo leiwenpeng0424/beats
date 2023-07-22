@@ -119,6 +119,10 @@ export interface CLIOptions {
      * Cleanup before output write.
      */
     clean?: boolean;
+    /**
+     * Confound bundle code.
+     */
+    minify?: boolean;
 }
 
 export interface Config extends CLIOptions {

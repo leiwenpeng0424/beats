@@ -10,12 +10,16 @@ import {
     normalizeCLIInput,
     parser,
 } from "./utils";
+import { ITSConfigJson } from "@nfts/tsc-json";
+import alias from "./plugins/alias";
 
 const packageFilePath = "package.json";
 const defaultEntry = "src/index";
+const tsConfigFilePath = "tsconfig.json";
 
 const cli = async (args: string[]) => {
     const [, ..._args] = args;
+
     const pkgJson = fileSystem.readJSONSync<IPackageJson>(packageFilePath);
 
     const {
@@ -25,33 +29,46 @@ const cli = async (args: string[]) => {
         verbose,
         sourcemap,
         project,
+        minify,
     } = parser<CLIOptions>(_args);
 
-    // @Remark Add verbose flag to ENV.
-    process.env.NODE_DEBUG = verbose ? "verbose" : "info";
-
     coreDepsInfo();
+
+    const tsConfig = fileSystem.readJSONSync<ITSConfigJson>(
+        tsConfigFilePath ?? project,
+    );
 
     const config = await tryReadConfigFromRoot({
         configPath,
         pkgJson,
     });
-    const internalPlugins: Plugin[] = [];
-    const { eslint, commonjs, nodeResolve, esbuild, styles } = config;
-    const rollupPlugins = applyPlugins(internalPlugins, {
-        eslint,
-        commonjs,
-        nodeResolve,
-        esbuild,
-        styles,
-        binGen: { bin: pkgJson.bin },
-    });
+
     const {
         rollup,
         externals,
         input: configInput, //
     } = config;
+
+    const paths = tsConfig.compilerOptions?.paths;
+
+    const internalPlugins: Plugin[] = [
+        alias({
+            alias: paths ?? {},
+        }),
+    ];
+
+    const { eslint, commonjs, nodeResolve, esbuild, styles } = config;
+    const rollupPlugins = applyPlugins(internalPlugins, {
+        eslint,
+        commonjs,
+        nodeResolve,
+        esbuild: Object.assign({ minify }, esbuild ?? {}),
+        styles,
+        binGen: { bin: pkgJson.bin },
+    });
+
     const externalsFn = externalsGenerator(externals, pkgJson);
+
     if (config.bundle) {
         const bundles = config.bundle.reduce((options, bundle) => {
             const { input: bundleInput, ...otherProps } = bundle;
@@ -104,7 +121,7 @@ const cli = async (args: string[]) => {
                 external: externalsFn,
                 plugins: [
                     dtsGen({
-                        tsConfigFile: project ?? "tsconfig.json",
+                        tsConfigFile: project ?? tsConfigFilePath,
                         dtsFileName: pkgJson.types,
                     }),
                     // Exclude eslint plugin for DTS bundle.

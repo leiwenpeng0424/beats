@@ -18,7 +18,12 @@
 
         // declaration
         "declaration": true,
-        "declarationDir": ".declarations"
+        "declarationDir": ".declarations",
+
+        // path alias
+        "paths": {
+            "@/*": ["src/*"]
+        }
     },
     "include": ["src/"]
 }
