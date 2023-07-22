@@ -65,13 +65,7 @@ export default function bundleProgress(): Plugin {
             async handler(output, bundle) {
                 const files = Object.keys(bundle);
                 for (const file of files) {
-                    const { facadeModuleId, fileName, code } = bundle[
-                        file
-                    ] as OutputChunk;
-
-                    const blob = new Blob([code]);
-
-                    console.log(`${blob.size / 1024}kb`);
+                    const { facadeModuleId } = bundle[file] as OutputChunk;
 
                     facadeModuleId &&
                         console.log(
