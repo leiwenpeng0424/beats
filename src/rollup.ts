@@ -236,10 +236,7 @@ export const watch_ = async (
                         break;
                     }
                     case "ERROR": {
-                        console.error(`Rollup bundle error:`, e.result);
-                        // watcher.close().finally(() => {
-                        //     reject();
-                        // });
+                        console.error(`Rollup bundle error:`, e);
                         break;
                     }
                 }
@@ -360,8 +357,7 @@ export const startRollupBundle = async ({
         if (watch) {
             await watch_(bundles);
         } else {
-            const bundleTasks = await bundle(bundles);
-            await Promise.all(bundleTasks.map((task) => task()));
+            await Promise.all((await bundle(bundles)).map((task) => task()));
         }
     }
 };
