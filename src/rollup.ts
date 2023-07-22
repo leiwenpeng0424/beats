@@ -1,4 +1,5 @@
 import { type IPackageJson } from "@nfts/pkg-json";
+import { type ITSConfigJson } from "@nfts/tsc-json";
 import { ms } from "@nfts/utils";
 import commonjs from "@rollup/plugin-commonjs";
 import eslint from "@rollup/plugin-eslint";
@@ -6,22 +7,32 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import Module from "node:module";
 import nodePath from "node:path";
 import {
-    rollup,
-    watch,
+    OutputOptions,
     type Plugin,
+    rollup,
     type RollupOptions,
     type RollupOutput,
     type RollupWatchOptions,
+    watch,
 } from "rollup";
 import { type Config } from "@/configuration";
 import esbuild from "@/plugins/esbuild";
-import { clearScreen, cwd } from "@/utils";
+import {
+    clearScreen,
+    cwd,
+    isSameRollupInput,
+    normalizeCLIInput,
+} from "@/utils";
 import binGen, { RollupBinGenOptions } from "@/plugins/binGen";
 import bundleProgress from "@/plugins/bundleProgress";
 import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
 // import postcssPlugin from "@/plugins/styles";
 import styles from "rollup-plugin-styles";
 import alias, { RollupAliasOptions } from "@/plugins/alias";
+import dtsGen from "@/plugins/dtsGen";
+
+const defaultEntry = "src/index";
+const tsConfigFilePath = "tsconfig.json";
 
 export const EXTENSIONS = [
     ".js",
@@ -238,5 +249,118 @@ export const watch_ = async (
         });
     } catch (e) {
         //
+    }
+};
+
+export const startRollupBundle = async ({
+    config,
+    pkgJson,
+    tsConfig,
+}: {
+    config: Config;
+    pkgJson: IPackageJson;
+    tsConfig: ITSConfigJson;
+}) => {
+    const {
+        rollup,
+        externals,
+        input: configInput, //
+    } = config;
+
+    const paths = tsConfig.compilerOptions?.paths ?? {};
+
+    const {
+        eslint,
+        commonjs,
+        nodeResolve,
+        esbuild,
+        styles,
+        minify,
+        sourcemap,
+        project,
+        input: cliInput,
+        watch,
+    } = config;
+
+    const rollupPlugins = applyPlugins([], {
+        eslint,
+        commonjs,
+        nodeResolve,
+        esbuild: Object.assign({ minify }, esbuild ?? {}),
+        styles,
+        binGen: { bin: pkgJson.bin },
+        alias: { alias: paths },
+    });
+
+    const externalsFn = externalsGenerator(externals, pkgJson);
+
+    if (config.bundle) {
+        const bundles = config.bundle.reduce((options, bundle) => {
+            const { input: bundleInput, ...otherProps } = bundle;
+
+            const option = {
+                input:
+                    bundleInput ||
+                    configInput ||
+                    (cliInput
+                        ? normalizeCLIInput(cliInput as string)
+                        : defaultEntry),
+                output: [{ ...otherProps, sourcemap }],
+                plugins: rollupPlugins,
+                external: externalsFn,
+                ...rollup,
+            } as RollupOptions;
+
+            if (options.length === 0) {
+                return [option];
+            }
+
+            const i = options.findIndex((o) =>
+                isSameRollupInput(o.input, option.input),
+            );
+
+            if (i === -1) {
+                options.push(option);
+            } else {
+                options[i] = Object.assign({}, options[i], {
+                    output: [
+                        ...(options[i].output as OutputOptions[]),
+                        { ...otherProps, sourcemap },
+                    ],
+                });
+            }
+
+            return options;
+        }, [] as RollupOptions[]);
+
+        if (config.dtsRollup) {
+            if (config.dtsRollup && !pkgJson.types) {
+                throw new Error(
+                    "'dtsRollup' is enabled, Looks like you forget to add types field in your local package.json file",
+                );
+            }
+
+            bundles.push({
+                input: defaultEntry,
+                output: { file: pkgJson.types, format: "esm" },
+                external: externalsFn,
+                plugins: [
+                    dtsGen({
+                        tsConfigFile: project ?? tsConfigFilePath,
+                        dtsFileName: pkgJson.types,
+                    }),
+                    // Exclude eslint plugin for DTS bundle.
+                    ...rollupPlugins.slice(0, -1),
+                ],
+                ...rollup,
+            });
+        }
+
+        if (watch) {
+            await watch_(bundles);
+        } else {
+            const bundleTasks = await bundle(bundles);
+            await Promise.all(bundleTasks.map((task) => task()));
+        }
     }
 };

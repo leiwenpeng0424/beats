@@ -1,5 +1,5 @@
 import { type Plugin } from "rollup";
-import type { IPathObject } from "@nfts/tsc-json";
+import { type IPathObject } from "@nfts/tsc-json";
 import nodePath from "node:path";
 import { cwd } from "@/utils";
 
