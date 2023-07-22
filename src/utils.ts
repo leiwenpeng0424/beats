@@ -2,7 +2,7 @@ import { RollupOptions } from "rollup";
 import nodePath from "node:path";
 import { fileSystem, colors } from "@nfts/utils";
 import { IPackageJson } from "@nfts/pkg-json";
-import { verboseLog } from "./log";
+import { verboseLog } from "@/log";
 
 // Clear screen
 export const clearScreen = () => process.stdout.write("\x1Bc");

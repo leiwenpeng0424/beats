@@ -1,17 +1,16 @@
 import { IPackageJson } from "@nfts/pkg-json";
 import { fileSystem } from "@nfts/utils";
-import { type OutputOptions, type Plugin, type RollupOptions } from "rollup";
-import { CLIOptions, tryReadConfigFromRoot } from "./configuration";
-import dtsGen from "./plugins/dtsGen";
-import { applyPlugins, bundle, externalsGenerator, watch_ } from "./rollup";
+import { type OutputOptions, type RollupOptions } from "rollup";
+import { CLIOptions, tryReadConfigFromRoot } from "@/configuration";
+import dtsGen from "@/plugins/dtsGen";
+import { applyPlugins, bundle, externalsGenerator, watch_ } from "@/rollup";
 import {
     coreDepsInfo,
     isSameRollupInput,
     normalizeCLIInput,
     parser,
-} from "./utils";
+} from "@/utils";
 import { ITSConfigJson } from "@nfts/tsc-json";
-import alias from "./plugins/alias";
 
 const packageFilePath = "package.json";
 const defaultEntry = "src/index";
@@ -26,7 +25,6 @@ const cli = async (args: string[]) => {
         input: cliInput,
         config: configPath,
         watch,
-        verbose,
         sourcemap,
         project,
         minify,
@@ -51,20 +49,22 @@ const cli = async (args: string[]) => {
 
     const paths = tsConfig.compilerOptions?.paths;
 
-    const internalPlugins: Plugin[] = [
-        alias({
-            alias: paths ?? {},
-        }),
-    ];
+    const {
+        eslint,
+        commonjs,
+        nodeResolve,
+        esbuild,
+        styles, //
+    } = config;
 
-    const { eslint, commonjs, nodeResolve, esbuild, styles } = config;
-    const rollupPlugins = applyPlugins(internalPlugins, {
+    const rollupPlugins = applyPlugins([], {
         eslint,
         commonjs,
         nodeResolve,
         esbuild: Object.assign({ minify }, esbuild ?? {}),
         styles,
         binGen: { bin: pkgJson.bin },
+        alias: { alias: paths ?? {} },
     });
 
     const externalsFn = externalsGenerator(externals, pkgJson);

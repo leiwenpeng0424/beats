@@ -13,14 +13,15 @@ import {
     type RollupOutput,
     type RollupWatchOptions,
 } from "rollup";
-import { type Config } from "./configuration";
-import esbuild from "./plugins/esbuild";
-import { clearScreen, cwd } from "./utils";
-import binGen, { RollupBinGenOptions } from "./plugins/binGen";
-import bundleProgress from "./plugins/bundleProgress";
-import cleanup, { RollupCleanupOptions } from "./plugins/cleanup";
-// import postcssPlugin from "./plugins/styles";
+import { type Config } from "@/configuration";
+import esbuild from "@/plugins/esbuild";
+import { clearScreen, cwd } from "@/utils";
+import binGen, { RollupBinGenOptions } from "@/plugins/binGen";
+import bundleProgress from "@/plugins/bundleProgress";
+import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
+// import postcssPlugin from "@/plugins/styles";
 import styles from "rollup-plugin-styles";
+import alias, { RollupAliasOptions } from "@/plugins/alias";
 
 export const EXTENSIONS = [
     ".js",
@@ -72,9 +73,14 @@ export const applyPlugins = (
     options?: Pick<
         Config,
         "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "clean" | "styles"
-    > & { binGen?: RollupBinGenOptions; clean?: RollupCleanupOptions },
+    > & {
+        binGen?: RollupBinGenOptions;
+        clean?: RollupCleanupOptions;
+        alias?: RollupAliasOptions;
+    },
 ) => {
     const defaultPlugins = [
+        alias(options?.alias ?? { alias: {} }),
         styles(options?.styles),
         // @TODO
         // postcssPlugin({ cssModules: true }),

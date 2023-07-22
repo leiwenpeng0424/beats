@@ -1,11 +1,7 @@
-import "./cli";
-import type { Config } from "./configuration";
+import "@/cli";
+import type { Config } from "@/configuration";
 
-import alias from "@/plugins/alias";
-
-export * from "./configuration";
-
-export { alias };
+export * from "@/configuration";
 
 export function defineConfig(options: Config) {
     return options;
