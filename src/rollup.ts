@@ -308,6 +308,9 @@ export const startRollupBundle = async ({
                 output: [{ ...otherProps, sourcemap }],
                 plugins: rollupPlugins,
                 external: externalsFn,
+                treeshake: true,
+                strictDeprecations: true,
+                perf: true,
                 ...rollup,
             } as RollupOptions;
 
