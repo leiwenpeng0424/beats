@@ -1,3 +1,13 @@
+import { type Config } from "@/configuration";
+import bundleProgress from "@/plugins/bundleProgress";
+import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
+import esbuild from "@/plugins/esbuild";
+import {
+    clearScreen,
+    cwd,
+    isSameRollupInput,
+    normalizeCliInput,
+} from "@/utils";
 import { type IPackageJson } from "@nfts/pkg-json";
 import { type ITSConfigJson } from "@nfts/tsc-json";
 import { ms } from "@nfts/utils";
@@ -8,29 +18,17 @@ import Module from "node:module";
 import nodePath from "node:path";
 import {
     OutputOptions,
-    type Plugin,
     rollup,
     type RollupOptions,
     type RollupOutput,
     type RollupWatchOptions,
     watch,
 } from "rollup";
-import { type Config } from "@/configuration";
-import esbuild from "@/plugins/esbuild";
-import {
-    clearScreen,
-    cwd,
-    isSameRollupInput,
-    normalizeCliInput,
-} from "@/utils";
-import binGen, { RollupBinGenOptions } from "@/plugins/binGen";
-import bundleProgress from "@/plugins/bundleProgress";
-import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
 // import postcssPlugin from "@/plugins/styles";
-import styles from "rollup-plugin-styles";
+import { debugLog, verboseLog } from "@/log";
 import alias, { RollupAliasOptions } from "@/plugins/alias";
 import dtsGen from "@/plugins/dtsGen";
-import { verboseLog } from "@/log";
+import styles from "rollup-plugin-styles";
 
 const defaultEntry = "src/index";
 const tsConfigFilePath = "tsconfig.json";
@@ -78,17 +76,15 @@ export const externalsGenerator = (
  * Default plugins.
  **/
 export const applyPlugins = (
-    extraPlugins: Plugin[] = [],
     options?: Pick<
         Config,
         "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "clean" | "styles"
     > & {
-        binGen?: RollupBinGenOptions;
         clean?: RollupCleanupOptions;
         alias?: RollupAliasOptions;
     },
 ) => {
-    const defaultPlugins = [
+    return [
         alias(options?.alias ?? { alias: {} }),
         styles(options?.styles),
         // @TODO
@@ -112,21 +108,14 @@ export const applyPlugins = (
         commonjs(
             Object.assign({ extensions: EXTENSIONS }, options?.commonjs ?? {}),
         ),
-        bundleProgress(),
         cleanup(options?.clean),
-        /**
-         * @OPTIONAL
-         * @NOTICE Optional plugin, only invoke when binGen exist.
-         */
-        options?.binGen && binGen(options?.binGen),
+        bundleProgress(),
         /**
          * @OPTIONAL
          * @NOTICE: Keep eslint plugins always at the bottom.
          */
         eslint(Object.assign({}, options?.eslint ?? {})),
     ].filter(Boolean);
-
-    return [...defaultPlugins, ...extraPlugins];
 };
 
 export type TBundleOutput = {
@@ -257,10 +246,12 @@ export const startRollupBundle = async ({
     tsConfig: ITSConfigJson;
 }) => {
     const {
-        rollup,
         externals,
+        rollup: rollupOpt = {},
         input: configInput, //
     } = config;
+
+    const { bin } = pkgJson;
 
     const paths = tsConfig.compilerOptions?.paths ?? {};
 
@@ -277,20 +268,35 @@ export const startRollupBundle = async ({
         watch,
     } = config;
 
-    const rollupPlugins = applyPlugins([], {
+    const rollupPlugins = applyPlugins({
         eslint,
         commonjs,
         nodeResolve,
         esbuild: Object.assign({ minify }, esbuild ?? {}),
         styles,
-        binGen: { bin: pkgJson.bin },
         alias: { alias: paths },
     });
 
     const externalsFn = externalsGenerator(externals, pkgJson);
 
+    let bundles: RollupOptions[] = [];
+
+    const { plugins: extraPlugins = [], ...rollupOpts } = rollupOpt;
+
+    const rollupOptionWithoutInputOutput: Omit<
+        RollupOptions,
+        "input" | "output"
+    > = {
+        perf: true,
+        treeshake: true,
+        strictDeprecations: true,
+        plugins: [...rollupPlugins, extraPlugins],
+        external: externalsFn,
+        ...(rollupOpts ?? {}),
+    };
+
     if (config.bundle) {
-        const bundles = config.bundle.reduce((options, bundle) => {
+        bundles = config.bundle.reduce((options, bundle) => {
             const { input: bundleInput, ...otherProps } = bundle;
 
             const option = {
@@ -301,12 +307,7 @@ export const startRollupBundle = async ({
                         ? normalizeCliInput(cliInput as string)
                         : defaultEntry),
                 output: [{ ...otherProps, sourcemap }],
-                plugins: rollupPlugins,
-                external: externalsFn,
-                treeshake: true,
-                strictDeprecations: true,
-                perf: true,
-                ...rollup,
+                ...rollupOptionWithoutInputOutput,
             } as RollupOptions;
 
             if (options.length === 0) {
@@ -330,18 +331,37 @@ export const startRollupBundle = async ({
 
             return options;
         }, [] as RollupOptions[]);
+    }
 
-        if (config.dtsRollup) {
-            if (config.dtsRollup && !pkgJson.types) {
-                throw new Error(
-                    "'dtsRollup' is enabled, Looks like you forget to add types field in your local package.json file",
-                );
-            }
+    // if (bin) {
+    //     Object.keys(bin).forEach((binName) => {
+    //         const binOutput = bin[binName];
+    //         const binInput = nodePath.join(cwd(), `src/${binName}`);
+    //
+    //         const _output: RollupOptions = {
+    //             input: binInput,
+    //             output: {
+    //                 format: pkgJson.module === "module" ? "esm" : "cjs",
+    //                 file: nodePath.join(
+    //                     //
+    //                     cwd(),
+    //                     binOutput,
+    //                 ),
+    //             },
+    //             ...rollupOptionWithoutInputOutput,
+    //         };
+    //
+    //         bundles.push(_output);
+    //     });
+    // }
 
+    if (config.dtsRollup) {
+        debugLog(`Enable dtsRollup`);
+        if (pkgJson.types) {
             bundles.push({
                 input: defaultEntry,
                 output: { file: pkgJson.types, format: "esm" },
-                external: externalsFn,
+                ...rollupOptionWithoutInputOutput,
                 plugins: [
                     dtsGen({
                         tsConfigFile: project ?? tsConfigFilePath,
@@ -350,14 +370,18 @@ export const startRollupBundle = async ({
                     // Exclude eslint plugin for DTS bundle.
                     ...rollupPlugins.slice(0, -1),
                 ],
-                ...rollup,
             });
-        }
-
-        if (watch) {
-            await watch_(bundles);
         } else {
-            await Promise.all((await bundle(bundles)).map((task) => task()));
+            verboseLog(
+                //
+                `dtsRollup is enabled, but no 'types' or 'typings' field in package.json`,
+            );
         }
+    }
+
+    if (watch) {
+        await watch_(bundles);
+    } else {
+        await Promise.all((await bundle(bundles)).map((task) => task()));
     }
 };

@@ -1,3 +1,5 @@
+import { type TRollupTransformOptions } from "@/plugins/esbuild";
+import { cwd } from "@/utils";
 import { type IPackageJson } from "@nfts/pkg-json";
 import { modulex } from "@nfts/utils";
 import { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
@@ -5,9 +7,7 @@ import { RollupEslintOptions } from "@rollup/plugin-eslint";
 import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
-import { type ModuleFormat, Plugin, type RollupOptions } from "rollup";
-import { type TRollupTransformOptions } from "@/plugins/esbuild";
-import { cwd } from "@/utils";
+import { Plugin, type ModuleFormat, type RollupOptions } from "rollup";
 
 const esmExt = [".mjs", ".mts"];
 const cjsExt = [".cjs", ".cts"];
@@ -177,7 +177,7 @@ export interface Config extends CLIOptions {
     /**
      * Extra rollup options.
      */
-    rollup?: Omit<RollupOptions, "plugins" | "output" | "input">;
+    rollup?: Exclude<RollupOptions, "output" | "input">;
 
     /**
      * Output options.

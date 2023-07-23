@@ -1,8 +1,8 @@
-import { RollupOptions } from "rollup";
-import nodePath from "node:path";
-import { colors, fileSystem } from "@nfts/utils";
-import { IPackageJson } from "@nfts/pkg-json";
 import { verboseLog } from "@/log";
+import { IPackageJson } from "@nfts/pkg-json";
+import { colors, fileSystem } from "@nfts/utils";
+import nodePath from "node:path";
+import { RollupOptions } from "rollup";
 
 // Clear screen.
 export const clearScreen = () => process.stdout.write("\x1Bc");

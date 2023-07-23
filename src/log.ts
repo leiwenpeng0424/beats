@@ -1,3 +1,5 @@
+import { colors } from "@nfts/utils";
+
 /**
  * Verbose
  * @param args
@@ -14,6 +16,9 @@ export const verboseLog = (...args: any[]) => {
  */
 export const debugLog = (...args: any[]) => {
     if (process.env.BEATS_DEBUG !== "undefined") {
-        console.debug("debug:", ...args);
+        console.debug(
+            colors.bgBlack(colors.cyan(colors.bold("debug:"))),
+            ...args,
+        );
     }
 };

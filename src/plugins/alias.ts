@@ -5,6 +5,11 @@ import { cwd } from "@/utils";
 
 export type RollupAliasOptions = { alias: IPathObject };
 
+/**
+ * tsconfig paths to alias.
+ * this plugin need to be the first one of the rollup plugin array.
+ * @param alias
+ */
 export default function alias({ alias }: RollupAliasOptions): Plugin {
     const aliaNames = Object.keys(alias);
 

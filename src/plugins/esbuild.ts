@@ -85,9 +85,7 @@ export default function esbuild({
         async transform(code: string, id: string) {
             const ext = extname(id);
 
-            const loader = EsbuildLoaders[
-                ext as keyof typeof EsbuildLoaders
-            ] as Loader;
+            const loader = EsbuildLoaders[ext as keyof typeof EsbuildLoaders] as Loader;
 
             if (!loader) {
                 return null;

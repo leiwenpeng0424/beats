@@ -1,6 +1,3 @@
-/**
- * @TBD
- */
 import { type Plugin } from "rollup";
 import nodePath from "node:path";
 import { cwd } from "@/utils";
@@ -10,6 +7,10 @@ export interface RollupCleanupOptions {
     active?: boolean;
 }
 
+/**
+ * cleanup output dir.
+ * @param active
+ */
 export default function cleanup(
     { active }: RollupCleanupOptions = { active: true },
 ): Plugin {
@@ -20,10 +21,11 @@ export default function cleanup(
             if (active && !isWrite) {
                 if (output.file) {
                     const absPath = nodePath.join(cwd(), output.file);
-                    const absDir = nodePath.dirname(absPath);
+
                     try {
-                        await nodeFs.access(absDir);
-                        await nodeFs.rmdir(absDir, { maxRetries: 10 });
+                        await nodeFs.access(absPath);
+                        await nodeFs.unlink(absPath);
+                        await nodeFs.unlink(`${absPath}.map`);
                     } catch (e) {
                         //
                     }
