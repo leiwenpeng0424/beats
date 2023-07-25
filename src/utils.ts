@@ -104,7 +104,3 @@ export const depsInfo = () => {
     console.log("");
     verboseLog(depInfo);
 };
-
-export const sizeMeasure = () => {
-    //
-};

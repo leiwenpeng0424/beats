@@ -108,7 +108,6 @@ export default function dtsGen(options?: IDtsPluginOptions): Plugin {
                 }
             }
         },
-
         writeBundle: {
             async handler() {
                 if (!onlyInput) {
