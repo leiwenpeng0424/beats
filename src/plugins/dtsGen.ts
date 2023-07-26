@@ -1,6 +1,6 @@
 import { Extractor, ExtractorConfig } from "@microsoft/api-extractor";
 import { type ITSConfigJson } from "@nfts/tsc-json";
-import { fileSystem } from "@nfts/utils";
+import { json as Json, file as File } from "@nfts/nodeutils";
 import nodePath from "node:path";
 import { type Plugin } from "rollup";
 import ts, {
@@ -87,19 +87,16 @@ export default function dtsGen(options?: IDtsPluginOptions): Plugin {
                 onlyInput = entry[1];
 
                 if (options?.tsConfigFile) {
-                    tsConfig = await fileSystem.readJSON(options.tsConfigFile);
+                    tsConfig = await Json.readJSON(options.tsConfigFile);
                 } else {
-                    const [tsConfigFile] = await fileSystem.findFile(
+                    const tsConfigFile = File.findFile(
                         `tsconfig.json`,
                         process.cwd(),
-                        {
-                            fullpath: true,
-                        },
                     );
 
                     if (tsConfigFile) {
                         tsConfigPath = tsConfigFile;
-                        tsConfig = await fileSystem.readJSON(tsConfigFile);
+                        tsConfig = await Json.readJSON(tsConfigFile);
                     } else {
                         throw Error(
                             `Can't find tsconfig.json from current project`,
@@ -212,6 +209,8 @@ export default function dtsGen(options?: IDtsPluginOptions): Plugin {
                             //     `${extractorResult.warningCount} warnings`,
                             // );
                         }
+
+                        File.rmdirSync(declarationDir);
                     }
                 }
             },

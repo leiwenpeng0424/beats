@@ -4,15 +4,15 @@ dependencies:
   '@microsoft/api-extractor':
     specifier: ^7.36.2
     version: 7.36.2(@types/node@20.4.2)
+  '@nfts/nodeutils':
+    specifier: ^0.0.5
+    version: 0.0.5
   '@nfts/pkg-json':
     specifier: ^0.1.1
     version: 0.1.1
   '@nfts/tsc-json':
     specifier: ^0.1.1
     version: 0.1.1
-  '@nfts/utils':
-    specifier: ^0.0.2
-    version: 0.0.2
   '@rollup/plugin-commonjs':
     specifier: ^25.0.3
     version: 25.0.3(rollup@3.26.3)
@@ -410,6 +410,14 @@ packages:
       - typescript
     dev: true
 
+  /@nfts/nodeutils@0.0.5:
+    resolution: {integrity: sha512-1gkdQrVrB5TExifwGIKIxsJvWw9WDNUULBNYFhQ4lUPW5NQlfmp/KVaz0yXHBnYd2gL0FaJRZo5ZlNOFYeZX/g==}
+    dependencies:
+      json5: 2.2.3
+      tslib: 2.6.0
+      typescript: 4.9.5
+    dev: false
+
   /@nfts/pkg-json@0.1.1:
     resolution: {integrity: sha512-ipsuZBGDFwVNbqzccah7fnMHnYkhFvLvjh0xKtAWTmMCuyzWjWtb+LMfDms8RNI8McgsIpGvTsXhDqW6Iz8+qQ==}
 
@@ -421,6 +429,7 @@ packages:
     dependencies:
       json5: 2.2.3
       typescript: 4.9.3
+    dev: true
 
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -3054,6 +3063,7 @@ packages:
     resolution: {integrity: sha512-CIfGzTelbKNEnLpLdGFgdyKhG23CKdKgQPOBc+OUNrkJ2vr+KSzsSV5kq5iWhEQbok+quxgGzrAtGWCyU7tHnA==}
     engines: {node: '>=4.2.0'}
     hasBin: true
+    dev: true
 
   /typescript@4.9.5:
     resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}

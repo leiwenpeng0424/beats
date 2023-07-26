@@ -1,5 +1,5 @@
 import { type ITSConfigJson } from "@nfts/tsc-json";
-import { fileSystem } from "@nfts/utils";
+import { json as Json } from "@nfts/nodeutils";
 import { transform, type Loader, type TransformOptions } from "esbuild";
 import { extname } from "node:path";
 import { Plugin } from "rollup";
@@ -38,7 +38,7 @@ export default function esbuild({
     let tsConfigJson: ITSConfigJson | undefined;
 
     try {
-        tsConfigJson = fileSystem.readJSONSync<ITSConfigJson>(tsConfigFile);
+        tsConfigJson = Json.readJSONSync<ITSConfigJson>(tsConfigFile);
     } catch (_) {}
 
     /**

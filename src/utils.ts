@@ -1,6 +1,6 @@
 import { verboseLog } from "@/log";
 import { IPackageJson } from "@nfts/pkg-json";
-import { colors, fileSystem } from "@nfts/utils";
+import { colors, json as Json } from "@nfts/nodeutils";
 import nodePath from "node:path";
 import { RollupOptions } from "rollup";
 
@@ -84,7 +84,7 @@ export const depsInfo = () => {
         .map((dep) => {
             const main = require.resolve(dep);
             const depDir = nodePath.join(main, "../../");
-            const pkgJson = fileSystem.readJSONSync<IPackageJson>(
+            const pkgJson = Json.readJSONSync<IPackageJson>(
                 nodePath.join(depDir, "package.json"),
             );
 

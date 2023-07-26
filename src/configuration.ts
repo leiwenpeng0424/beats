@@ -1,7 +1,7 @@
 import { type TRollupTransformOptions } from "@/plugins/esbuild";
 import { cwd } from "@/utils";
 import { type IPackageJson } from "@nfts/pkg-json";
-import { modulex } from "@nfts/utils";
+import { module_ } from "@nfts/nodeutils";
 import { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
 import { RollupEslintOptions } from "@rollup/plugin-eslint";
 import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
@@ -91,6 +91,7 @@ export type TBundleConfig = {
 };
 
 export interface CLIOptions {
+    [K: string]: any;
     /**
      * Entry file for all bundle output. If you are not specified in bundle item.
      * this would be the default input.
@@ -215,7 +216,7 @@ export const tryReadConfigFromRoot = async ({
     }
 
     if (configPath) {
-        config = modulex.import_<Config>(configPath);
+        config = module_.import_<Config>(configPath);
 
         if (!config.bundle) {
             Object.assign(config, {

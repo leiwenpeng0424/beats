@@ -10,7 +10,7 @@ import {
 } from "@/utils";
 import { type IPackageJson } from "@nfts/pkg-json";
 import { type ITSConfigJson } from "@nfts/tsc-json";
-import { ms } from "@nfts/utils";
+import { ms } from "@nfts/nodeutils";
 import commonjs from "@rollup/plugin-commonjs";
 import eslint from "@rollup/plugin-eslint";
 import nodeResolve from "@rollup/plugin-node-resolve";

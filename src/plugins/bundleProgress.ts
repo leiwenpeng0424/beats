@@ -1,4 +1,4 @@
-import { colors } from "@nfts/utils";
+import { colors } from "@nfts/nodeutils";
 import { type OutputChunk, type Plugin } from "rollup";
 import nodePath from "node:path";
 import { cwd } from "@/utils";

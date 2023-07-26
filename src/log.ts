@@ -1,4 +1,4 @@
-import { colors } from "@nfts/utils";
+import { colors } from "@nfts/nodeutils";
 
 /**
  * Verbose
