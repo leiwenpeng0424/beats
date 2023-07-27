@@ -75,16 +75,21 @@ function printOutput(input, output) {
   );
 }
 
+const tsconfig = "./tsconfig.json";
+const packagejson = "./package.json";
+const dtsEntry = "index.d.ts";
+const output = "./index.js";
+const esmExt = [".mjs", ".mts"];
+const cjsExt = [".cjs", ".cts"];
+const esmMiddleNames = [".esm.", ".es."];
+const cjsMiddleNames = [".cjs."];
+
 var __knownSymbol$2 = (name, symbol) => {
   if (symbol = Symbol[name])
     return symbol;
   throw Error("Symbol." + name + " is not defined");
 };
 var __forAwait$2 = (obj, it, method) => (it = obj[__knownSymbol$2("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol$2("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
-const esmExt = [".mjs", ".mts"];
-const cjsExt = [".cjs", ".cts"];
-const esmMiddleNames = [".esm.", ".es."];
-const cjsMiddleNames = [".cjs."];
 const getFormatFromFileName = (output) => {
   const ext = nodePath.extname(output);
   if (esmExt.includes(ext) || output.endsWith(".d.ts")) {
@@ -103,14 +108,14 @@ const getFormatFromFileName = (output) => {
 };
 const getOutputFromPackageJson = (pkgJson, externalOutputOptions = (o) => o) => {
   const { main, module: m } = pkgJson;
-  return [main, m].filter(Boolean).map((output) => {
-    const format = getFormatFromFileName(output);
-    if (output === ".") {
-      output = "./index.js";
+  return [main, m].filter(Boolean).map((output$1) => {
+    const format = getFormatFromFileName(output$1);
+    if (output$1 === ".") {
+      output$1 = output;
     }
     return externalOutputOptions({
       format,
-      file: output
+      file: output$1
     });
   });
 };
@@ -298,7 +303,10 @@ async function dtsGen(options) {
   if (tsConfig) {
     const { compilerOptions = {} } = tsConfig;
     const { declaration, declarationDir } = compilerOptions;
-    const packageJsonFullPath = nodePath.resolve(cwd(), "package.json");
+    const packageJsonFullPath = nodePath.resolve(
+      cwd(),
+      packagejson
+    );
     if (declaration && declarationDir) {
       emitOnlyDeclarations(
         {
@@ -306,10 +314,13 @@ async function dtsGen(options) {
           emitDeclarationOnly: true,
           declarationDir
         },
-        typeof tsConfigPath === "string" ? tsConfigPath : "./tsconfig.json"
+        typeof tsConfigPath === "string" ? tsConfigPath : tsconfig
       );
-      const mainEntry = nodePath.resolve(declarationDir, `index.d.ts`);
-      const trimmedFile = (_a = options == null ? void 0 : options.dtsFileName) != null ? _a : "./index.d.ts";
+      const mainEntry = nodePath.resolve(
+        declarationDir,
+        dtsEntry
+      );
+      const trimmedFile = (_a = options == null ? void 0 : options.dtsFileName) != null ? _a : dtsEntry;
       const config = apiExtractor.ExtractorConfig.prepare({
         configObjectFullPath: void 0,
         packageJsonFullPath,
@@ -569,7 +580,7 @@ var __objRest$1 = (source, exclude) => {
 };
 var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
 const defaultEntry = "src/index";
-const tsConfigFilePath$1 = "tsconfig.json";
+const tsConfigFilePath = "tsconfig.json";
 const EXTENSIONS = [
   ".js",
   ".jsx",
@@ -797,7 +808,7 @@ const startRollupBundle = async ({
     debugLog(`Enable dtsRollup`);
     if (pkgJson.types) {
       await dtsGen({
-        tsConfigFile: project != null ? project : tsConfigFilePath$1,
+        tsConfigFile: project != null ? project : tsConfigFilePath,
         dtsFileName: pkgJson.types
       });
     } else {
@@ -840,11 +851,9 @@ var __objRest = (source, exclude) => {
     }
   return target;
 };
-const tsConfigFilePath = "tsconfig.json";
-const packageJsonFilePath = "package.json";
 const cli = async (args) => {
   const [, ..._args] = args;
-  const pkgJson = nodeutils.json.readJSONSync(packageJsonFilePath);
+  const pkgJson = nodeutils.json.readJSONSync(packagejson);
   const _a = nodeutils.parser(_args), {
     project,
     config: configPath,
@@ -860,10 +869,10 @@ const cli = async (args) => {
   process.env.BEATS_DEBUG = debug ? String(debug) : "undefined";
   depsInfo();
   const tsConfig = nodeutils.json.readJSONSync(
-    tsConfigFilePath 
+    project != null ? project : tsconfig
   );
   debugLog(
-    `tsconfig -> ${nodePath.join(cwd(), tsConfigFilePath )}
+    `tsconfig -> ${nodePath.join(cwd(), project != null ? project : tsconfig)}
 `
   );
   const config = await tryReadConfigFromRoot({

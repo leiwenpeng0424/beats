@@ -6,13 +6,11 @@ import { cwd, depsInfo } from "@/utils";
 import type { ITSConfigJson } from "@nfts/tsc-json";
 import { debugLog } from "@/log";
 import nodePath from "node:path";
-
-const tsConfigFilePath = "tsconfig.json";
-const packageJsonFilePath = "package.json";
+import * as CONSTANTS from "@/constants";
 
 const cli = async (args: string[]) => {
     const [, ..._args] = args;
-    const pkgJson = Json.readJSONSync<IPackageJson>(packageJsonFilePath);
+    const pkgJson = Json.readJSONSync<IPackageJson>(CONSTANTS.packagejson);
     const {
         project,
         config: configPath,
@@ -27,11 +25,11 @@ const cli = async (args: string[]) => {
     depsInfo();
 
     const tsConfig = Json.readJSONSync<ITSConfigJson>(
-        tsConfigFilePath ?? project,
+        project ?? CONSTANTS.tsconfig,
     );
 
     debugLog(
-        `tsconfig -> ${nodePath.join(cwd(), tsConfigFilePath ?? project)}\n`,
+        `tsconfig -> ${nodePath.join(cwd(), project ?? CONSTANTS.tsconfig)}\n`,
     );
 
     const config = await tryReadConfigFromRoot({

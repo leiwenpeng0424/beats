@@ -9,6 +9,7 @@ import ts, {
     sys,
 } from "typescript";
 import { cwd, printOutput } from "@/utils";
+import * as CONSTANTS from "@/constants";
 
 export function createCompilerProgram(
     tsConfigCompilerOptions: CompilerOptions,
@@ -86,7 +87,10 @@ export async function dtsGen(options: IDtsGenOptions) {
         const { compilerOptions = {} } = tsConfig;
         const { declaration, declarationDir } = compilerOptions;
 
-        const packageJsonFullPath = nodePath.resolve(cwd(), "package.json");
+        const packageJsonFullPath = nodePath.resolve(
+            cwd(),
+            CONSTANTS.packagejson,
+        );
 
         if (declaration && declarationDir) {
             // 生成 dts
@@ -98,12 +102,15 @@ export async function dtsGen(options: IDtsGenOptions) {
                 },
                 typeof tsConfigPath === "string"
                     ? tsConfigPath
-                    : "./tsconfig.json",
+                    : CONSTANTS.tsconfig,
             );
 
-            const mainEntry = nodePath.resolve(declarationDir, `index.d.ts`);
+            const mainEntry = nodePath.resolve(
+                declarationDir,
+                CONSTANTS.dtsEntry,
+            );
 
-            const trimmedFile = options?.dtsFileName ?? "./index.d.ts";
+            const trimmedFile = options?.dtsFileName ?? CONSTANTS.dtsEntry;
 
             const config = ExtractorConfig.prepare({
                 configObjectFullPath: undefined,

@@ -8,12 +8,7 @@ import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
 import { Plugin, type ModuleFormat, type RollupOptions } from "rollup";
-
-const esmExt = [".mjs", ".mts"];
-const cjsExt = [".cjs", ".cts"];
-
-const esmMiddleNames = [".esm.", ".es."];
-const cjsMiddleNames = [".cjs."];
+import * as CONSTANTS from "@/constants";
 
 /**
  * Return output format.
@@ -22,19 +17,19 @@ const cjsMiddleNames = [".cjs."];
 const getFormatFromFileName = (output: string): ModuleFormat => {
     const ext = nodePath.extname(output);
 
-    if (esmExt.includes(ext) || output.endsWith(".d.ts")) {
+    if (CONSTANTS.esmExt.includes(ext) || output.endsWith(".d.ts")) {
         return "es";
     }
 
-    if (cjsExt.includes(ext)) {
+    if (CONSTANTS.cjsExt.includes(ext)) {
         return "cjs";
     }
 
-    if (esmMiddleNames.some((name) => output.includes(name))) {
+    if (CONSTANTS.esmMiddleNames.some((name) => output.includes(name))) {
         return "es";
     }
 
-    if (cjsMiddleNames.some((name) => output.includes(name))) {
+    if (CONSTANTS.cjsMiddleNames.some((name) => output.includes(name))) {
         return "cjs";
     }
 
@@ -61,7 +56,7 @@ const getOutputFromPackageJson = (
 
                 // dot mark fallback to ./index.js
                 if (output === ".") {
-                    output = "./index.js";
+                    output = CONSTANTS.output;
                 }
 
                 return externalOutputOptions({

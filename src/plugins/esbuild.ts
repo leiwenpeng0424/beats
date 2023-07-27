@@ -1,15 +1,15 @@
 import { type ITSConfigJson } from "@nfts/tsc-json";
 import { json as Json } from "@nfts/nodeutils";
-import { transform, type Loader, type TransformOptions } from "esbuild";
+import { type Loader, transform, type TransformOptions } from "esbuild";
 import { extname } from "node:path";
 import { Plugin } from "rollup";
 import {
-    formatDiagnosticsWithColorAndContext,
-    sys,
     type Diagnostic,
+    formatDiagnosticsWithColorAndContext,
     type Program,
+    sys,
 } from "typescript";
-import { createCompilerProgram } from "../dts";
+import { createCompilerProgram } from "@/dts";
 
 export type TEsbuildTsx = "react" | "react-jsx" | "react-jsxdev" | "preserve";
 
