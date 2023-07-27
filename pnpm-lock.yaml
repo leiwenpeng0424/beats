@@ -5,8 +5,8 @@ dependencies:
     specifier: ^7.36.2
     version: 7.36.2(@types/node@20.4.2)
   '@nfts/nodeutils':
-    specifier: ^0.0.5
-    version: 0.0.5
+    specifier: ^0.0.6
+    version: 0.0.6
   '@nfts/pkg-json':
     specifier: ^0.1.1
     version: 0.1.1
@@ -52,7 +52,7 @@ dependencies:
 
 devDependencies:
   '@nfts/beats':
-    specifier: ^0.0.11
+    specifier: latest
     version: 0.0.11(@types/node@20.4.2)
   '@nfts/eslint-config':
     specifier: ^1.3.2
@@ -410,8 +410,8 @@ packages:
       - typescript
     dev: true
 
-  /@nfts/nodeutils@0.0.5:
-    resolution: {integrity: sha512-1gkdQrVrB5TExifwGIKIxsJvWw9WDNUULBNYFhQ4lUPW5NQlfmp/KVaz0yXHBnYd2gL0FaJRZo5ZlNOFYeZX/g==}
+  /@nfts/nodeutils@0.0.6:
+    resolution: {integrity: sha512-Iq273pQv4CjZ/2YykMzvbCWaJrI8sgfJgfmtt/HeN/sNPTOBlRvyENqBR2NYWjJnuEOGE9UQlq+rP5TX5Nv2DQ==}
     dependencies:
       json5: 2.2.3
       tslib: 2.6.0

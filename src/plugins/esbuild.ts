@@ -9,7 +9,7 @@ import {
     type Diagnostic,
     type Program,
 } from "typescript";
-import { createCompilerProgram } from "./dtsGen";
+import { createCompilerProgram } from "../dts";
 
 export type TEsbuildTsx = "react" | "react-jsx" | "react-jsxdev" | "preserve";
 
@@ -85,7 +85,9 @@ export default function esbuild({
         async transform(code: string, id: string) {
             const ext = extname(id);
 
-            const loader = EsbuildLoaders[ext as keyof typeof EsbuildLoaders] as Loader;
+            const loader = EsbuildLoaders[
+                ext as keyof typeof EsbuildLoaders
+            ] as Loader;
 
             if (!loader) {
                 return null;

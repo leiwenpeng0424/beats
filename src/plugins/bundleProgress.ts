@@ -1,7 +1,7 @@
 import { colors } from "@nfts/nodeutils";
 import { type OutputChunk, type Plugin } from "rollup";
 import nodePath from "node:path";
-import { cwd } from "@/utils";
+import { cwd, printOutput } from "@/utils";
 
 export type BundleStatus = {
     loaded: number;
@@ -67,21 +67,9 @@ export default function bundleProgress(): Plugin {
                 for (const file of files) {
                     const { facadeModuleId } = bundle[file] as OutputChunk;
 
-                    facadeModuleId &&
-                        console.log(
-                            colors.bgGreen(
-                                colors.bold(
-                                    colors.black(
-                                        nodePath.relative(
-                                            cwd(),
-                                            facadeModuleId,
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            "➡︎",
-                            colors.cyan(file),
-                        );
+                    if (facadeModuleId) {
+                        printOutput(facadeModuleId, file);
+                    }
                 }
             },
         },

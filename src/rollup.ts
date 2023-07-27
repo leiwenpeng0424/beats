@@ -27,7 +27,7 @@ import {
 // import postcssPlugin from "@/plugins/styles";
 import { debugLog, verboseLog } from "@/log";
 import alias, { RollupAliasOptions } from "@/plugins/alias";
-import dtsGen from "@/plugins/dtsGen";
+import { dtsGen } from "@/dts";
 import styles from "rollup-plugin-styles";
 
 const defaultEntry = "src/index";
@@ -333,43 +333,18 @@ export const startRollupBundle = async ({
         }, [] as RollupOptions[]);
     }
 
-    // if (bin) {
-    //     Object.keys(bin).forEach((binName) => {
-    //         const binOutput = bin[binName];
-    //         const binInput = nodePath.join(cwd(), `src/${binName}`);
-    //
-    //         const _output: RollupOptions = {
-    //             input: binInput,
-    //             output: {
-    //                 format: pkgJson.module === "module" ? "esm" : "cjs",
-    //                 file: nodePath.join(
-    //                     //
-    //                     cwd(),
-    //                     binOutput,
-    //                 ),
-    //             },
-    //             ...rollupOptionWithoutInputOutput,
-    //         };
-    //
-    //         bundles.push(_output);
-    //     });
-    // }
+    if (watch) {
+        await watch_(bundles);
+    } else {
+        await Promise.all((await bundle(bundles)).map((task) => task()));
+    }
 
     if (config.dtsRollup) {
         debugLog(`Enable dtsRollup`);
         if (pkgJson.types) {
-            bundles.push({
-                input: defaultEntry,
-                output: { file: pkgJson.types, format: "esm" },
-                ...rollupOptionWithoutInputOutput,
-                plugins: [
-                    dtsGen({
-                        tsConfigFile: project ?? tsConfigFilePath,
-                        dtsFileName: pkgJson.types,
-                    }),
-                    // Exclude eslint plugin for DTS bundle.
-                    ...rollupPlugins.slice(0, -1),
-                ],
+            await dtsGen({
+                tsConfigFile: project ?? tsConfigFilePath,
+                dtsFileName: pkgJson.types,
             });
         } else {
             verboseLog(
@@ -377,11 +352,5 @@ export const startRollupBundle = async ({
                 `dtsRollup is enabled, but no 'types' or 'typings' field in package.json`,
             );
         }
-    }
-
-    if (watch) {
-        await watch_(bundles);
-    } else {
-        await Promise.all((await bundle(bundles)).map((task) => task()));
     }
 };

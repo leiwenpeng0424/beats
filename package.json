@@ -11,7 +11,8 @@
     },
     "scripts": {
         "start": "beats --watch",
-        "build": "beats --clean --sourcemap --debug --verbose"
+        "build": "beats --clean --sourcemap --debug --verbose",
+        "build:local": "node --trace-warnings npm/index.cjs.js --clean --debug"
     },
     "publishConfig": {
         "access": "public"
@@ -30,7 +31,7 @@
     },
     "dependencies": {
         "@microsoft/api-extractor": "^7.36.2",
-        "@nfts/nodeutils": "^0.0.5",
+        "@nfts/nodeutils": "^0.0.6",
         "@nfts/pkg-json": "^0.1.1",
         "@nfts/tsc-json": "^0.1.1",
         "@rollup/plugin-commonjs": "^25.0.3",
