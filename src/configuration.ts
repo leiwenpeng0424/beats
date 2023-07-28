@@ -7,7 +7,7 @@ import { RollupEslintOptions } from "@rollup/plugin-eslint";
 import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
-import { Plugin, type ModuleFormat, type RollupOptions } from "rollup";
+import { type ModuleFormat, Plugin, type RollupOptions } from "rollup";
 import * as CONSTANTS from "@/constants";
 
 /**
