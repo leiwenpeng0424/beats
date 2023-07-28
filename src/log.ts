@@ -4,6 +4,7 @@ import { colors } from "@nfts/nodeutils";
  * Verbose
  * @param args
  */
+// eslint-disable-next-line
 export const verboseLog = (...args: any[]) => {
     if (process.env.BEATS_VERBOSE !== "undefined") {
         console.log(...args);
@@ -14,6 +15,7 @@ export const verboseLog = (...args: any[]) => {
  * Debug
  * @param args
  */
+// eslint-disable-next-line
 export const debugLog = (...args: any[]) => {
     if (process.env.BEATS_DEBUG !== "undefined") {
         console.debug(

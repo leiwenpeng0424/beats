@@ -65,10 +65,46 @@ export const depsInfo = () => {
 
 export function printOutput(input: string, output: string) {
     console.log(
-        colors.bgGreen(
+        colors.bgCyan(
             colors.bold(colors.black(nodePath.relative(cwd(), input))),
         ),
         "➡︎",
         colors.cyan(output),
+    );
+}
+
+export function measureSync(mark: string, task: () => void) {
+    performance.mark(`${mark} start`);
+    task();
+    performance.mark(`${mark} end`);
+
+    const measure = performance.measure(
+        `${mark} start to end`,
+        `${mark} start`,
+        `${mark} end`,
+    );
+
+    verboseLog(
+        colors.bgBlack(
+            colors.white(colors.bold(`${mark} duration: ${measure.duration}`)),
+        ),
+    );
+}
+
+export async function measure(mark: string, task: () => Promise<void>) {
+    performance.mark(`${mark} start`);
+    await task();
+    performance.mark(`${mark} end`);
+
+    const measure = performance.measure(
+        `${mark} start to end`,
+        `${mark} start`,
+        `${mark} end`,
+    );
+
+    verboseLog(
+        colors.bgBlack(
+            colors.white(colors.bold(`${mark} duration: ${measure.duration}`)),
+        ),
     );
 }

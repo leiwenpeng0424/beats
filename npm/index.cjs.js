@@ -67,11 +67,26 @@ const depsInfo = () => {
 };
 function printOutput(input, output) {
   console.log(
-    nodeutils.colors.bgGreen(
+    nodeutils.colors.bgCyan(
       nodeutils.colors.bold(nodeutils.colors.black(nodePath.relative(cwd(), input)))
     ),
     "\u27A1\uFE0E",
     nodeutils.colors.cyan(output)
+  );
+}
+async function measure(mark, task) {
+  performance.mark(`${mark} start`);
+  await task();
+  performance.mark(`${mark} end`);
+  const measure2 = performance.measure(
+    `${mark} start to end`,
+    `${mark} start`,
+    `${mark} end`
+  );
+  verboseLog(
+    nodeutils.colors.bgBlack(
+      nodeutils.colors.white(nodeutils.colors.bold(`${mark} duration: ${measure2.duration}`))
+    )
   );
 }
 
@@ -362,7 +377,9 @@ async function dtsGen(options) {
         )
       });
       if (extractorResult.succeeded) ;
-      nodeutils.file.rmdirSync(declarationDir);
+      if (!options.watch) {
+        nodeutils.file.rmdirSync(declarationDir);
+      }
       printOutput("src/index.ts", "index.d.ts");
     }
   }
@@ -680,10 +697,16 @@ const bundle = async (options) => {
   }
   return bundles;
 };
-const watch_ = async (options) => {
+const watch_ = async (options, {
+  bundleEnd,
+  bundleStart,
+  start,
+  end,
+  error
+} = {}) => {
   const watcher = rollup.watch(options);
   let firstRun = true;
-  let start;
+  let startTime;
   try {
     await new Promise(() => {
       watcher.on(`event`, (e) => {
@@ -691,37 +714,43 @@ const watch_ = async (options) => {
         switch (code) {
           case "START": {
             clearScreen();
+            start == null ? void 0 : start();
             if (firstRun) {
               console.log(`Start rollup watching bundle.`);
             }
-            start = (/* @__PURE__ */ new Date()).getTime();
-            break;
-          }
-          case "BUNDLE_END": {
+            startTime = (/* @__PURE__ */ new Date()).getTime();
             break;
           }
           case "BUNDLE_START": {
+            bundleStart == null ? void 0 : bundleStart();
+            break;
+          }
+          case "BUNDLE_END": {
+            bundleEnd == null ? void 0 : bundleEnd();
             break;
           }
           case "END": {
-            if (firstRun) {
-              console.log(
-                `Bundle end in ${nodeutils.ms(
-                  ( new Date()).getTime() - start
-                )}`
-              );
-            } else {
-              console.log(
-                `Re-bundle end ${nodeutils.ms(
-                  ( new Date()).getTime() - start
-                )}`
-              );
-            }
-            firstRun = false;
+            end == null ? void 0 : end().finally(() => {
+              if (firstRun) {
+                console.log(
+                  `Bundle end in ${nodeutils.ms(
+                    ( new Date()).getTime() - startTime
+                  )}`
+                );
+              } else {
+                console.log(
+                  `Re-bundle end ${nodeutils.ms(
+                    ( new Date()).getTime() - startTime
+                  )}`
+                );
+              }
+              firstRun = false;
+            });
             break;
           }
           case "ERROR": {
-            console.error(`Rollup bundle error:`, e);
+            error == null ? void 0 : error();
+            console.error(`Rollup bundle error: `, e);
             break;
           }
         }
@@ -799,24 +828,36 @@ const startRollupBundle = async ({
       return options;
     }, []);
   }
-  if (watch2) {
-    await watch_(bundles);
-  } else {
-    await Promise.all((await bundle(bundles)).map((task) => task()));
-  }
-  if (config.dtsRollup) {
-    debugLog(`Enable dtsRollup`);
-    if (pkgJson.types) {
-      await dtsGen({
-        tsConfigFile: project != null ? project : tsConfigFilePath,
-        dtsFileName: pkgJson.types
-      });
-    } else {
-      verboseLog(
-        //
-        `dtsRollup is enabled, but no 'types' or 'typings' field in package.json`
-      );
+  const dts = async () => {
+    if (config.dtsRollup) {
+      debugLog(`Enable dtsRollup`);
+      if (pkgJson.types) {
+        await measure("dts", async () => {
+          await dtsGen({
+            tsConfigFile: project != null ? project : tsConfigFilePath,
+            dtsFileName: pkgJson.types,
+            watch: watch2
+          });
+        });
+      } else {
+        verboseLog(
+          //
+          `dtsRollup is enabled, but no 'types' or 'typings' field in package.json`
+        );
+      }
     }
+  };
+  if (watch2) {
+    await watch_(bundles, {
+      async end() {
+        await dts();
+      }
+    });
+  } else {
+    await measure("rollup", async () => {
+      await Promise.all((await bundle(bundles)).map((task) => task()));
+    });
+    await dts();
   }
 };
 

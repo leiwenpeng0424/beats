@@ -2,7 +2,6 @@
     "name": "@nfts/beats",
     "version": "0.0.11",
     "description": "",
-    "type": "commonjs",
     "main": "npm/index.cjs.js",
     "module": "npm/index.esm.js",
     "types": "npm/index.d.ts",
@@ -10,8 +9,8 @@
         "beats": "bin/beats"
     },
     "scripts": {
-        "start": "beats --watch",
-        "build": "beats --clean --sourcemap --debug --verbose",
+        "start": "node_modules/.bin/beats --watch",
+        "build": "node_modules/.bin/beats --clean --sourcemap --debug --verbose",
         "build:local": "node --trace-warnings npm/index.cjs.js --clean --debug"
     },
     "publishConfig": {

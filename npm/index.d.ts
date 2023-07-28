@@ -7,6 +7,7 @@ import { RollupOptions } from 'rollup';
 import { TransformOptions } from 'esbuild';
 
 declare interface CLIOptions {
+    // eslint-disable-next-line
     [K: string]: any;
     /**
      * Entry file for all bundle output. If you are not specified in bundle item.

@@ -64,6 +64,7 @@ export function emitOnlyDeclarations(
 export interface IDtsGenOptions {
     tsConfigFile?: string;
     dtsFileName?: string;
+    watch?: boolean;
 }
 
 export async function dtsGen(options: IDtsGenOptions) {
@@ -160,7 +161,9 @@ export async function dtsGen(options: IDtsGenOptions) {
                 // TODO: Throw whe meet error
             }
 
-            File.rmdirSync(declarationDir);
+            if (!options.watch) {
+                File.rmdirSync(declarationDir);
+            }
             printOutput("src/index.ts", "index.d.ts");
         }
     }
