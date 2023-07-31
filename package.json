@@ -1,6 +1,6 @@
 {
     "name": "@nfts/beats",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "description": "",
     "main": "npm/index.cjs.js",
     "module": "npm/index.esm.js",
