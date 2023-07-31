@@ -1,10 +1,6 @@
 import * as CONSTANTS from "@/constants";
 import { cwd, printOutput, resolveDtsEntryFromEntry } from "@/utils";
-import {
-    Extractor,
-    ExtractorConfig,
-    ExtractorLogLevel,
-} from "@microsoft/api-extractor";
+import { Extractor, ExtractorConfig } from "@microsoft/api-extractor";
 import { file as File, json as Json } from "@nfts/nodeutils";
 import { type ITSConfigJson } from "@nfts/tsc-json";
 import nodePath from "node:path";

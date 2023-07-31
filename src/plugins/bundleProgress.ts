@@ -1,6 +1,6 @@
-import { type OutputChunk, type Plugin } from "rollup";
+import { type Plugin } from "rollup";
 import nodePath from "node:path";
-import { cwd, printOutput } from "@/utils";
+import { cwd } from "@/utils";
 
 export type BundleStatus = {
     loaded: number;

@@ -21,15 +21,15 @@ import Module from "node:module";
 import nodePath from "node:path";
 import {
     rollup,
-    watch,
     type RollupOptions,
     type RollupOutput,
     type RollupWatchOptions,
+    watch,
 } from "rollup";
 // import postcssPlugin from "@/plugins/styles";
 import * as CONSTANTS from "@/constants";
 import { dtsGen } from "@/dts";
-import { debugLog, verboseLog } from "@/log";
+import { verboseLog } from "@/log";
 import alias, { RollupAliasOptions } from "@/plugins/alias";
 import styles from "rollup-plugin-styles";
 

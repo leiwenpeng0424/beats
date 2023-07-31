@@ -3,7 +3,6 @@ import { IPackageJson } from "@nfts/pkg-json";
 import { colors, json as Json } from "@nfts/nodeutils";
 import nodePath from "node:path";
 import { RollupOptions } from "rollup";
-import * as readline from "readline";
 
 // Clear screen.
 export const clearScreen = () => process.stdout.write("\x1Bc");
