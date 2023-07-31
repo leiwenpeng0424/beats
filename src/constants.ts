@@ -3,7 +3,7 @@ export const packagejson = "./package.json";
 export const dtsEntry = "index.d.ts";
 
 export const output = "./index.js";
-export const input = "./src/index.ts";
+export const input = "./src/index";
 
 export const outputDir = "npm";
 

@@ -1,14 +1,18 @@
 import * as CONSTANTS from "@/constants";
 import { cwd, printOutput, resolveDtsEntryFromEntry } from "@/utils";
-import { Extractor, ExtractorConfig } from "@microsoft/api-extractor";
+import {
+    Extractor,
+    ExtractorConfig,
+    ExtractorLogLevel,
+} from "@microsoft/api-extractor";
 import { file as File, json as Json } from "@nfts/nodeutils";
 import { type ITSConfigJson } from "@nfts/tsc-json";
 import nodePath from "node:path";
 import ts, {
+    type CompilerOptions,
     createCompilerHost,
     createProgram,
     sys,
-    type CompilerOptions,
 } from "typescript";
 
 export function createCompilerProgram(
@@ -55,7 +59,6 @@ export function emitOnlyDeclarations(
     tsconfig: string,
 ) {
     const program = createCompilerProgram(tsConfigCompilerOptions, tsconfig);
-    // TODO：将同步写入优化成异步，多线程写入，优化编译时间
     if (program) {
         program.emit(undefined);
     }
@@ -69,7 +72,6 @@ export interface IDtsGenOptions {
 }
 
 export async function dtsGen({
-    watch,
     input,
     dtsFileName,
     tsConfigFile,
@@ -81,7 +83,6 @@ export async function dtsGen({
         tsConfig = await Json.readJSON(tsConfigFile);
     } else {
         const tsConfigFile = File.findFile(`tsconfig.json`, process.cwd());
-
         if (tsConfigFile) {
             tsConfigPath = tsConfigFile;
             tsConfig = await Json.readJSON(tsConfigFile);
@@ -139,15 +140,6 @@ export async function dtsGen({
                     tsdocMetadata: {
                         enabled: false,
                     },
-                    messages: {
-                        extractorMessageReporting: {
-                            default: {
-                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                // @ts-ignore
-                                logLevel: "none",
-                            },
-                        },
-                    },
                 },
             });
 
@@ -155,6 +147,9 @@ export async function dtsGen({
                 localBuild: true,
                 showDiagnostics: false,
                 showVerboseMessages: false,
+                // messageCallback(msg) {
+                //     console.log(msg.text);
+                // },
                 typescriptCompilerFolder: nodePath.join(
                     require.resolve("typescript"),
                     "../..",
@@ -167,8 +162,8 @@ export async function dtsGen({
                 // TODO: Throw whe meet error
             }
 
-            if (!watch && declarationDir) {
-                File.rmdirSync(declarationDir);
+            if (declarationDir) {
+                File.rmdirSync(nodePath.resolve(cwd(), declarationDir));
             }
 
             printOutput(input!, nodePath.relative(cwd(), trimmedFile));

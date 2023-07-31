@@ -15,7 +15,7 @@ const tsconfig = "./tsconfig.json";
 const packagejson = "./package.json";
 const dtsEntry = "index.d.ts";
 const output = "./index.js";
-const input = "./src/index.ts";
+const input = "./src/index";
 const outputDir = "npm";
 const esmExt = [".mjs", ".mts"];
 const cjsExt = [".cjs", ".cts"];
@@ -77,14 +77,14 @@ const depsInfo = () => {
 };
 function printOutput(input, output) {
   console.log(
-    colors.bgCyan(
-      colors.bold(colors.black(nodePath.relative(cwd(), input)))
+    colors.bgBlack(
+      colors.bold(colors.cyan(nodePath.relative(cwd(), input)))
     ),
-    "\u27A1\uFE0E",
+    colors.cyan("\u27A1\uFE0E"),
     colors.cyan(output)
   );
 }
-const v = "\u23D0";
+const v = "";
 function box(text) {
   console.log(
     colors.cyan("\u256D") + Array(Math.round(process.stdout.columns - 2)).fill(colors.cyan("\u2500")).join("") + colors.cyan("\u256E")
@@ -93,7 +93,10 @@ function box(text) {
   const lineWidth = process.stdout.columns;
   const textLength = text.length;
   const emptyLength = Math.ceil(lineWidth - 2);
-  const halfEmptyLength = Math.ceil((lineWidth - textLength - 2) / 2);
+  const isOdd = (lineWidth - textLength - 2) % 2 === 0;
+  const halfEmptyLength = Math.ceil(
+    (lineWidth - textLength - (isOdd ? 2 : 3)) / 2
+  );
   s += colors.cyan(v);
   s += Array(emptyLength).fill(" ").join("");
   s += colors.cyan(v);
@@ -127,8 +130,18 @@ async function measure(mark, task) {
   );
 }
 function resolveDtsEntryFromEntry(declarationDir, entry) {
-  const entryUnshiftRoot = nodePath.join(cwd(), entry).replace(cwd() + "/", "").split("/").slice(1).join("/").replace(".ts", ".d.ts");
+  let entryUnshiftRoot = nodePath.join(cwd(), entry).replace(cwd() + "/", "").split("/").slice(1).join("/").replace(".ts", ".d.ts");
+  if (!entryUnshiftRoot.endsWith(".d.ts")) {
+    entryUnshiftRoot += ".d.ts";
+  }
   return nodePath.join(cwd(), declarationDir, entryUnshiftRoot);
+}
+async function serialize(tasks) {
+  return tasks.reduce((promise, next) => {
+    return promise.then(() => {
+      return next();
+    });
+  }, Promise.resolve());
 }
 
 var __knownSymbol$2 = (name, symbol) => {
@@ -323,7 +336,6 @@ function emitOnlyDeclarations(tsConfigCompilerOptions, tsconfig) {
   }
 }
 async function dtsGen({
-  watch,
   input,
   dtsFileName,
   tsConfigFile
@@ -379,15 +391,6 @@ async function dtsGen({
           },
           tsdocMetadata: {
             enabled: false
-          },
-          messages: {
-            extractorMessageReporting: {
-              default: {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                logLevel: "none"
-              }
-            }
           }
         }
       });
@@ -395,14 +398,17 @@ async function dtsGen({
         localBuild: true,
         showDiagnostics: false,
         showVerboseMessages: false,
+        // messageCallback(msg) {
+        //     console.log(msg.text);
+        // },
         typescriptCompilerFolder: nodePath.join(
           require.resolve("typescript"),
           "../.."
         )
       });
       if (extractorResult.succeeded) ;
-      if (!watch && declarationDir) {
-        file.rmdirSync(declarationDir);
+      if (declarationDir) {
+        file.rmdirSync(nodePath.resolve(cwd(), declarationDir));
       }
       printOutput(input, nodePath.relative(cwd(), trimmedFile));
     }
@@ -644,8 +650,9 @@ const externalsGenerator = (externals = [], pkgJson) => {
 const applyPlugins = (options) => {
   var _a, _b, _c, _d;
   return [
-    alias((_a = options == null ? void 0 : options.alias) != null ? _a : { alias: {} }),
+    cleanup(options == null ? void 0 : options.clean),
     styles(options == null ? void 0 : options.styles),
+    alias((_a = options == null ? void 0 : options.alias) != null ? _a : { alias: {} }),
     // @TODO
     // postcssPlugin({ cssModules: true }),
     esbuild(
@@ -667,13 +674,8 @@ const applyPlugins = (options) => {
     commonjs(
       Object.assign({ extensions: EXTENSIONS }, (_c = options == null ? void 0 : options.commonjs) != null ? _c : {})
     ),
-    cleanup(options == null ? void 0 : options.clean),
-    bundleProgress(),
-    /**
-     * @OPTIONAL
-     * @NOTICE: Keep eslint plugins always at the bottom.
-     */
-    eslint(Object.assign({}, (_d = options == null ? void 0 : options.eslint) != null ? _d : {}))
+    eslint(Object.assign({}, (_d = options == null ? void 0 : options.eslint) != null ? _d : {})),
+    bundleProgress()
   ].filter(Boolean);
 };
 const bundle = async (options, config, pkgJson) => {
@@ -808,7 +810,6 @@ async function dts({
       var _a;
       await dtsGen({
         input,
-        watch: config.watch,
         tsConfigFile: (_a = config.project) != null ? _a : tsconfig,
         dtsFileName: types || nodePath.resolve(cwd(), outputBasepath, outputBasename)
       });
@@ -897,10 +898,8 @@ async function startRollupBundle({
     });
   } else {
     await measure("rollup", async () => {
-      Promise.all(
-        (await bundle(bundles, config, pkgJson)).map((task) => task())
-      ).then(() => {
-      });
+      const tasks = await bundle(bundles, config, pkgJson);
+      await serialize(tasks);
     });
   }
 }

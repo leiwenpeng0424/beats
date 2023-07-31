@@ -9,6 +9,7 @@ import {
     measure,
     normalizeCliInput,
     printOutput,
+    serialize,
 } from "@/utils";
 import { ms } from "@nfts/nodeutils";
 import { type IPackageJson } from "@nfts/pkg-json";
@@ -84,8 +85,9 @@ export const applyPlugins = (
     },
 ) => {
     return [
-        alias(options?.alias ?? { alias: {} }),
+        cleanup(options?.clean),
         styles(options?.styles),
+        alias(options?.alias ?? { alias: {} }),
         // @TODO
         // postcssPlugin({ cssModules: true }),
         esbuild(
@@ -107,13 +109,8 @@ export const applyPlugins = (
         commonjs(
             Object.assign({ extensions: EXTENSIONS }, options?.commonjs ?? {}),
         ),
-        cleanup(options?.clean),
-        bundleProgress(),
-        /**
-         * @OPTIONAL
-         * @NOTICE: Keep eslint plugins always at the bottom.
-         */
         eslint(Object.assign({}, options?.eslint ?? {})),
+        bundleProgress(),
     ].filter(Boolean);
 };
 
@@ -292,7 +289,6 @@ async function dts({
         await measure("dts", async () => {
             await dtsGen({
                 input,
-                watch: config.watch,
                 tsConfigFile: config.project ?? CONSTANTS.tsconfig,
                 dtsFileName:
                     types ||
@@ -416,11 +412,8 @@ export async function startRollupBundle({
         });
     } else {
         await measure("rollup", async () => {
-            Promise.all(
-                (await bundle(bundles, config, pkgJson)).map((task) => task()),
-            ).then(() => {
-                // TODO: do something?
-            });
+            const tasks = await bundle(bundles, config, pkgJson);
+            await serialize(tasks);
         });
     }
 }

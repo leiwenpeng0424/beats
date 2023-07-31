@@ -18,3 +18,8 @@ export declare function box(text: string): void;
 export declare function measureSync(mark: string, task: () => void): void;
 export declare function measure(mark: string, task: () => Promise<void>): Promise<void>;
 export declare function resolveDtsEntryFromEntry(declarationDir: string, entry: string): string;
+/**
+ * Serialize async tasks.
+ * @param tasks
+ */
+export declare function serialize(tasks: (() => Promise<any>)[]): Promise<void>;

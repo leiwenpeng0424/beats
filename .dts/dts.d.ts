@@ -7,4 +7,4 @@ export interface IDtsGenOptions {
     dtsFileName?: string;
     watch?: boolean;
 }
-export declare function dtsGen({ watch, input, dtsFileName, tsConfigFile, }: IDtsGenOptions): Promise<void>;
+export declare function dtsGen({ input, dtsFileName, tsConfigFile, }: IDtsGenOptions): Promise<void>;

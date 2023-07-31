@@ -71,15 +71,15 @@ export const depsInfo = () => {
  */
 export function printOutput(input: string, output: string) {
     console.log(
-        colors.bgCyan(
-            colors.bold(colors.black(nodePath.relative(cwd(), input))),
+        colors.bgBlack(
+            colors.bold(colors.cyan(nodePath.relative(cwd(), input))),
         ),
-        "➡︎",
+        colors.cyan("➡︎"),
         colors.cyan(output),
     );
 }
 
-const v = "⏐";
+const v = "";
 
 export function box(text: string) {
     console.log(
@@ -94,7 +94,12 @@ export function box(text: string) {
     const lineWidth = process.stdout.columns;
     const textLength = text.length;
     const emptyLength = Math.ceil(lineWidth - 2);
-    const halfEmptyLength = Math.ceil((lineWidth - textLength - 2) / 2);
+
+    const isOdd = (lineWidth - textLength - 2) % 2 === 0;
+
+    const halfEmptyLength = Math.ceil(
+        (lineWidth - textLength - (isOdd ? 2 : 3)) / 2,
+    );
 
     s += colors.cyan(v);
     s += Array(emptyLength).fill(" ").join("");
@@ -159,7 +164,7 @@ export function resolveDtsEntryFromEntry(
     declarationDir: string,
     entry: string,
 ) {
-    const entryUnshiftRoot = nodePath
+    let entryUnshiftRoot = nodePath
         .join(cwd(), entry)
         .replace(cwd() + "/", "")
         .split("/")
@@ -167,5 +172,21 @@ export function resolveDtsEntryFromEntry(
         .join("/")
         .replace(".ts", ".d.ts");
 
+    if (!entryUnshiftRoot.endsWith(".d.ts")) {
+        entryUnshiftRoot += ".d.ts";
+    }
+
     return nodePath.join(cwd(), declarationDir, entryUnshiftRoot);
+}
+
+/**
+ * Serialize async tasks.
+ * @param tasks
+ */
+export async function serialize(tasks: (() => Promise<any>)[]) {
+    return tasks.reduce((promise, next) => {
+        return promise.then(() => {
+            return next();
+        });
+    }, Promise.resolve());
 }
