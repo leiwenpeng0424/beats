@@ -1,3 +1,4 @@
+import { IPackageJson } from '@nfts/pkg-json';
 import { ModuleFormat } from 'rollup';
 import { Plugin as Plugin_2 } from 'rollup';
 import { RollupCommonJSOptions } from '@rollup/plugin-commonjs';
@@ -6,14 +7,14 @@ import { RollupNodeResolveOptions } from '@rollup/plugin-node-resolve';
 import { RollupOptions } from 'rollup';
 import { TransformOptions } from 'esbuild';
 
-declare interface CLIOptions {
+export declare interface CLIOptions {
     // eslint-disable-next-line
     [K: string]: any;
     /**
      * Entry file for all bundle output. If you are not specified in bundle item.
      * this would be the default input.
      */
-    input?: string | string[] | { [K: string]: string };
+    input?: string;
 
     /**
      * Should generate .d.ts file for bundle.
@@ -95,7 +96,7 @@ export declare interface Config extends CLIOptions {
     /**
      * Extra rollup options.
      */
-    rollup?: Exclude<RollupOptions, "output" | "input">;
+    rollup?: Exclude<TRollupOptions, "output" | "input">;
 
     /**
      * Output options.
@@ -108,10 +109,16 @@ export declare interface Config extends CLIOptions {
     bundleOverwrite?: (b: TBundleConfig) => TBundleConfig;
 }
 
-export declare function defineConfig(options: Config): Config;
+/**
+ * Configuration define helper.
+ * @param options
+ */
+export declare function defineConfig(options: Config) {
+    return options;
+}
 
-declare type TBundleConfig = {
-    input?: RollupOptions["input"];
+export declare type TBundleConfig = {
+    input?: string;
     dir?: string;
     file?: string;
     format?: ModuleFormat;
@@ -123,6 +130,64 @@ declare type TBundleConfig = {
     sourcemap?: boolean | "inline" | "hidden";
 };
 
+export declare type TRollupOptions = Omit<RollupOptions, "input"> & {
+    input: string;
+};
+
 declare type TRollupTransformOptions = TransformOptions;
+
+/**
+ * Read config from project.
+ * @param configPath
+ * @param pkgJson
+ */
+export declare async function tryReadConfig({
+    configPath,
+    pkgJson,
+}: {
+    configPath?: string;
+    pkgJson: IPackageJson;
+}): Promise<Config> {
+    const _cwd = cwd();
+
+    let config: Config;
+
+    if (!configPath) {
+        for await (const configFile of Configs) {
+            try {
+                const configFilePath = nodePath.join(_cwd, configFile);
+                await nodeFs.access(configFilePath);
+                configPath = configFilePath;
+                break;
+            } catch (e: unknown) {
+                // TODO: Skip error
+            }
+        }
+    }
+
+    if (configPath) {
+        config = module_.import_<Config>(configPath);
+
+        if (!config.bundle) {
+            Object.assign(config, {
+                bundle: getOutputFromPackageJson(
+                pkgJson,
+                config.bundleOverwrite,
+                ),
+            });
+        }
+
+        if (pkgJson.types) {
+            Object.assign(config, { dtsRollup: true });
+        }
+
+        return config;
+    } else {
+        return {
+            dtsRollup: !!pkgJson.types,
+            bundle: getOutputFromPackageJson(pkgJson),
+        };
+    }
+}
 
 export { }

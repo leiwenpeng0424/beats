@@ -1,20 +1,20 @@
+import * as CONSTANTS from "@/constants";
 import { type TRollupTransformOptions } from "@/plugins/esbuild";
 import { cwd } from "@/utils";
-import { type IPackageJson } from "@nfts/pkg-json";
 import { module_ } from "@nfts/nodeutils";
+import { type IPackageJson } from "@nfts/pkg-json";
 import { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
 import { RollupEslintOptions } from "@rollup/plugin-eslint";
 import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
-import { type ModuleFormat, Plugin, type RollupOptions } from "rollup";
-import * as CONSTANTS from "@/constants";
+import { Plugin, type ModuleFormat, type RollupOptions } from "rollup";
 
 /**
  * Return output format.
  * @param output
  */
-const getFormatFromFileName = (output: string): ModuleFormat => {
+function getFormatFromFileName(output: string): ModuleFormat {
     const ext = nodePath.extname(output);
 
     if (CONSTANTS.esmExt.includes(ext) || output.endsWith(".d.ts")) {
@@ -34,17 +34,17 @@ const getFormatFromFileName = (output: string): ModuleFormat => {
     }
 
     return "cjs";
-};
+}
 
 /**
  * Get outputs from package.json
  * @param pkgJson
  * @param externalOutputOptions
  */
-const getOutputFromPackageJson = (
+function getOutputFromPackageJson(
     pkgJson: IPackageJson,
     externalOutputOptions: (opt: TBundleConfig) => TBundleConfig = (o) => o,
-): TBundleConfig[] => {
+): TBundleConfig[] {
     const { main, module: m } = pkgJson;
     return (
         [main, m]
@@ -65,7 +65,7 @@ const getOutputFromPackageJson = (
                 });
             })
     );
-};
+}
 
 /**
  * Default config.
@@ -73,7 +73,7 @@ const getOutputFromPackageJson = (
 const Configs = ["beats.config.js", "beats.config.ts", "beats.config.json"];
 
 export type TBundleConfig = {
-    input?: RollupOptions["input"];
+    input?: string;
     dir?: string;
     file?: string;
     format?: ModuleFormat;
@@ -92,7 +92,7 @@ export interface CLIOptions {
      * Entry file for all bundle output. If you are not specified in bundle item.
      * this would be the default input.
      */
-    input?: string | string[] | { [K: string]: string };
+    input?: string;
 
     /**
      * Should generate .d.ts file for bundle.
@@ -174,7 +174,7 @@ export interface Config extends CLIOptions {
     /**
      * Extra rollup options.
      */
-    rollup?: Exclude<RollupOptions, "output" | "input">;
+    rollup?: Exclude<TRollupOptions, "output" | "input">;
 
     /**
      * Output options.
@@ -187,13 +187,30 @@ export interface Config extends CLIOptions {
     bundleOverwrite?: (b: TBundleConfig) => TBundleConfig;
 }
 
-export const tryReadConfigFromRoot = async ({
+export type TRollupOptions = Omit<RollupOptions, "input"> & {
+    input: string;
+};
+
+/**
+ * Configuration define helper.
+ * @param options
+ */
+export function defineConfig(options: Config) {
+    return options;
+}
+
+/**
+ * Read config from project.
+ * @param configPath
+ * @param pkgJson
+ */
+export async function tryReadConfig({
     configPath,
     pkgJson,
 }: {
     configPath?: string;
     pkgJson: IPackageJson;
-}): Promise<Config> => {
+}): Promise<Config> {
     const _cwd = cwd();
 
     let config: Config;
@@ -234,4 +251,4 @@ export const tryReadConfigFromRoot = async ({
             bundle: getOutputFromPackageJson(pkgJson),
         };
     }
-};
+}

@@ -1,15 +1,15 @@
+import * as CONSTANTS from "@/constants";
+import { cwd, printOutput, resolveDtsEntryFromEntry } from "@/utils";
 import { Extractor, ExtractorConfig } from "@microsoft/api-extractor";
-import { type ITSConfigJson } from "@nfts/tsc-json";
 import { file as File, json as Json } from "@nfts/nodeutils";
+import { type ITSConfigJson } from "@nfts/tsc-json";
 import nodePath from "node:path";
 import ts, {
-    type CompilerOptions,
     createCompilerHost,
     createProgram,
     sys,
+    type CompilerOptions,
 } from "typescript";
-import { cwd, printOutput } from "@/utils";
-import * as CONSTANTS from "@/constants";
 
 export function createCompilerProgram(
     tsConfigCompilerOptions: CompilerOptions,
@@ -62,17 +62,23 @@ export function emitOnlyDeclarations(
 }
 
 export interface IDtsGenOptions {
+    input: string;
     tsConfigFile?: string;
     dtsFileName?: string;
     watch?: boolean;
 }
 
-export async function dtsGen(options: IDtsGenOptions) {
+export async function dtsGen({
+    watch,
+    input,
+    dtsFileName,
+    tsConfigFile,
+}: IDtsGenOptions) {
     let tsConfig: ITSConfigJson | undefined;
-    let tsConfigPath = options?.tsConfigFile;
+    let tsConfigPath = tsConfigFile;
 
-    if (options?.tsConfigFile) {
-        tsConfig = await Json.readJSON(options.tsConfigFile);
+    if (tsConfigFile) {
+        tsConfig = await Json.readJSON(tsConfigFile);
     } else {
         const tsConfigFile = File.findFile(`tsconfig.json`, process.cwd());
 
@@ -93,25 +99,25 @@ export async function dtsGen(options: IDtsGenOptions) {
             CONSTANTS.packagejson,
         );
 
-        if (declaration && declarationDir) {
+        if (declaration) {
             // 生成 dts
             emitOnlyDeclarations(
                 {
                     declaration: true,
                     emitDeclarationOnly: true,
-                    declarationDir: declarationDir,
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    declarationDir: declarationDir!,
                 },
                 typeof tsConfigPath === "string"
                     ? tsConfigPath
                     : CONSTANTS.tsconfig,
             );
 
-            const mainEntry = nodePath.resolve(
-                declarationDir,
-                CONSTANTS.dtsEntry,
-            );
+            const mainEntry = declarationDir
+                ? resolveDtsEntryFromEntry(declarationDir, input)
+                : input.replace(nodePath.extname(input), ".d.ts");
 
-            const trimmedFile = options?.dtsFileName ?? CONSTANTS.dtsEntry;
+            const trimmedFile = dtsFileName || CONSTANTS.dtsEntry;
 
             const config = ExtractorConfig.prepare({
                 configObjectFullPath: undefined,
@@ -120,7 +126,7 @@ export async function dtsGen(options: IDtsGenOptions) {
                 configObject: {
                     projectFolder: process.cwd(),
                     compiler: {
-                        tsconfigFilePath: options?.tsConfigFile,
+                        tsconfigFilePath: tsConfigFile,
                     },
                     mainEntryPointFilePath: mainEntry,
                     dtsRollup: {
@@ -161,10 +167,11 @@ export async function dtsGen(options: IDtsGenOptions) {
                 // TODO: Throw whe meet error
             }
 
-            if (!options.watch) {
+            if (!watch && declarationDir) {
                 File.rmdirSync(declarationDir);
             }
-            printOutput("src/index.ts", "index.d.ts");
+
+            printOutput(input!, nodePath.relative(cwd(), trimmedFile));
         }
     }
 }

@@ -13,6 +13,17 @@ var Module = require('node:module');
 var rollup = require('rollup');
 var styles = require('rollup-plugin-styles');
 
+const tsconfig = "./tsconfig.json";
+const packagejson = "./package.json";
+const dtsEntry = "index.d.ts";
+const output = "./index.js";
+const input = "./src/index.ts";
+const outputDir = "npm";
+const esmExt = [".mjs", ".mts"];
+const cjsExt = [".cjs", ".cts"];
+const esmMiddleNames = [".esm.", ".es."];
+const cjsMiddleNames = [".cjs."];
+
 const verboseLog = (...args) => {
   if (process.env.BEATS_VERBOSE !== "undefined") {
     console.log(...args);
@@ -21,6 +32,7 @@ const verboseLog = (...args) => {
 const debugLog = (...args) => {
   if (process.env.BEATS_DEBUG !== "undefined") {
     console.debug(
+      "",
       nodeutils.colors.bgBlack(nodeutils.colors.cyan(nodeutils.colors.bold("debug:"))),
       ...args
     );
@@ -74,6 +86,33 @@ function printOutput(input, output) {
     nodeutils.colors.cyan(output)
   );
 }
+const v = "\u23D0";
+function box(text) {
+  console.log(
+    nodeutils.colors.cyan("\u256D") + Array(Math.round(process.stdout.columns - 2)).fill(nodeutils.colors.cyan("\u2500")).join("") + nodeutils.colors.cyan("\u256E")
+  );
+  let s = "";
+  const lineWidth = process.stdout.columns;
+  const textLength = text.length;
+  const emptyLength = Math.ceil(lineWidth - 2);
+  const halfEmptyLength = Math.ceil((lineWidth - textLength - 2) / 2);
+  s += nodeutils.colors.cyan(v);
+  s += Array(emptyLength).fill(" ").join("");
+  s += nodeutils.colors.cyan(v);
+  s += nodeutils.colors.cyan(v);
+  s += Array(halfEmptyLength).fill(" ").join("");
+  s += nodeutils.colors.cyan(text);
+  s += Array(halfEmptyLength).fill(" ").join("");
+  s += nodeutils.colors.cyan(v);
+  s += nodeutils.colors.cyan(v);
+  s += Array(emptyLength).fill(" ").join("");
+  s += nodeutils.colors.cyan(v);
+  console.log(s);
+  console.log(
+    nodeutils.colors.cyan("\u2570") + Array(Math.round(process.stdout.columns - 2)).fill(nodeutils.colors.cyan("\u2500")).join("") + nodeutils.colors.cyan("\u256F")
+  );
+  console.log("");
+}
 async function measure(mark, task) {
   performance.mark(`${mark} start`);
   await task();
@@ -89,15 +128,10 @@ async function measure(mark, task) {
     )
   );
 }
-
-const tsconfig = "./tsconfig.json";
-const packagejson = "./package.json";
-const dtsEntry = "index.d.ts";
-const output = "./index.js";
-const esmExt = [".mjs", ".mts"];
-const cjsExt = [".cjs", ".cts"];
-const esmMiddleNames = [".esm.", ".es."];
-const cjsMiddleNames = [".cjs."];
+function resolveDtsEntryFromEntry(declarationDir, entry) {
+  const entryUnshiftRoot = nodePath.join(cwd(), entry).replace(cwd() + "/", "").split("/").slice(1).join("/").replace(".ts", ".d.ts");
+  return nodePath.join(cwd(), declarationDir, entryUnshiftRoot);
+}
 
 var __knownSymbol$2 = (name, symbol) => {
   if (symbol = Symbol[name])
@@ -105,7 +139,7 @@ var __knownSymbol$2 = (name, symbol) => {
   throw Error("Symbol." + name + " is not defined");
 };
 var __forAwait$2 = (obj, it, method) => (it = obj[__knownSymbol$2("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol$2("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
-const getFormatFromFileName = (output) => {
+function getFormatFromFileName(output) {
   const ext = nodePath.extname(output);
   if (esmExt.includes(ext) || output.endsWith(".d.ts")) {
     return "es";
@@ -120,8 +154,8 @@ const getFormatFromFileName = (output) => {
     return "cjs";
   }
   return "cjs";
-};
-const getOutputFromPackageJson = (pkgJson, externalOutputOptions = (o) => o) => {
+}
+function getOutputFromPackageJson(pkgJson, externalOutputOptions = (o) => o) {
   const { main, module: m } = pkgJson;
   return [main, m].filter(Boolean).map((output$1) => {
     const format = getFormatFromFileName(output$1);
@@ -133,12 +167,15 @@ const getOutputFromPackageJson = (pkgJson, externalOutputOptions = (o) => o) => 
       file: output$1
     });
   });
-};
+}
 const Configs = ["beats.config.js", "beats.config.ts", "beats.config.json"];
-const tryReadConfigFromRoot = async ({
+function defineConfig(options) {
+  return options;
+}
+async function tryReadConfig({
   configPath,
   pkgJson
-}) => {
+}) {
   const _cwd = cwd();
   let config;
   if (!configPath) {
@@ -184,7 +221,7 @@ const tryReadConfigFromRoot = async ({
       bundle: getOutputFromPackageJson(pkgJson)
     };
   }
-};
+}
 
 function bundleProgress() {
   let cur;
@@ -227,19 +264,6 @@ function bundleProgress() {
       if (process.stdout.isTTY) {
         process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
-      }
-    },
-    writeBundle: {
-      sequential: true,
-      order: "post",
-      async handler(output, bundle) {
-        const files = Object.keys(bundle);
-        for (const file of files) {
-          const { facadeModuleId } = bundle[file];
-          if (facadeModuleId) {
-            printOutput(facadeModuleId, file);
-          }
-        }
       }
     }
   };
@@ -300,17 +324,21 @@ function emitOnlyDeclarations(tsConfigCompilerOptions, tsconfig) {
     program.emit(void 0);
   }
 }
-async function dtsGen(options) {
-  var _a;
+async function dtsGen({
+  watch,
+  input,
+  dtsFileName,
+  tsConfigFile
+}) {
   let tsConfig;
-  let tsConfigPath = options == null ? void 0 : options.tsConfigFile;
-  if (options == null ? void 0 : options.tsConfigFile) {
-    tsConfig = await nodeutils.json.readJSON(options.tsConfigFile);
+  let tsConfigPath = tsConfigFile;
+  if (tsConfigFile) {
+    tsConfig = await nodeutils.json.readJSON(tsConfigFile);
   } else {
-    const tsConfigFile = nodeutils.file.findFile(`tsconfig.json`, process.cwd());
-    if (tsConfigFile) {
-      tsConfigPath = tsConfigFile;
-      tsConfig = await nodeutils.json.readJSON(tsConfigFile);
+    const tsConfigFile2 = nodeutils.file.findFile(`tsconfig.json`, process.cwd());
+    if (tsConfigFile2) {
+      tsConfigPath = tsConfigFile2;
+      tsConfig = await nodeutils.json.readJSON(tsConfigFile2);
     } else {
       throw Error(`Can't find tsconfig.json from current project`);
     }
@@ -322,20 +350,18 @@ async function dtsGen(options) {
       cwd(),
       packagejson
     );
-    if (declaration && declarationDir) {
+    if (declaration) {
       emitOnlyDeclarations(
         {
           declaration: true,
           emitDeclarationOnly: true,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           declarationDir
         },
         typeof tsConfigPath === "string" ? tsConfigPath : tsconfig
       );
-      const mainEntry = nodePath.resolve(
-        declarationDir,
-        dtsEntry
-      );
-      const trimmedFile = (_a = options == null ? void 0 : options.dtsFileName) != null ? _a : dtsEntry;
+      const mainEntry = declarationDir ? resolveDtsEntryFromEntry(declarationDir, input) : input.replace(nodePath.extname(input), ".d.ts");
+      const trimmedFile = dtsFileName || dtsEntry;
       const config = apiExtractor.ExtractorConfig.prepare({
         configObjectFullPath: void 0,
         packageJsonFullPath,
@@ -343,7 +369,7 @@ async function dtsGen(options) {
         configObject: {
           projectFolder: process.cwd(),
           compiler: {
-            tsconfigFilePath: options == null ? void 0 : options.tsConfigFile
+            tsconfigFilePath: tsConfigFile
           },
           mainEntryPointFilePath: mainEntry,
           dtsRollup: {
@@ -377,10 +403,10 @@ async function dtsGen(options) {
         )
       });
       if (extractorResult.succeeded) ;
-      if (!options.watch) {
+      if (!watch && declarationDir) {
         nodeutils.file.rmdirSync(declarationDir);
       }
-      printOutput("src/index.ts", "index.d.ts");
+      printOutput(input, nodePath.relative(cwd(), trimmedFile));
     }
   }
 }
@@ -596,8 +622,6 @@ var __objRest$1 = (source, exclude) => {
   return target;
 };
 var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
-const defaultEntry = "src/index";
-const tsConfigFilePath = "tsconfig.json";
 const EXTENSIONS = [
   ".js",
   ".jsx",
@@ -654,8 +678,8 @@ const applyPlugins = (options) => {
     eslint(Object.assign({}, (_d = options == null ? void 0 : options.eslint) != null ? _d : {}))
   ].filter(Boolean);
 };
-const bundle = async (options) => {
-  let bundles = [];
+const bundle = async (options, config, pkgJson) => {
+  const bundles = [];
   if (!Array.isArray(options)) {
     options = [options];
   }
@@ -664,23 +688,31 @@ const bundle = async (options) => {
       const option = temp.value;
       const bundle_ = await rollup.rollup(option);
       let { output } = option;
+      const { input } = option;
       if (output) {
         if (output && !Array.isArray(output)) {
           output = [output];
         }
-        const bundles_ = [];
         for (const output_ of output) {
-          bundles_.push(async () => {
+          bundles.push(async () => {
             const start = Date.now();
             await bundle_.generate(output_);
             const output2 = await bundle_.write(output_);
+            printOutput(input, output_.file);
             return __spreadProps$1(__spreadValues$1({}, output2), {
-              input: option.input,
               duration: Date.now() - start
             });
           });
         }
-        bundles = bundles.concat(bundles_);
+        bundles.push(async () => {
+          const start = Date.now();
+          await dts({ config, pkgJson, rollup: option });
+          return {
+            // TODO: Add input value.
+            input: "",
+            duration: Date.now() - start
+          };
+        });
       } else {
         verboseLog(`Output not found for input '${option.input}', skip...`);
       }
@@ -759,28 +791,51 @@ const watch_ = async (options, {
   } catch (e) {
   }
 };
-const startRollupBundle = async ({
+async function dts({
+  config,
+  rollup: rollup2,
+  pkgJson
+}) {
+  const { input } = rollup2;
+  const { module, main, types } = pkgJson;
+  const output = module || main;
+  const inputBasename = nodePath.basename(input);
+  const outputBasepath = output ? nodePath.dirname(output) : outputDir;
+  const outputBasename = inputBasename.replace(
+    nodePath.extname(inputBasename),
+    ".d.ts"
+  );
+  if (config.dtsRollup) {
+    await measure("dts", async () => {
+      var _a;
+      await dtsGen({
+        input,
+        watch: config.watch,
+        tsConfigFile: (_a = config.project) != null ? _a : tsconfig,
+        dtsFileName: types || nodePath.resolve(cwd(), outputBasepath, outputBasename)
+      });
+    });
+  }
+}
+async function startRollupBundle({
   config,
   pkgJson,
   tsConfig
-}) => {
+}) {
   var _a, _b;
-  const {
-    externals,
-    rollup: rollupOpt = {},
-    input: configInput
-    //
-  } = config;
   const paths = (_b = (_a = tsConfig.compilerOptions) == null ? void 0 : _a.paths) != null ? _b : {};
   const {
+    // Plugins
     eslint: eslint2,
     commonjs: commonjs2,
     nodeResolve: nodeResolve2,
     esbuild: esbuild2,
     styles: styles2,
+    rollup: rollupOpt = {},
+    // Options
+    externals,
     minify,
     sourcemap,
-    project,
     input: cliInput,
     watch: watch2
   } = config;
@@ -806,7 +861,7 @@ const startRollupBundle = async ({
     bundles = config.bundle.reduce((options, bundle2) => {
       const _a2 = bundle2, { input: bundleInput } = _a2, otherProps = __objRest$1(_a2, ["input"]);
       const option = __spreadValues$1({
-        input: bundleInput || configInput || (cliInput ? normalizeCliInput(cliInput) : defaultEntry),
+        input: bundleInput || (cliInput ? normalizeCliInput(cliInput) : input),
         output: [__spreadProps$1(__spreadValues$1({}, otherProps), { sourcemap })]
       }, rollupOptionWithoutInputOutput);
       if (options.length === 0) {
@@ -828,38 +883,29 @@ const startRollupBundle = async ({
       return options;
     }, []);
   }
-  const dts = async () => {
-    if (config.dtsRollup) {
-      debugLog(`Enable dtsRollup`);
-      if (pkgJson.types) {
-        await measure("dts", async () => {
-          await dtsGen({
-            tsConfigFile: project != null ? project : tsConfigFilePath,
-            dtsFileName: pkgJson.types,
-            watch: watch2
-          });
-        });
-      } else {
-        verboseLog(
-          //
-          `dtsRollup is enabled, but no 'types' or 'typings' field in package.json`
-        );
-      }
-    }
-  };
   if (watch2) {
     await watch_(bundles, {
       async end() {
-        await dts();
+        await Promise.all(
+          bundles.map(async (opts) => {
+            await dts({
+              config,
+              pkgJson,
+              rollup: opts
+            });
+          })
+        );
       }
     });
   } else {
     await measure("rollup", async () => {
-      await Promise.all((await bundle(bundles)).map((task) => task()));
+      Promise.all(
+        (await bundle(bundles, config, pkgJson)).map((task) => task())
+      ).then(() => {
+      });
     });
-    await dts();
   }
-};
+}
 
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
@@ -892,9 +938,13 @@ var __objRest = (source, exclude) => {
     }
   return target;
 };
-const cli = async (args) => {
+async function cli(args) {
   const [, ..._args] = args;
   const pkgJson = nodeutils.json.readJSONSync(packagejson);
+  const beatsPkgJson = nodeutils.json.readJSONSync(
+    nodePath.resolve(require.resolve(".."), "../../package.json")
+  );
+  box(`@nfts/beats(${beatsPkgJson.version})`);
   const _a = nodeutils.parser(_args), {
     project,
     config: configPath,
@@ -916,7 +966,7 @@ const cli = async (args) => {
     `tsconfig -> ${nodePath.join(cwd(), project != null ? project : tsconfig)}
 `
   );
-  const config = await tryReadConfigFromRoot({
+  const config = await tryReadConfig({
     configPath,
     pkgJson
   });
@@ -927,14 +977,11 @@ const cli = async (args) => {
     pkgJson,
     tsConfig
   });
-};
+}
 cli(process.argv.slice(1)).then(() => {
 }).catch((e) => {
   console.error(e);
 });
 
-function defineConfig(options) {
-  return options;
-}
-
 exports.defineConfig = defineConfig;
+exports.tryReadConfig = tryReadConfig;

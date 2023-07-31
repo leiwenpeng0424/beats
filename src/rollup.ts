@@ -1,4 +1,4 @@
-import { type Config } from "@/configuration";
+import { type Config, type TRollupOptions } from "@/configuration";
 import bundleProgress from "@/plugins/bundleProgress";
 import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
 import esbuild from "@/plugins/esbuild";
@@ -8,31 +8,29 @@ import {
     isSameRollupInput,
     measure,
     normalizeCliInput,
+    printOutput,
 } from "@/utils";
+import { ms } from "@nfts/nodeutils";
 import { type IPackageJson } from "@nfts/pkg-json";
 import { type ITSConfigJson } from "@nfts/tsc-json";
-import { ms } from "@nfts/nodeutils";
 import commonjs from "@rollup/plugin-commonjs";
 import eslint from "@rollup/plugin-eslint";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import Module from "node:module";
 import nodePath from "node:path";
 import {
-    OutputOptions,
     rollup,
+    watch,
     type RollupOptions,
     type RollupOutput,
     type RollupWatchOptions,
-    watch,
 } from "rollup";
 // import postcssPlugin from "@/plugins/styles";
+import * as CONSTANTS from "@/constants";
+import { dtsGen } from "@/dts";
 import { debugLog, verboseLog } from "@/log";
 import alias, { RollupAliasOptions } from "@/plugins/alias";
-import { dtsGen } from "@/dts";
 import styles from "rollup-plugin-styles";
-
-const defaultEntry = "src/index";
-const tsConfigFilePath = "tsconfig.json";
 
 export const EXTENSIONS = [
     ".js",
@@ -119,21 +117,24 @@ export const applyPlugins = (
     ].filter(Boolean);
 };
 
-export type TBundleOutput = {
-    /**
-     * Duration time.(ms)
-     */
-    duration: number;
-    input: string | string[];
-} & RollupOutput;
+export type TBundleOutput =
+    | {
+          duration: number;
+          input: string;
+      }
+    | RollupOutput;
 
 /**
  *
  * Get all bundle tasks.
  *
  */
-export const bundle = async (options: RollupOptions | RollupOptions[]) => {
-    let bundles: (() => Promise<TBundleOutput>)[] = [];
+export const bundle = async (
+    options: TRollupOptions | TRollupOptions[],
+    config: Config,
+    pkgJson: IPackageJson,
+) => {
+    const bundles: (() => Promise<TBundleOutput>)[] = [];
 
     if (!Array.isArray(options)) {
         options = [options];
@@ -142,29 +143,36 @@ export const bundle = async (options: RollupOptions | RollupOptions[]) => {
     for await (const option of options) {
         const bundle_ = await rollup(option);
         let { output } = option;
+        const { input } = option;
         if (output) {
             if (output && !Array.isArray(output)) {
                 output = [output];
             }
 
-            const bundles_: (() => Promise<TBundleOutput>)[] = [];
-
             for (const output_ of output) {
                 // Add bundle task
-                bundles_.push(async () => {
+                bundles.push(async () => {
                     const start = Date.now();
                     await bundle_.generate(output_);
                     const output = await bundle_.write(output_);
-
+                    printOutput(input, output_.file!);
                     return {
                         ...output,
-                        input: option.input as string | string[],
                         duration: Date.now() - start,
                     };
                 });
             }
 
-            bundles = bundles.concat(bundles_);
+            // One bundle one dts.
+            bundles.push(async () => {
+                const start = Date.now();
+                await dts({ config, pkgJson, rollup: option });
+                return {
+                    // TODO: Add input value.
+                    input: "",
+                    duration: Date.now() - start,
+                };
+            });
         } else {
             verboseLog(`Output not found for input '${option.input}', skip...`);
         }
@@ -257,7 +265,50 @@ export const watch_ = async (
     }
 };
 
-export const startRollupBundle = async ({
+async function dts({
+    config,
+    rollup,
+    pkgJson,
+}: {
+    config: Config;
+    rollup: TRollupOptions;
+    pkgJson: IPackageJson;
+}): Promise<void> {
+    const { input } = rollup;
+    const { module, main, types } = pkgJson;
+    const output = module || main;
+
+    const inputBasename = nodePath.basename(input);
+    const outputBasepath = output
+        ? nodePath.dirname(output)
+        : CONSTANTS.outputDir;
+
+    const outputBasename = inputBasename.replace(
+        nodePath.extname(inputBasename),
+        ".d.ts",
+    );
+
+    if (config.dtsRollup) {
+        await measure("dts", async () => {
+            await dtsGen({
+                input,
+                watch: config.watch,
+                tsConfigFile: config.project ?? CONSTANTS.tsconfig,
+                dtsFileName:
+                    types ||
+                    nodePath.resolve(cwd(), outputBasepath, outputBasename),
+            });
+        });
+    }
+}
+
+/**
+ * Start rollup bundle process.
+ * @param config
+ * @param pkgJson
+ * @param tsConfig
+ */
+export async function startRollupBundle({
     config,
     pkgJson,
     tsConfig,
@@ -265,26 +316,22 @@ export const startRollupBundle = async ({
     config: Config;
     pkgJson: IPackageJson;
     tsConfig: ITSConfigJson;
-}) => {
-    const {
-        externals,
-        rollup: rollupOpt = {},
-        input: configInput, //
-    } = config;
-
-    // const { bin } = pkgJson;
-
+}) {
     const paths = tsConfig.compilerOptions?.paths ?? {};
 
     const {
+        // Plugins
         eslint,
         commonjs,
         nodeResolve,
         esbuild,
         styles,
+        rollup: rollupOpt = {} as TRollupOptions,
+
+        // Options
+        externals,
         minify,
         sourcemap,
-        project,
         input: cliInput,
         watch,
     } = config;
@@ -300,7 +347,7 @@ export const startRollupBundle = async ({
 
     const externalsFn = externalsGenerator(externals, pkgJson);
 
-    let bundles: RollupOptions[] = [];
+    let bundles: TRollupOptions[] = [];
 
     const { plugins: extraPlugins = [], ...rollupOpts } = rollupOpt;
 
@@ -323,13 +370,12 @@ export const startRollupBundle = async ({
             const option = {
                 input:
                     bundleInput ||
-                    configInput ||
                     (cliInput
                         ? normalizeCliInput(cliInput as string)
-                        : defaultEntry),
+                        : CONSTANTS.input),
                 output: [{ ...otherProps, sourcemap }],
                 ...rollupOptionWithoutInputOutput,
-            } as RollupOptions;
+            } as TRollupOptions;
 
             if (options.length === 0) {
                 return [option];
@@ -344,46 +390,37 @@ export const startRollupBundle = async ({
             } else {
                 options[i] = Object.assign({}, options[i], {
                     output: [
-                        ...(options[i].output as OutputOptions[]),
+                        ...(options[i].output as TRollupOptions[]),
                         { ...otherProps, sourcemap },
                     ],
                 });
             }
 
             return options;
-        }, [] as RollupOptions[]);
+        }, [] as TRollupOptions[]);
     }
-
-    const dts = async () => {
-        if (config.dtsRollup) {
-            debugLog(`Enable dtsRollup`);
-            if (pkgJson.types) {
-                await measure("dts", async () => {
-                    await dtsGen({
-                        tsConfigFile: project ?? tsConfigFilePath,
-                        dtsFileName: pkgJson.types,
-                        watch,
-                    });
-                });
-            } else {
-                verboseLog(
-                    //
-                    `dtsRollup is enabled, but no 'types' or 'typings' field in package.json`,
-                );
-            }
-        }
-    };
 
     if (watch) {
         await watch_(bundles, {
             async end() {
-                await dts();
+                await Promise.all(
+                    bundles.map(async (opts) => {
+                        await dts({
+                            config,
+                            pkgJson,
+                            rollup: opts,
+                        });
+                    }),
+                );
             },
         });
     } else {
         await measure("rollup", async () => {
-            await Promise.all((await bundle(bundles)).map((task) => task()));
+            Promise.all(
+                (await bundle(bundles, config, pkgJson)).map((task) => task()),
+            ).then(() => {
+                // TODO: do something?
+            });
         });
-        await dts();
     }
-};
+}

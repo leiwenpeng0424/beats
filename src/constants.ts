@@ -3,6 +3,9 @@ export const packagejson = "./package.json";
 export const dtsEntry = "index.d.ts";
 
 export const output = "./index.js";
+export const input = "./src/index.ts";
+
+export const outputDir = "npm";
 
 export const esmExt = [".mjs", ".mts"];
 export const cjsExt = [".cjs", ".cts"];

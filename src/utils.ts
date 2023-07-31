@@ -3,6 +3,7 @@ import { IPackageJson } from "@nfts/pkg-json";
 import { colors, json as Json } from "@nfts/nodeutils";
 import nodePath from "node:path";
 import { RollupOptions } from "rollup";
+import * as readline from "readline";
 
 // Clear screen.
 export const clearScreen = () => process.stdout.write("\x1Bc");
@@ -63,6 +64,11 @@ export const depsInfo = () => {
     verboseLog(depInfo);
 };
 
+/**
+ * Write bundle result to terminal.
+ * @param input
+ * @param output
+ */
 export function printOutput(input: string, output: string) {
     console.log(
         colors.bgCyan(
@@ -71,6 +77,46 @@ export function printOutput(input: string, output: string) {
         "➡︎",
         colors.cyan(output),
     );
+}
+
+const v = "⏐";
+
+export function box(text: string) {
+    console.log(
+        colors.cyan("╭") +
+            Array(Math.round(process.stdout.columns - 2))
+                .fill(colors.cyan("─"))
+                .join("") +
+            colors.cyan("╮"),
+    );
+    let s = "";
+
+    const lineWidth = process.stdout.columns;
+    const textLength = text.length;
+    const emptyLength = Math.ceil(lineWidth - 2);
+    const halfEmptyLength = Math.ceil((lineWidth - textLength - 2) / 2);
+
+    s += colors.cyan(v);
+    s += Array(emptyLength).fill(" ").join("");
+    s += colors.cyan(v);
+    s += colors.cyan(v);
+    s += Array(halfEmptyLength).fill(" ").join("");
+    s += colors.cyan(text);
+    s += Array(halfEmptyLength).fill(" ").join("");
+    s += colors.cyan(v);
+    s += colors.cyan(v);
+    s += Array(emptyLength).fill(" ").join("");
+    s += colors.cyan(v);
+
+    console.log(s);
+    console.log(
+        colors.cyan("╰") +
+            Array(Math.round(process.stdout.columns - 2))
+                .fill(colors.cyan("─"))
+                .join("") +
+            colors.cyan("╯"),
+    );
+    console.log("");
 }
 
 export function measureSync(mark: string, task: () => void) {
@@ -107,4 +153,19 @@ export async function measure(mark: string, task: () => Promise<void>) {
             colors.white(colors.bold(`${mark} duration: ${measure.duration}`)),
         ),
     );
+}
+
+export function resolveDtsEntryFromEntry(
+    declarationDir: string,
+    entry: string,
+) {
+    const entryUnshiftRoot = nodePath
+        .join(cwd(), entry)
+        .replace(cwd() + "/", "")
+        .split("/")
+        .slice(1)
+        .join("/")
+        .replace(".ts", ".d.ts");
+
+    return nodePath.join(cwd(), declarationDir, entryUnshiftRoot);
 }

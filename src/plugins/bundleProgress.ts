@@ -57,20 +57,5 @@ export default function bundleProgress(): Plugin {
                 process.stdout.cursorTo(0);
             }
         },
-
-        writeBundle: {
-            sequential: true,
-            order: "post",
-            async handler(output, bundle) {
-                const files = Object.keys(bundle);
-                for (const file of files) {
-                    const { facadeModuleId } = bundle[file] as OutputChunk;
-
-                    if (facadeModuleId) {
-                        printOutput(facadeModuleId, file);
-                    }
-                }
-            },
-        },
     };
 }

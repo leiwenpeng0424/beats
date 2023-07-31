@@ -1,16 +1,22 @@
-import type { IPackageJson } from "@nfts/pkg-json";
-import { json as Json, parser } from "@nfts/nodeutils";
-import { type CLIOptions, tryReadConfigFromRoot } from "@/configuration";
-import { startRollupBundle } from "@/rollup";
-import { cwd, depsInfo } from "@/utils";
-import type { ITSConfigJson } from "@nfts/tsc-json";
-import { debugLog } from "@/log";
-import nodePath from "node:path";
+import { type CLIOptions, tryReadConfig } from "@/configuration";
 import * as CONSTANTS from "@/constants";
+import { debugLog } from "@/log";
+import { startRollupBundle } from "@/rollup";
+import { cwd, depsInfo, box } from "@/utils";
+import { json as Json, parser } from "@nfts/nodeutils";
+import type { IPackageJson } from "@nfts/pkg-json";
+import type { ITSConfigJson } from "@nfts/tsc-json";
+import nodePath from "node:path";
 
-const cli = async (args: string[]) => {
+async function cli(args: string[]) {
     const [, ..._args] = args;
     const pkgJson = Json.readJSONSync<IPackageJson>(CONSTANTS.packagejson);
+    const beatsPkgJson = Json.readJSONSync<IPackageJson>(
+        nodePath.resolve(require.resolve(".."), "../../package.json"),
+    );
+
+    box(`@nfts/beats(${beatsPkgJson.version})`);
+
     const {
         project,
         config: configPath,
@@ -32,7 +38,7 @@ const cli = async (args: string[]) => {
         `tsconfig -> ${nodePath.join(cwd(), project ?? CONSTANTS.tsconfig)}\n`,
     );
 
-    const config = await tryReadConfigFromRoot({
+    const config = await tryReadConfig({
         configPath,
         pkgJson,
     });
@@ -46,7 +52,7 @@ const cli = async (args: string[]) => {
         pkgJson,
         tsConfig,
     });
-};
+}
 
 cli(process.argv.slice(1))
     .then(() => {

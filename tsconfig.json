@@ -18,11 +18,11 @@
 
         // declaration
         "declaration": true,
-        "declarationDir": ".declarations",
+        "declarationDir": ".dts",
 
         // path alias
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src/"]

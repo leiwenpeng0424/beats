@@ -19,6 +19,7 @@ export const verboseLog = (...args: any[]) => {
 export const debugLog = (...args: any[]) => {
     if (process.env.BEATS_DEBUG !== "undefined") {
         console.debug(
+            "",
             colors.bgBlack(colors.cyan(colors.bold("debug:"))),
             ...args,
         );
