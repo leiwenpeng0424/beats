@@ -2,7 +2,7 @@ import { Plugin, TransformResult } from "rollup";
 import { AcceptedPlugin } from "postcss";
 import { type Config } from "postcss-load-config";
 import { createFilter } from "@rollup/pluginutils";
-import { cwd } from "../../utils";
+import { cwd } from "@/utils";
 import postcssLoader from "./postcss";
 
 export interface RollupPostcssOptions extends Omit<Config, "plugins"> {

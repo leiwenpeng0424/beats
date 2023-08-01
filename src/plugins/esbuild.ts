@@ -13,6 +13,9 @@ import { createCompilerProgram } from "@/dts";
 
 export type TEsbuildTsx = "react" | "react-jsx" | "react-jsxdev" | "preserve";
 
+/**
+ * Only handle js/ts file.
+ */
 const EsbuildLoaders = {
     ".js": "js",
     ".jsx": "jsx",

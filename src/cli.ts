@@ -15,7 +15,7 @@ async function cli(args: string[]) {
         nodePath.resolve(require.resolve(".."), "../../package.json"),
     );
 
-    box(`@nfts/beats(${beatsPkgJson.version})`);
+    box(`@nfts/beats (${beatsPkgJson.version})`);
 
     const {
         project,
@@ -27,8 +27,6 @@ async function cli(args: string[]) {
 
     process.env.BEATS_VERBOSE = verbose ? String(verbose) : "undefined";
     process.env.BEATS_DEBUG = debug ? String(debug) : "undefined";
-
-    depsInfo();
 
     const tsConfig = Json.readJSONSync<ITSConfigJson>(
         project ?? CONSTANTS.tsconfig,

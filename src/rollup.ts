@@ -33,7 +33,7 @@ import { verboseLog } from "@/log";
 import alias, { RollupAliasOptions } from "@/plugins/alias";
 import styles from "rollup-plugin-styles";
 
-export const EXTENSIONS = [
+export const Extensions = [
     ".js",
     ".jsx",
     ".ts",
@@ -45,6 +45,8 @@ export const EXTENSIONS = [
     ".cts",
     ".node",
 ];
+
+export const StyleSheetExtensions = [".css", ".less", ".scss", ".sass"];
 
 /**
  *
@@ -101,13 +103,13 @@ export const applyPlugins = (
                 {
                     rootDir: cwd(),
                     preferBuiltins: false,
-                    extensions: EXTENSIONS,
+                    extensions: Extensions,
                 },
                 options?.nodeResolve ?? {},
             ),
         ),
         commonjs(
-            Object.assign({ extensions: EXTENSIONS }, options?.commonjs ?? {}),
+            Object.assign({ extensions: Extensions }, options?.commonjs ?? {}),
         ),
         eslint(Object.assign({}, options?.eslint ?? {})),
         bundleProgress(),

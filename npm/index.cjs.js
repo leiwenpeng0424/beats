@@ -55,28 +55,6 @@ const isSameRollupInput = (input1, input2) => {
 const normalizeCliInput = (input) => {
   return input.trimStart().trimEnd().split(",").filter(Boolean);
 };
-const depsInfo = () => {
-  const coreDeps = ["typescript", "esbuild", "rollup"];
-  const depInfo = coreDeps.map((dep) => {
-    const main = require.resolve(dep);
-    const depDir = nodePath.join(main, "../../");
-    const pkgJson = nodeutils.json.readJSONSync(
-      nodePath.join(depDir, "package.json")
-    );
-    const { name, version } = pkgJson;
-    return {
-      name,
-      version,
-      path: depDir
-    };
-  }).reduce((infos, info) => {
-    return infos += `${nodeutils.colors.green("*")} ${info.name}@${nodeutils.colors.green(
-      info.version
-    )} 
-`;
-  }, "");
-  verboseLog(depInfo);
-};
 function printOutput(input, output) {
   console.log(
     nodeutils.colors.bgBlack(
@@ -628,7 +606,7 @@ var __objRest$1 = (source, exclude) => {
   return target;
 };
 var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
-const EXTENSIONS = [
+const Extensions = [
   ".js",
   ".jsx",
   ".ts",
@@ -668,13 +646,13 @@ const applyPlugins = (options) => {
         {
           rootDir: cwd(),
           preferBuiltins: false,
-          extensions: EXTENSIONS
+          extensions: Extensions
         },
         (_b = options == null ? void 0 : options.nodeResolve) != null ? _b : {}
       )
     ),
     commonjs(
-      Object.assign({ extensions: EXTENSIONS }, (_c = options == null ? void 0 : options.commonjs) != null ? _c : {})
+      Object.assign({ extensions: Extensions }, (_c = options == null ? void 0 : options.commonjs) != null ? _c : {})
     ),
     eslint(Object.assign({}, (_d = options == null ? void 0 : options.eslint) != null ? _d : {})),
     bundleProgress()
@@ -943,7 +921,7 @@ async function cli(args) {
   const beatsPkgJson = nodeutils.json.readJSONSync(
     nodePath.resolve(require.resolve(".."), "../../package.json")
   );
-  box(`@nfts/beats(${beatsPkgJson.version})`);
+  box(`@nfts/beats (${beatsPkgJson.version})`);
   const _a = nodeutils.parser(_args), {
     project,
     config: configPath,
@@ -957,7 +935,6 @@ async function cli(args) {
   ]);
   process.env.BEATS_VERBOSE = verbose ? String(verbose) : "undefined";
   process.env.BEATS_DEBUG = debug ? String(debug) : "undefined";
-  depsInfo();
   const tsConfig = nodeutils.json.readJSONSync(
     project != null ? project : tsconfig
   );
@@ -984,4 +961,3 @@ cli(process.argv.slice(1)).then(() => {
 
 exports.defineConfig = defineConfig;
 exports.tryReadConfig = tryReadConfig;
-//# sourceMappingURL=index.cjs.js.map
