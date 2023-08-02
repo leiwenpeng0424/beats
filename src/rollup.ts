@@ -282,10 +282,11 @@ async function dts({
         ? nodePath.dirname(output)
         : CONSTANTS.outputDir;
 
-    const outputBasename = inputBasename.replace(
-        nodePath.extname(inputBasename),
-        ".d.ts",
-    );
+    const ext = nodePath.extname(inputBasename);
+
+    const outputBasename = ext
+        ? inputBasename.replace(ext, ".d.ts")
+        : `${inputBasename ?? "index"}.d.ts`;
 
     if (config.dtsRollup) {
         await measure("dts", async () => {
