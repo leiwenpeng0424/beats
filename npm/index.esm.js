@@ -376,9 +376,6 @@ async function dtsGen({
         localBuild: true,
         showDiagnostics: false,
         showVerboseMessages: false,
-        // messageCallback(msg) {
-        //     console.log(msg.text);
-        // },
         typescriptCompilerFolder: nodePath.join(
           require.resolve("typescript"),
           "../.."
@@ -779,10 +776,8 @@ async function dts({
   const output = module || main;
   const inputBasename = nodePath.basename(input);
   const outputBasepath = output ? nodePath.dirname(output) : outputDir;
-  const outputBasename = inputBasename.replace(
-    nodePath.extname(inputBasename),
-    ".d.ts"
-  );
+  const ext = nodePath.extname(inputBasename);
+  const outputBasename = ext ? inputBasename.replace(ext, ".d.ts") : `${inputBasename != null ? inputBasename : "index"}.d.ts`;
   if (config.dtsRollup) {
     await measure("dts", async () => {
       var _a;

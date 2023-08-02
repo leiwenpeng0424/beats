@@ -154,7 +154,7 @@ export const bundle = async (
                     const start = Date.now();
                     await bundle_.generate(output_);
                     const output = await bundle_.write(output_);
-                    printOutput(input, output_.file!);
+                    printOutput(input, output_.file as string);
                     return {
                         ...output,
                         duration: Date.now() - start,

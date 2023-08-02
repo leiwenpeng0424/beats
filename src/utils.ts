@@ -182,6 +182,7 @@ export function resolveDtsEntryFromEntry(
  * Serialize async tasks.
  * @param tasks
  */
+// eslint-disable-next-line
 export async function serialize(tasks: (() => Promise<any>)[]) {
     return tasks.reduce((promise, next) => {
         return promise.then(() => {

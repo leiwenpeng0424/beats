@@ -2,7 +2,7 @@ import { type CLIOptions, tryReadConfig } from "@/configuration";
 import * as CONSTANTS from "@/constants";
 import { debugLog } from "@/log";
 import { startRollupBundle } from "@/rollup";
-import { cwd, depsInfo, box } from "@/utils";
+import { box, cwd } from "@/utils";
 import { json as Json, parser } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import type { ITSConfigJson } from "@nfts/tsc-json";

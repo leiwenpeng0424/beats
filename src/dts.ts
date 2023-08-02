@@ -143,9 +143,6 @@ export async function dtsGen({
                 localBuild: true,
                 showDiagnostics: false,
                 showVerboseMessages: false,
-                // messageCallback(msg) {
-                //     console.log(msg.text);
-                // },
                 typescriptCompilerFolder: nodePath.join(
                     require.resolve("typescript"),
                     "../..",
@@ -162,7 +159,7 @@ export async function dtsGen({
                 File.rmdirSync(nodePath.resolve(cwd(), declarationDir));
             }
 
-            printOutput(input!, nodePath.relative(cwd(), trimmedFile));
+            printOutput(input as string, nodePath.relative(cwd(), trimmedFile));
         }
     }
 }
