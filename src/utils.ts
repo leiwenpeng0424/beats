@@ -165,10 +165,10 @@ export function resolveDtsEntryFromEntry(
 ) {
     let entryUnshiftRoot = nodePath
         .join(cwd(), entry)
-        .replace(cwd() + "/", "")
-        .split("/")
+        .replace(cwd() + nodePath.sep, "")
+        .split(nodePath.sep)
         .slice(1)
-        .join("/")
+        .join(nodePath.sep)
         .replace(".ts", ".d.ts");
 
     if (!entryUnshiftRoot.endsWith(".d.ts")) {

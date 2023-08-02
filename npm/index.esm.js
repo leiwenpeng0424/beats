@@ -29,8 +29,8 @@ const verboseLog = (...args) => {
 };
 const debugLog = (...args) => {
   if (process.env.BEATS_DEBUG !== "undefined") {
+    console.log();
     console.debug(
-      "",
       colors.bgBlack(colors.cyan(colors.bold("debug:"))),
       ...args
     );
@@ -108,7 +108,7 @@ async function measure(mark, task) {
   );
 }
 function resolveDtsEntryFromEntry(declarationDir, entry) {
-  let entryUnshiftRoot = nodePath.join(cwd(), entry).replace(cwd() + "/", "").split("/").slice(1).join("/").replace(".ts", ".d.ts");
+  let entryUnshiftRoot = nodePath.join(cwd(), entry).replace(cwd() + nodePath.sep, "").split(nodePath.sep).slice(1).join(nodePath.sep).replace(".ts", ".d.ts");
   if (!entryUnshiftRoot.endsWith(".d.ts")) {
     entryUnshiftRoot += ".d.ts";
   }
@@ -348,7 +348,8 @@ async function dtsGen({
         },
         typeof tsConfigPath === "string" ? tsConfigPath : tsconfig
       );
-      const mainEntry = declarationDir ? resolveDtsEntryFromEntry(declarationDir, input) : input.replace(nodePath.extname(input), ".d.ts");
+      const ext = nodePath.extname(input);
+      const mainEntry = declarationDir ? resolveDtsEntryFromEntry(declarationDir, input) : ext ? input.replace(nodePath.extname(input), ".d.ts") : `${input}.d.ts`;
       const trimmedFile = dtsFileName || dtsEntry;
       const config = ExtractorConfig.prepare({
         configObjectFullPath: void 0,
@@ -953,3 +954,4 @@ cli(process.argv.slice(1)).then(() => {
 });
 
 export { defineConfig, tryReadConfig };
+//# sourceMappingURL=index.esm.js.map

@@ -18,8 +18,8 @@ export const verboseLog = (...args: any[]) => {
 // eslint-disable-next-line
 export const debugLog = (...args: any[]) => {
     if (process.env.BEATS_DEBUG !== "undefined") {
+        console.log();
         console.debug(
-            "",
             colors.bgBlack(colors.cyan(colors.bold("debug:"))),
             ...args,
         );

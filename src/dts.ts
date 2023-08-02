@@ -110,9 +110,13 @@ export async function dtsGen({
                     : CONSTANTS.tsconfig,
             );
 
+            const ext = nodePath.extname(input);
+
             const mainEntry = declarationDir
                 ? resolveDtsEntryFromEntry(declarationDir, input)
-                : input.replace(nodePath.extname(input), ".d.ts");
+                : ext
+                ? input.replace(nodePath.extname(input), ".d.ts")
+                : `${input}.d.ts`;
 
             const trimmedFile = dtsFileName || CONSTANTS.dtsEntry;
 
