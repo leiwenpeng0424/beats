@@ -2,8 +2,8 @@
     "name": "@nfts/beats",
     "version": "0.0.14",
     "description": "",
-    "main": "npm/index.cjs.js",
-    "module": "npm/index.esm.js",
+    "main": "npm/index.cjs",
+    "module": "npm/index.mjs",
     "types": "npm/index.d.ts",
     "bin": {
         "beats": "bin/beats"

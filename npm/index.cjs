@@ -1,15 +1,17 @@
-import { colors, module_, json, file, ms, parser } from '@nfts/nodeutils';
-import nodePath, { extname } from 'node:path';
-import nodeFs from 'node:fs/promises';
-import { transform } from 'esbuild';
-import ts, { sys, createCompilerHost, createProgram, formatDiagnosticsWithColorAndContext } from 'typescript';
-import { ExtractorConfig, Extractor } from '@microsoft/api-extractor';
-import commonjs from '@rollup/plugin-commonjs';
-import eslint from '@rollup/plugin-eslint';
-import nodeResolve from '@rollup/plugin-node-resolve';
-import Module from 'node:module';
-import { watch, rollup } from 'rollup';
-import styles from 'rollup-plugin-styles';
+'use strict';
+
+var nodeutils = require('@nfts/nodeutils');
+var nodePath = require('node:path');
+var nodeFs = require('node:fs/promises');
+var esbuild$1 = require('esbuild');
+var ts = require('typescript');
+var apiExtractor = require('@microsoft/api-extractor');
+var commonjs = require('@rollup/plugin-commonjs');
+var eslint = require('@rollup/plugin-eslint');
+var nodeResolve = require('@rollup/plugin-node-resolve');
+var Module = require('node:module');
+var rollup = require('rollup');
+var styles = require('rollup-plugin-styles');
 
 const tsconfig = "./tsconfig.json";
 const packagejson = "./package.json";
@@ -31,7 +33,7 @@ const debugLog = (...args) => {
   if (process.env.BEATS_DEBUG !== "undefined") {
     console.log();
     console.debug(
-      colors.bgBlack(colors.cyan(colors.bold("debug:"))),
+      nodeutils.colors.bgBlack(nodeutils.colors.cyan(nodeutils.colors.bold("debug:"))),
       ...args
     );
   }
@@ -55,17 +57,17 @@ const normalizeCliInput = (input) => {
 };
 function printOutput(input, output) {
   console.log(
-    colors.bgBlack(
-      colors.bold(colors.cyan(nodePath.relative(cwd(), input)))
+    nodeutils.colors.bgBlack(
+      nodeutils.colors.bold(nodeutils.colors.cyan(nodePath.relative(cwd(), input)))
     ),
-    colors.cyan("\u27A1\uFE0E"),
-    colors.cyan(output)
+    nodeutils.colors.cyan("\u27A1\uFE0E"),
+    nodeutils.colors.cyan(output)
   );
 }
 const v = "";
 function box(text) {
   console.log(
-    colors.cyan("\u256D") + Array(Math.round(process.stdout.columns - 2)).fill(colors.cyan("\u2500")).join("") + colors.cyan("\u256E")
+    nodeutils.colors.cyan("\u256D") + Array(Math.round(process.stdout.columns - 2)).fill(nodeutils.colors.cyan("\u2500")).join("") + nodeutils.colors.cyan("\u256E")
   );
   let s = "";
   const lineWidth = process.stdout.columns;
@@ -75,20 +77,20 @@ function box(text) {
   const halfEmptyLength = Math.ceil(
     (lineWidth - textLength - (isOdd ? 2 : 3)) / 2
   );
-  s += colors.cyan(v);
+  s += nodeutils.colors.cyan(v);
   s += Array(emptyLength).fill(" ").join("");
-  s += colors.cyan(v);
-  s += colors.cyan(v);
+  s += nodeutils.colors.cyan(v);
+  s += nodeutils.colors.cyan(v);
   s += Array(halfEmptyLength).fill(" ").join("");
-  s += colors.cyan(text);
+  s += nodeutils.colors.cyan(text);
   s += Array(halfEmptyLength).fill(" ").join("");
-  s += colors.cyan(v);
-  s += colors.cyan(v);
+  s += nodeutils.colors.cyan(v);
+  s += nodeutils.colors.cyan(v);
   s += Array(emptyLength).fill(" ").join("");
-  s += colors.cyan(v);
+  s += nodeutils.colors.cyan(v);
   console.log(s);
   console.log(
-    colors.cyan("\u2570") + Array(Math.round(process.stdout.columns - 2)).fill(colors.cyan("\u2500")).join("") + colors.cyan("\u256F")
+    nodeutils.colors.cyan("\u2570") + Array(Math.round(process.stdout.columns - 2)).fill(nodeutils.colors.cyan("\u2500")).join("") + nodeutils.colors.cyan("\u256F")
   );
   console.log("");
 }
@@ -102,8 +104,8 @@ async function measure(mark, task) {
     `${mark} end`
   );
   verboseLog(
-    colors.bgBlack(
-      colors.white(colors.bold(`${mark} duration: ${measure2.duration}`))
+    nodeutils.colors.bgBlack(
+      nodeutils.colors.white(nodeutils.colors.bold(`${mark} duration: ${measure2.duration}`))
     )
   );
 }
@@ -191,7 +193,7 @@ async function tryReadConfig({
     }
   }
   if (configPath) {
-    config = module_.import_(configPath);
+    config = nodeutils.module_.import_(configPath);
     if (!config.bundle) {
       Object.assign(config, {
         bundle: getOutputFromPackageJson(
@@ -284,10 +286,10 @@ function createCompilerProgram(tsConfigCompilerOptions, tsconfig) {
     tsConfigCompilerOptions,
     {
       useCaseSensitiveFileNames: true,
-      getCurrentDirectory: sys.getCurrentDirectory,
-      readDirectory: sys.readDirectory,
-      fileExists: sys.fileExists,
-      readFile: sys.readFile,
+      getCurrentDirectory: ts.sys.getCurrentDirectory,
+      readDirectory: ts.sys.readDirectory,
+      fileExists: ts.sys.fileExists,
+      readFile: ts.sys.readFile,
       onUnRecoverableConfigFileDiagnostic: function(diagnostic) {
         console.log(
           `onUnRecoverableConfigFileDiagnostic`,
@@ -296,9 +298,9 @@ function createCompilerProgram(tsConfigCompilerOptions, tsconfig) {
       }
     }
   );
-  const host = createCompilerHost(tsConfigCompilerOptions);
+  const host = ts.createCompilerHost(tsConfigCompilerOptions);
   if (config) {
-    return createProgram({
+    return ts.createProgram({
       host,
       options: config.options,
       rootNames: config.fileNames,
@@ -321,12 +323,12 @@ async function dtsGen({
   let tsConfig;
   let tsConfigPath = tsConfigFile;
   if (tsConfigFile) {
-    tsConfig = await json.readJSON(tsConfigFile);
+    tsConfig = await nodeutils.json.readJSON(tsConfigFile);
   } else {
-    const tsConfigFile2 = file.findFile(`tsconfig.json`, process.cwd());
+    const tsConfigFile2 = nodeutils.file.findFile(`tsconfig.json`, process.cwd());
     if (tsConfigFile2) {
       tsConfigPath = tsConfigFile2;
-      tsConfig = await json.readJSON(tsConfigFile2);
+      tsConfig = await nodeutils.json.readJSON(tsConfigFile2);
     } else {
       throw Error(`Can't find tsconfig.json from current project`);
     }
@@ -350,8 +352,12 @@ async function dtsGen({
       );
       const ext = nodePath.extname(input);
       const mainEntry = declarationDir ? resolveDtsEntryFromEntry(declarationDir, input) : ext ? input.replace(nodePath.extname(input), ".d.ts") : `${input}.d.ts`;
+      const content = await nodeFs.readFile(mainEntry);
+      if (content.toString() === "") {
+        return;
+      }
       const trimmedFile = dtsFileName || dtsEntry;
-      const config = ExtractorConfig.prepare({
+      const config = apiExtractor.ExtractorConfig.prepare({
         configObjectFullPath: void 0,
         packageJsonFullPath,
         ignoreMissingEntryPoint: true,
@@ -373,7 +379,7 @@ async function dtsGen({
           }
         }
       });
-      const extractorResult = Extractor.invoke(config, {
+      const extractorResult = apiExtractor.Extractor.invoke(config, {
         localBuild: true,
         showDiagnostics: false,
         showVerboseMessages: false,
@@ -384,7 +390,7 @@ async function dtsGen({
       });
       if (extractorResult.succeeded) ;
       if (declarationDir) {
-        file.rmdirSync(nodePath.resolve(cwd(), declarationDir));
+        nodeutils.file.rmdirSync(nodePath.resolve(cwd(), declarationDir));
       }
       printOutput(input, nodePath.relative(cwd(), trimmedFile));
     }
@@ -423,7 +429,7 @@ function esbuild({
   let program;
   let tsConfigJson;
   try {
-    tsConfigJson = json.readJSONSync(tsConfigFile);
+    tsConfigJson = nodeutils.json.readJSONSync(tsConfigFile);
   } catch (_) {
   }
   const tsconfigRaw = {
@@ -459,7 +465,7 @@ function esbuild({
     },
     async transform(code, id) {
       var _a2, _b2, _c2;
-      const ext = extname(id);
+      const ext = nodePath.extname(id);
       const loader = EsbuildLoaders[ext];
       if (!loader) {
         return null;
@@ -475,7 +481,7 @@ function esbuild({
           tsErrors = tsErrors.concat(diagnostics);
         }
       }
-      const result = await transform(code, __spreadValues$2({
+      const result = await esbuild$1.transform(code, __spreadValues$2({
         loader,
         target: "es2017",
         sourcefile: id,
@@ -489,13 +495,13 @@ function esbuild({
     },
     buildEnd() {
       if (tsErrors.length > 0) {
-        const formattedDiagnostics = formatDiagnosticsWithColorAndContext(tsErrors, {
-          getCurrentDirectory: sys.getCurrentDirectory,
+        const formattedDiagnostics = ts.formatDiagnosticsWithColorAndContext(tsErrors, {
+          getCurrentDirectory: ts.sys.getCurrentDirectory,
           getCanonicalFileName: (fileName) => {
             return fileName;
           },
           getNewLine: () => {
-            return sys.newLine;
+            return ts.sys.newLine;
           }
         });
         this.error(formattedDiagnostics);
@@ -662,7 +668,7 @@ const bundle = async (options, config, pkgJson) => {
   try {
     for (var iter = __forAwait(options), more, temp, error; more = !(temp = await iter.next()).done; more = false) {
       const option = temp.value;
-      const bundle_ = await rollup(option);
+      const bundle_ = await rollup.rollup(option);
       let { output } = option;
       const { input } = option;
       if (output) {
@@ -712,7 +718,7 @@ const watch_ = async (options, {
   end,
   error
 } = {}) => {
-  const watcher = watch(options);
+  const watcher = rollup.watch(options);
   let firstRun = true;
   let startTime;
   try {
@@ -741,13 +747,13 @@ const watch_ = async (options, {
             end == null ? void 0 : end().finally(() => {
               if (firstRun) {
                 console.log(
-                  `Bundle end in ${ms(
+                  `Bundle end in ${nodeutils.ms(
                     ( new Date()).getTime() - startTime
                   )}`
                 );
               } else {
                 console.log(
-                  `Re-bundle end ${ms(
+                  `Re-bundle end ${nodeutils.ms(
                     ( new Date()).getTime() - startTime
                   )}`
                 );
@@ -911,12 +917,12 @@ var __objRest = (source, exclude) => {
 };
 async function cli(args) {
   const [, ..._args] = args;
-  const pkgJson = json.readJSONSync(packagejson);
-  const beatsPkgJson = json.readJSONSync(
+  const pkgJson = nodeutils.json.readJSONSync(packagejson);
+  const beatsPkgJson = nodeutils.json.readJSONSync(
     nodePath.resolve(require.resolve(".."), "../../package.json")
   );
   box(`@nfts/beats (${beatsPkgJson.version})`);
-  const _a = parser(_args), {
+  const _a = nodeutils.parser(_args), {
     project,
     config: configPath,
     debug,
@@ -929,7 +935,7 @@ async function cli(args) {
   ]);
   process.env.BEATS_VERBOSE = verbose ? String(verbose) : "undefined";
   process.env.BEATS_DEBUG = debug ? String(debug) : "undefined";
-  const tsConfig = json.readJSONSync(
+  const tsConfig = nodeutils.json.readJSONSync(
     project != null ? project : tsconfig
   );
   debugLog(
@@ -953,5 +959,6 @@ cli(process.argv.slice(1)).then(() => {
   console.error(e);
 });
 
-export { defineConfig, tryReadConfig };
-//# sourceMappingURL=index.esm.js.map
+exports.defineConfig = defineConfig;
+exports.tryReadConfig = tryReadConfig;
+//# sourceMappingURL=index.cjs.map

@@ -10,6 +10,7 @@ import ts, {
     createProgram,
     sys,
 } from "typescript";
+import nodeFs from "node:fs/promises";
 
 export function createCompilerProgram(
     tsConfigCompilerOptions: CompilerOptions,
@@ -117,6 +118,13 @@ export async function dtsGen({
                 : ext
                 ? input.replace(nodePath.extname(input), ".d.ts")
                 : `${input}.d.ts`;
+
+            const content = await nodeFs.readFile(mainEntry);
+
+            // Fix #1
+            if (content.toString() === "") {
+                return;
+            }
 
             const trimmedFile = dtsFileName || CONSTANTS.dtsEntry;
 
