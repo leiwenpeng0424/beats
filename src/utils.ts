@@ -78,51 +78,6 @@ export function printOutput(input: string, output: string) {
     );
 }
 
-const v = "";
-
-export function box(text: string) {
-    console.log(
-        colors.cyan("╭") +
-            Array(Math.round(process.stdout.columns - 2))
-                .fill(colors.cyan("─"))
-                .join("") +
-            colors.cyan("╮"),
-    );
-    let s = "";
-
-    const lineWidth = process.stdout.columns;
-    const textLength = text.length;
-    const emptyLength = Math.ceil(lineWidth - 2);
-
-    const isOdd = (lineWidth - textLength - 2) % 2 === 0;
-
-    const halfEmptyLength = Math.ceil(
-        (lineWidth - textLength - (isOdd ? 2 : 3)) / 2,
-    );
-
-    s += colors.cyan(v);
-    s += Array(emptyLength).fill(" ").join("");
-    s += colors.cyan(v);
-    s += colors.cyan(v);
-    s += Array(halfEmptyLength).fill(" ").join("");
-    s += colors.cyan(text);
-    s += Array(halfEmptyLength).fill(" ").join("");
-    s += colors.cyan(v);
-    s += colors.cyan(v);
-    s += Array(emptyLength).fill(" ").join("");
-    s += colors.cyan(v);
-
-    console.log(s);
-    console.log(
-        colors.cyan("╰") +
-            Array(Math.round(process.stdout.columns - 2))
-                .fill(colors.cyan("─"))
-                .join("") +
-            colors.cyan("╯"),
-    );
-    console.log("");
-}
-
 export function measureSync(mark: string, task: () => void) {
     performance.mark(`${mark} start`);
     task();
@@ -189,4 +144,27 @@ export async function serialize(tasks: (() => Promise<any>)[]) {
             return next();
         });
     }, Promise.resolve());
+}
+
+/**
+ * Split text by length.
+ * @param str
+ * @param len
+ */
+export function strSplitByLength(str: string, len: number): string[] {
+    const result = str.match(new RegExp(`(.{1,${len}})`, "g"));
+    return result ?? [];
+}
+
+/** @link https://github.com/chalk/strip-ansi/blob/main/index.js */
+export function stripAnsi(
+    text: string,
+    { onlyFirst }: { onlyFirst: boolean } = { onlyFirst: true },
+) {
+    const pattern = [
+        "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
+        "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))",
+    ].join("|");
+    const regexp = new RegExp(pattern, onlyFirst ? undefined : "g");
+    return text.replace(regexp, "");
 }

@@ -3,7 +3,6 @@ import bundleProgress from "@/plugins/bundleProgress";
 import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
 import esbuild from "@/plugins/esbuild";
 import {
-    clearScreen,
     cwd,
     isSameRollupInput,
     measure,
@@ -32,6 +31,7 @@ import { dtsGen } from "@/dts";
 import { verboseLog } from "@/log";
 import alias, { RollupAliasOptions } from "@/plugins/alias";
 import styles from "rollup-plugin-styles";
+import Terminal from "./terminal";
 
 export const Extensions = [
     ".js",
@@ -187,6 +187,7 @@ export const bundle = async (
  */
 export const watch_ = async (
     options: RollupWatchOptions | RollupWatchOptions[],
+    term: Terminal,
     {
         bundleEnd,
         bundleStart,
@@ -203,19 +204,17 @@ export const watch_ = async (
 ) => {
     const watcher = watch(options);
     let firstRun = true;
-
     let startTime: number;
-
     try {
         await new Promise<void>(() => {
             watcher.on(`event`, (e) => {
                 const code = e.code;
                 switch (code) {
                     case "START": {
-                        clearScreen();
+                        term.clearScreen();
                         start?.();
                         if (firstRun) {
-                            console.log(`Start rollup watching bundle.`);
+                            term.writeLine(`Start rollup watching bundle.`);
                         }
                         startTime = new Date().getTime();
                         break;
@@ -234,13 +233,13 @@ export const watch_ = async (
                     case "END": {
                         end?.().finally(() => {
                             if (firstRun) {
-                                console.log(
+                                term.writeLine(
                                     `Bundle end in ${ms(
                                         new Date().getTime() - startTime,
                                     )}`,
                                 );
                             } else {
-                                console.log(
+                                term.writeLine(
                                     `Re-bundle end ${ms(
                                         new Date().getTime() - startTime,
                                     )}`,
@@ -253,7 +252,9 @@ export const watch_ = async (
                     }
                     case "ERROR": {
                         error?.();
-                        console.error(`Rollup bundle error: `, e);
+                        term.clearScreen().writeLine(
+                            `Bundle Error: ${e.error.message}`,
+                        );
                         break;
                     }
                 }
@@ -306,12 +307,15 @@ async function dts({
  * @param config
  * @param pkgJson
  * @param tsConfig
+ * @param term
  */
 export async function startRollupBundle({
     config,
     pkgJson,
     tsConfig,
+    term,
 }: {
+    term: Terminal;
     config: Config;
     pkgJson: IPackageJson;
     tsConfig: ITSConfigJson;
@@ -319,7 +323,6 @@ export async function startRollupBundle({
     const paths = tsConfig.compilerOptions?.paths ?? {};
 
     const {
-        // Plugins
         eslint,
         commonjs,
         nodeResolve,
@@ -400,7 +403,7 @@ export async function startRollupBundle({
     }
 
     if (watch) {
-        await watch_(bundles, {
+        await watch_(bundles, term, {
             async end() {
                 await Promise.all(
                     bundles.map(async (opts) => {

@@ -12,6 +12,7 @@ var nodeResolve = require('@rollup/plugin-node-resolve');
 var Module = require('node:module');
 var rollup = require('rollup');
 var styles = require('rollup-plugin-styles');
+var readline = require('node:readline');
 
 const tsconfig = "./tsconfig.json";
 const packagejson = "./package.json";
@@ -29,17 +30,7 @@ const verboseLog = (...args) => {
     console.log(...args);
   }
 };
-const debugLog = (...args) => {
-  if (process.env.BEATS_DEBUG !== "undefined") {
-    console.log();
-    console.debug(
-      nodeutils.colors.bgBlack(nodeutils.colors.cyan(nodeutils.colors.bold("debug:"))),
-      ...args
-    );
-  }
-};
 
-const clearScreen = () => process.stdout.write("\x1Bc");
 const cwd = () => process.cwd();
 const isSameRollupInput = (input1, input2) => {
   const type1 = typeof input1;
@@ -63,36 +54,6 @@ function printOutput(input, output) {
     nodeutils.colors.cyan("\u27A1\uFE0E"),
     nodeutils.colors.cyan(output)
   );
-}
-const v = "";
-function box(text) {
-  console.log(
-    nodeutils.colors.cyan("\u256D") + Array(Math.round(process.stdout.columns - 2)).fill(nodeutils.colors.cyan("\u2500")).join("") + nodeutils.colors.cyan("\u256E")
-  );
-  let s = "";
-  const lineWidth = process.stdout.columns;
-  const textLength = text.length;
-  const emptyLength = Math.ceil(lineWidth - 2);
-  const isOdd = (lineWidth - textLength - 2) % 2 === 0;
-  const halfEmptyLength = Math.ceil(
-    (lineWidth - textLength - (isOdd ? 2 : 3)) / 2
-  );
-  s += nodeutils.colors.cyan(v);
-  s += Array(emptyLength).fill(" ").join("");
-  s += nodeutils.colors.cyan(v);
-  s += nodeutils.colors.cyan(v);
-  s += Array(halfEmptyLength).fill(" ").join("");
-  s += nodeutils.colors.cyan(text);
-  s += Array(halfEmptyLength).fill(" ").join("");
-  s += nodeutils.colors.cyan(v);
-  s += nodeutils.colors.cyan(v);
-  s += Array(emptyLength).fill(" ").join("");
-  s += nodeutils.colors.cyan(v);
-  console.log(s);
-  console.log(
-    nodeutils.colors.cyan("\u2570") + Array(Math.round(process.stdout.columns - 2)).fill(nodeutils.colors.cyan("\u2500")).join("") + nodeutils.colors.cyan("\u256F")
-  );
-  console.log("");
 }
 async function measure(mark, task) {
   performance.mark(`${mark} start`);
@@ -122,6 +83,18 @@ async function serialize(tasks) {
       return next();
     });
   }, Promise.resolve());
+}
+function strSplitByLength(str, len) {
+  const result = str.match(new RegExp(`(.{1,${len}})`, "g"));
+  return result != null ? result : [];
+}
+function stripAnsi(text, { onlyFirst } = { onlyFirst: true }) {
+  const pattern = [
+    "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
+    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))"
+  ].join("|");
+  const regexp = new RegExp(pattern, onlyFirst ? void 0 : "g");
+  return text.replace(regexp, "");
 }
 
 var __knownSymbol$2 = (name, symbol) => {
@@ -397,19 +370,19 @@ async function dtsGen({
   }
 }
 
-var __defProp$2 = Object.defineProperty;
+var __defProp$3 = Object.defineProperty;
 var __getOwnPropSymbols$2 = Object.getOwnPropertySymbols;
 var __hasOwnProp$2 = Object.prototype.hasOwnProperty;
 var __propIsEnum$2 = Object.prototype.propertyIsEnumerable;
-var __defNormalProp$2 = (obj, key, value) => key in obj ? __defProp$2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __defNormalProp$3 = (obj, key, value) => key in obj ? __defProp$3(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __spreadValues$2 = (a, b) => {
   for (var prop in b || (b = {}))
     if (__hasOwnProp$2.call(b, prop))
-      __defNormalProp$2(a, prop, b[prop]);
+      __defNormalProp$3(a, prop, b[prop]);
   if (__getOwnPropSymbols$2)
     for (var prop of __getOwnPropSymbols$2(b)) {
       if (__propIsEnum$2.call(b, prop))
-        __defNormalProp$2(a, prop, b[prop]);
+        __defNormalProp$3(a, prop, b[prop]);
     }
   return a;
 };
@@ -571,7 +544,7 @@ function alias({ alias: alias2 }) {
   };
 }
 
-var __defProp$1 = Object.defineProperty;
+var __defProp$2 = Object.defineProperty;
 var __defProps$1 = Object.defineProperties;
 var __getOwnPropDescs$1 = Object.getOwnPropertyDescriptors;
 var __getOwnPropSymbols$1 = Object.getOwnPropertySymbols;
@@ -582,15 +555,15 @@ var __knownSymbol = (name, symbol) => {
     return symbol;
   throw Error("Symbol." + name + " is not defined");
 };
-var __defNormalProp$1 = (obj, key, value) => key in obj ? __defProp$1(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __defNormalProp$2 = (obj, key, value) => key in obj ? __defProp$2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __spreadValues$1 = (a, b) => {
   for (var prop in b || (b = {}))
     if (__hasOwnProp$1.call(b, prop))
-      __defNormalProp$1(a, prop, b[prop]);
+      __defNormalProp$2(a, prop, b[prop]);
   if (__getOwnPropSymbols$1)
     for (var prop of __getOwnPropSymbols$1(b)) {
       if (__propIsEnum$1.call(b, prop))
-        __defNormalProp$1(a, prop, b[prop]);
+        __defNormalProp$2(a, prop, b[prop]);
     }
   return a;
 };
@@ -711,7 +684,7 @@ const bundle = async (options, config, pkgJson) => {
   }
   return bundles;
 };
-const watch_ = async (options, {
+const watch_ = async (options, term, {
   bundleEnd,
   bundleStart,
   start,
@@ -727,10 +700,10 @@ const watch_ = async (options, {
         const code = e.code;
         switch (code) {
           case "START": {
-            clearScreen();
+            term.clearScreen();
             start == null ? void 0 : start();
             if (firstRun) {
-              console.log(`Start rollup watching bundle.`);
+              term.writeLine(`Start rollup watching bundle.`);
             }
             startTime = (/* @__PURE__ */ new Date()).getTime();
             break;
@@ -746,13 +719,13 @@ const watch_ = async (options, {
           case "END": {
             end == null ? void 0 : end().finally(() => {
               if (firstRun) {
-                console.log(
+                term.writeLine(
                   `Bundle end in ${nodeutils.ms(
                     ( new Date()).getTime() - startTime
                   )}`
                 );
               } else {
-                console.log(
+                term.writeLine(
                   `Re-bundle end ${nodeutils.ms(
                     ( new Date()).getTime() - startTime
                   )}`
@@ -764,7 +737,9 @@ const watch_ = async (options, {
           }
           case "ERROR": {
             error == null ? void 0 : error();
-            console.error(`Rollup bundle error: `, e);
+            term.clearScreen().writeLine(
+              `Bundle Error: ${e.error.message}`
+            );
             break;
           }
         }
@@ -799,12 +774,12 @@ async function dts({
 async function startRollupBundle({
   config,
   pkgJson,
-  tsConfig
+  tsConfig,
+  term
 }) {
   var _a, _b;
   const paths = (_b = (_a = tsConfig.compilerOptions) == null ? void 0 : _a.paths) != null ? _b : {};
   const {
-    // Plugins
     eslint: eslint2,
     commonjs: commonjs2,
     nodeResolve: nodeResolve2,
@@ -863,7 +838,7 @@ async function startRollupBundle({
     }, []);
   }
   if (watch2) {
-    await watch_(bundles, {
+    await watch_(bundles, term, {
       async end() {
         await Promise.all(
           bundles.map(async (opts) => {
@@ -881,6 +856,115 @@ async function startRollupBundle({
       const tasks = await bundle(bundles, config, pkgJson);
       await serialize(tasks);
     });
+  }
+}
+
+var __defProp$1 = Object.defineProperty;
+var __defNormalProp$1 = (obj, key, value) => key in obj ? __defProp$1(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp$1(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+class Terminal {
+  constructor() {
+    __publicField(this, "stdin", process.stdin);
+    __publicField(this, "stdout", process.stdout);
+    __publicField(this, "x");
+    __publicField(this, "y");
+    __publicField(this, "maxCols");
+    __publicField(this, "rl");
+    this.rl = readline.createInterface({
+      input: this.stdin,
+      output: this.stdout,
+      historySize: 0,
+      removeHistoryDuplicates: true,
+      tabSize: 4,
+      prompt: "",
+      terminal: process.stdout.isTTY
+    });
+    const pos = this.rl.getCursorPos();
+    this.x = pos.cols;
+    this.y = pos.rows;
+    this.maxCols = process.stdout.columns;
+  }
+  _write(content) {
+    readline.clearScreenDown(this.stdin);
+    const segments = strSplitByLength(content, this.maxCols);
+    segments.forEach((text) => {
+      this.rl.write(text);
+      this.y += 1;
+    });
+    return this;
+  }
+  nextLine() {
+    this.y += 1;
+    this.rl.write("\r");
+    return this;
+  }
+  clearLine(cb) {
+    process.stdout.cursorTo(0);
+    process.stdout.clearLine(1, () => {
+      cb == null ? void 0 : cb();
+    });
+    return this;
+  }
+  writeSameLine(content) {
+    this.clearLine(() => {
+      this._write(content);
+    });
+    return this;
+  }
+  writeLine(content, options = {
+    endWithNewLine: false
+  }) {
+    this._write(content);
+    if (options.endWithNewLine) {
+      this.nextLine();
+    }
+    return this;
+  }
+  clearScreen() {
+    this.x = 0;
+    this.y = 0;
+    readline.cursorTo(this.stdin, this.x, this.y);
+    readline.clearScreenDown(this.stdin);
+    return this;
+  }
+  box(content) {
+    this.nextLine();
+    this.writeLine(
+      `\u256D${Array(this.maxCols - 2).fill("\u2500").join("")}\u256E`
+    );
+    const padding = 4;
+    const writeCenter = (text) => {
+      const originLen = text.length;
+      const stripLen = stripAnsi(text).length;
+      const len = stripAnsi(text).length - (originLen - stripLen) - 0;
+      const restLen = this.maxCols - padding * 2;
+      if (restLen < len) {
+        strSplitByLength(text, restLen).forEach((t) => {
+          writeCenter(t);
+        });
+      } else {
+        const left = Math.ceil((restLen - len) / 2);
+        const leftPadding = "\u2502" + Array(left + padding - 1).fill(" ").join("");
+        const rightPadding = Array(restLen - left - len + padding - 1).fill(" ").join("") + "\u2502";
+        this.writeLine(`${leftPadding}${text}${rightPadding}`);
+      }
+    };
+    const contents = [
+      " ",
+      typeof content === "string" ? content : content,
+      " "
+    ].flat();
+    contents.forEach((t) => {
+      writeCenter(t);
+    });
+    this.writeLine(
+      `\u2570${Array(this.maxCols - 2).fill("\u2500").join("")}\u256F`
+    );
+    this.nextLine();
+    return this;
   }
 }
 
@@ -921,7 +1005,12 @@ async function cli(args) {
   const beatsPkgJson = nodeutils.json.readJSONSync(
     nodePath.resolve(require.resolve(".."), "../../package.json")
   );
-  box(`@nfts/beats (${beatsPkgJson.version})`);
+  const term = new Terminal();
+  term.clearScreen().box([
+    nodeutils.colors.red(`@nfts/beats(${beatsPkgJson.version})`),
+    ` `,
+    nodeutils.colors.cyan(`This a message!!!`)
+  ]);
   const _a = nodeutils.parser(_args), {
     project,
     config: configPath,
@@ -938,15 +1027,12 @@ async function cli(args) {
   const tsConfig = nodeutils.json.readJSONSync(
     project != null ? project : tsconfig
   );
-  debugLog(
-    `tsconfig -> ${nodePath.join(cwd(), project != null ? project : tsconfig)}
-`
-  );
   const config = await tryReadConfig({
     configPath,
     pkgJson
   });
   return startRollupBundle({
+    term,
     config: __spreadProps(__spreadValues(__spreadValues({}, config), restInputOptions), {
       project
     }),
@@ -955,8 +1041,10 @@ async function cli(args) {
   });
 }
 cli(process.argv.slice(1)).then(() => {
+  process.exit(0);
 }).catch((e) => {
   console.error(e);
+  process.exit();
 });
 
 exports.defineConfig = defineConfig;

@@ -1,12 +1,11 @@
-import { type CLIOptions, tryReadConfig } from "@/configuration";
+import { tryReadConfig, type CLIOptions } from "@/configuration";
 import * as CONSTANTS from "@/constants";
-import { debugLog } from "@/log";
 import { startRollupBundle } from "@/rollup";
-import { box, cwd } from "@/utils";
-import { json as Json, parser } from "@nfts/nodeutils";
+import { json as Json, colors, parser } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import type { ITSConfigJson } from "@nfts/tsc-json";
 import nodePath from "node:path";
+import Terminal from "./terminal";
 
 async function cli(args: string[]) {
     const [, ..._args] = args;
@@ -15,7 +14,13 @@ async function cli(args: string[]) {
         nodePath.resolve(require.resolve(".."), "../../package.json"),
     );
 
-    box(`@nfts/beats (${beatsPkgJson.version})`);
+    const term = new Terminal();
+
+    term.clearScreen().box([
+        colors.red(`@nfts/beats(${beatsPkgJson.version})`),
+        ` `,
+        colors.cyan(`This a message!!!`),
+    ]);
 
     const {
         project,
@@ -32,16 +37,13 @@ async function cli(args: string[]) {
         project ?? CONSTANTS.tsconfig,
     );
 
-    debugLog(
-        `tsconfig -> ${nodePath.join(cwd(), project ?? CONSTANTS.tsconfig)}\n`,
-    );
-
     const config = await tryReadConfig({
         configPath,
         pkgJson,
     });
 
     return startRollupBundle({
+        term,
         config: {
             ...config,
             ...restInputOptions,
@@ -54,8 +56,9 @@ async function cli(args: string[]) {
 
 cli(process.argv.slice(1))
     .then(() => {
-        //
+        process.exit(0);
     })
     .catch((e) => {
         console.error(e);
+        process.exit();
     });
