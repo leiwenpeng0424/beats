@@ -1,0 +1,21 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "outDir": "bundle",
+        "lib": ["es2020"],
+        "module": "CommonJS",
+        "target": "ESNext",
+        "importHelpers": true,
+        "strict": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+
+        "declaration": true,
+        "declarationDir": ".declarations",
+        "jsx": "react"
+    },
+    "include": ["src/", "./typings.d.ts"]
+}

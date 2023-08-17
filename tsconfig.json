@@ -4,26 +4,24 @@
         // module
         "lib": ["es2020", "dom"],
         "module": "CommonJS",
-        "target": "ESNext",
-        "skipLibCheck": true,
-        "esModuleInterop": true,
         "moduleResolution": "node",
+        "target": "ESNext",
 
         // code style
-        "strict": true,
-        "alwaysStrict": true,
-        "importHelpers": false,
         "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true,
+        "downlevelIteration": true,
+        "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
+        "importHelpers": false,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "strict": true,
 
         // declaration
         "declaration": true,
-        "declarationDir": ".dts",
-
-        // path alias
-        "paths": {
-            "@/*": ["./src/*"]
-        }
+        "declarationDir": ".declaration"
     },
-    "include": ["src/"]
+    "exclude": ["**/npm", "**/node_modules"]
 }
+

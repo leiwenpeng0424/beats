@@ -1,0 +1,12 @@
+{
+    "name": "bin-gen",
+    "version": "0.0.0",
+    "main": "./dist/index.cjs",
+    "scripts": {
+        "build": "beats --clean --debug"
+    },
+    "bin": {
+        "beats": "./bin/beats.js",
+        "beatsx": "./bin/beatsx.js"
+    }
+}

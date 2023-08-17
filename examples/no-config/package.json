@@ -1,0 +1,9 @@
+{
+    "name": "no-config",
+    "version": "0.0.0",
+    "main": "./index.bundle.js",
+    "types": "./index.d.ts",
+    "scripts": {
+        "build": "beats"
+    }
+}

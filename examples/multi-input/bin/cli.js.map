@@ -1,0 +1,1 @@
+{"version":3,"file":"cli.js","sources":["../src/cli.ts"],"sourcesContent":["export function a() {\r\n    return \"Cli\";\r\n}\r\nconsole.log(`CLI`);\r\n"],"names":[],"mappings":";;AAAO,SAAS,CAAC,EAAE,CAAC,OAAM,KAAK,CAAC,OAAO,CAAC,GAAG,CAAC,KAAK,CAAC;;;;"}

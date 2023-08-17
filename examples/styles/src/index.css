@@ -1,0 +1,6 @@
+@import "index2.css";
+@import "index3.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

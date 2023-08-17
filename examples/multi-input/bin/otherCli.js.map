@@ -1,0 +1,1 @@
+{"version":3,"file":"otherCli.js","sources":["../src/otherCli.ts"],"sourcesContent":["export function b() {\r\n    return \"otherCli\";\r\n}\r\n"],"names":[],"mappings":";;AAAO,SAAS,CAAC,EAAE,CAAC,OAAM,UAAU;;;;"}

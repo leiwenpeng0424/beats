@@ -1,0 +1,13 @@
+{
+    "name": "alias",
+    "version": "1.0.0",
+    "description": "",
+    "main": "npm/index.js",
+    "types": "npm/index.d.ts",
+    "scripts": {
+        "build": "beats --clean --sourcemap"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

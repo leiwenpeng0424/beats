@@ -1,0 +1,21 @@
+@import "global";
+
+// Variables
+@color: rgba(0, 0, 0, 0.5);
+@color: rgba(0, 0, 0, 0.5);
+
+@link-color: #428bca; // sea blue
+@link-color-hover: darken(@link-color, 10%);
+
+// Usage
+a,
+.link {
+    color: @link-color;
+}
+a:hover {
+    color: @link-color-hover;
+}
+.widget {
+    color: @bg-100;
+    background-color: @link-color;
+}

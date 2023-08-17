@@ -1,0 +1,8 @@
+{
+  "name": "multi-input",
+  "version": "0.0.0",
+  "main": "bin/cli.js",
+  "scripts": {
+    "build": "beats --clean --sourcemap"
+  }
+}

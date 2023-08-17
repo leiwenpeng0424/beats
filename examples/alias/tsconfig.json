@@ -1,0 +1,20 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        // module
+        "lib": ["es2020", "dom"],
+        "module": "CommonJS",
+        "target": "ESNext",
+        "moduleResolution": "node",
+
+        // declaration
+        "declaration": true,
+        "declarationDir": ".declarations",
+
+        // path alias
+        "paths": {
+            "@/*": ["src/*"]
+        }
+    },
+    "include": ["src/"]
+}
