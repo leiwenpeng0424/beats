@@ -10,7 +10,7 @@ import { loadTsConfigJson } from "@/tsconfig";
 
 async function cli(args: string[]) {
     const [, ..._args] = args;
-    const pkgJson = Json.readJSONSync<IPackageJson>(CONSTANTS.packagejson);
+    const pkgJson = Json.readJSONSync<IPackageJson>(CONSTANTS.packageJson);
     const beatsPkgJson = Json.readJSONSync<IPackageJson>(
         nodePath.resolve(require.resolve(".."), "../../package.json"),
     );
@@ -33,6 +33,7 @@ async function cli(args: string[]) {
             ` `,
             colors.cyan(`This a message!!!`),
         ]);
+        term.nextLine();
     }
 
     const tsConfig = loadTsConfigJson(project ?? CONSTANTS.tsconfig);
@@ -62,3 +63,4 @@ cli(process.argv.slice(1))
         console.error(e);
         process.exit();
     });
+

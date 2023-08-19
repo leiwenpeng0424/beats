@@ -6,7 +6,7 @@
 
 [中文](./docs/zh-CN.md) | [English](./docs/en-US.md)
 
-## Todos
+## Todo
 
 -   [] css style support.
 -   [] executable bin file generate.

@@ -17,11 +17,12 @@ var dotenvExpand = require('dotenv-expand');
 var readline = require('node:readline');
 
 const tsconfig = "./tsconfig.json";
-const packagejson = "./package.json";
+const packageJson = "./package.json";
 const dtsEntry = "index.d.ts";
 const output = "./index.js";
 const input = "./src/index";
 const outputDir = "npm";
+const dtsDir = ".dts";
 const esmExt = [".mjs", ".mts"];
 const cjsExt = [".cjs", ".cts"];
 const esmMiddleNames = [".esm.", ".es."];
@@ -48,21 +49,6 @@ const isSameRollupInput = (input1, input2) => {
 const normalizeCliInput = (input) => {
   return input.trimStart().trimEnd().split(",").filter(Boolean);
 };
-async function measure(mark, task) {
-  performance.mark(`${mark} start`);
-  await task();
-  performance.mark(`${mark} end`);
-  const measure2 = performance.measure(
-    `${mark} start to end`,
-    `${mark} start`,
-    `${mark} end`
-  );
-  verboseLog(
-    nodeutils.colors.bgBlack(
-      nodeutils.colors.white(nodeutils.colors.bold(`${mark} duration: ${measure2.duration}`))
-    )
-  );
-}
 function resolveDtsEntryFromEntry(declarationDir, entry) {
   let entryUnshiftRoot = nodePath.join(cwd(), entry).replace(cwd() + nodePath.sep, "").split(nodePath.sep).slice(1).join(nodePath.sep).replace(".ts", ".d.ts");
   if (!entryUnshiftRoot.endsWith(".d.ts")) {
@@ -246,6 +232,128 @@ function cleanup({ active } = { active: true }) {
   };
 }
 
+var __defProp$5 = Object.defineProperty;
+var __defProps$3 = Object.defineProperties;
+var __getOwnPropDescs$3 = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols$4 = Object.getOwnPropertySymbols;
+var __hasOwnProp$4 = Object.prototype.hasOwnProperty;
+var __propIsEnum$4 = Object.prototype.propertyIsEnumerable;
+var __defNormalProp$5 = (obj, key, value) => key in obj ? __defProp$5(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues$4 = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp$4.call(b, prop))
+      __defNormalProp$5(a, prop, b[prop]);
+  if (__getOwnPropSymbols$4)
+    for (var prop of __getOwnPropSymbols$4(b)) {
+      if (__propIsEnum$4.call(b, prop))
+        __defNormalProp$5(a, prop, b[prop]);
+    }
+  return a;
+};
+var __spreadProps$3 = (a, b) => __defProps$3(a, __getOwnPropDescs$3(b));
+function createCompilerProgram(tsConfigCompilerOptions, tsconfig) {
+  const config = ts.getParsedCommandLineOfConfigFile(
+    tsconfig,
+    tsConfigCompilerOptions,
+    {
+      useCaseSensitiveFileNames: true,
+      getCurrentDirectory: ts.sys.getCurrentDirectory,
+      readDirectory: ts.sys.readDirectory,
+      fileExists: ts.sys.fileExists,
+      readFile: ts.sys.readFile,
+      onUnRecoverableConfigFileDiagnostic: function(diagnostic) {
+        console.log(
+          `onUnRecoverableConfigFileDiagnostic`,
+          diagnostic.messageText
+        );
+      }
+    }
+  );
+  const host = ts.createCompilerHost(tsConfigCompilerOptions);
+  if (config) {
+    return ts.createProgram({
+      host,
+      options: __spreadProps$3(__spreadValues$4({}, config.options), {
+        noEmit: false
+      }),
+      rootNames: config.fileNames,
+      projectReferences: config.projectReferences,
+      configFileParsingDiagnostics: ts.getConfigFileParsingDiagnostics(config)
+    });
+  }
+}
+function emitOnlyDeclarations(tsConfigCompilerOptions, tsconfig) {
+  const program = createCompilerProgram(tsConfigCompilerOptions, tsconfig);
+  if (program) {
+    program.emit(void 0);
+  }
+}
+async function dtsGen({
+  term,
+  input,
+  dtsFileName,
+  tsConfigFile = tsconfig
+}) {
+  const packageJsonFullPath = nodePath.resolve(cwd(), packageJson);
+  emitOnlyDeclarations(
+    {
+      declaration: true,
+      emitDeclarationOnly: true,
+      declarationDir: dtsDir
+    },
+    tsConfigFile
+  );
+  nodePath.extname(input);
+  const mainEntry = resolveDtsEntryFromEntry(dtsDir, input) ;
+  const content = await nodeFs.readFile(mainEntry);
+  if (content.toString() === "") {
+    return;
+  }
+  const trimmedFile = dtsFileName || dtsEntry;
+  const config = apiExtractor.ExtractorConfig.prepare({
+    configObjectFullPath: void 0,
+    packageJsonFullPath,
+    ignoreMissingEntryPoint: true,
+    configObject: {
+      projectFolder: process.cwd(),
+      compiler: {
+        tsconfigFilePath: tsConfigFile
+      },
+      mainEntryPointFilePath: mainEntry,
+      dtsRollup: {
+        enabled: true,
+        publicTrimmedFilePath: trimmedFile
+      },
+      docModel: {
+        enabled: false
+      },
+      tsdocMetadata: {
+        enabled: false
+      }
+    }
+  });
+  const extractorResult = apiExtractor.Extractor.invoke(config, {
+    localBuild: true,
+    showDiagnostics: false,
+    showVerboseMessages: false,
+    typescriptCompilerFolder: nodePath.join(
+      require.resolve("typescript"),
+      "../.."
+    ),
+    messageCallback(message2) {
+      message2.logLevel = "none";
+    }
+  });
+  if (extractorResult.succeeded) ;
+  nodeutils.file.rmdirSync(dtsDir);
+  const message = ` \u2728 ${nodeutils.colors.bgBlack(
+    nodeutils.colors.bold(nodePath.relative(cwd(), input))
+  )} ${nodeutils.colors.bold("->")} ${nodePath.relative(cwd(), trimmedFile)}`;
+  term.writeLine(message);
+  term.nextLine();
+  term.nextLine();
+}
+
 var __defProp$4 = Object.defineProperty;
 var __defProps$2 = Object.defineProperties;
 var __getOwnPropDescs$2 = Object.getOwnPropertyDescriptors;
@@ -286,132 +394,6 @@ function loadTsConfigJson(path = "./tsconfig.json") {
   return __spreadProps$2(__spreadValues$3({}, raw), {
     compilerOptions: options
   });
-}
-
-function createCompilerProgram(tsConfigCompilerOptions, tsconfig) {
-  const config = ts.getParsedCommandLineOfConfigFile(
-    tsconfig,
-    tsConfigCompilerOptions,
-    {
-      useCaseSensitiveFileNames: true,
-      getCurrentDirectory: ts.sys.getCurrentDirectory,
-      readDirectory: ts.sys.readDirectory,
-      fileExists: ts.sys.fileExists,
-      readFile: ts.sys.readFile,
-      onUnRecoverableConfigFileDiagnostic: function(diagnostic) {
-        console.log(
-          `onUnRecoverableConfigFileDiagnostic`,
-          diagnostic.messageText
-        );
-      }
-    }
-  );
-  const host = ts.createCompilerHost(tsConfigCompilerOptions);
-  if (config) {
-    return ts.createProgram({
-      host,
-      options: config.options,
-      rootNames: config.fileNames,
-      projectReferences: config.projectReferences,
-      configFileParsingDiagnostics: ts.getConfigFileParsingDiagnostics(config)
-    });
-  }
-}
-function emitOnlyDeclarations(tsConfigCompilerOptions, tsconfig) {
-  const program = createCompilerProgram(tsConfigCompilerOptions, tsconfig);
-  if (program) {
-    program.emit(void 0);
-  }
-}
-async function dtsGen({
-  term,
-  input,
-  dtsFileName,
-  tsConfigFile
-}) {
-  let tsConfig;
-  let tsConfigPath = tsConfigFile;
-  if (tsConfigFile) {
-    tsConfig = loadTsConfigJson(tsConfigFile);
-  } else {
-    const tsConfigFile2 = nodeutils.file.findFile(`tsconfig.json`, process.cwd());
-    if (tsConfigFile2) {
-      tsConfigPath = tsConfigFile2;
-      tsConfig = loadTsConfigJson(tsConfigFile2);
-    } else {
-      throw Error(`Can't find tsconfig.json from current project`);
-    }
-  }
-  if (tsConfig) {
-    const { compilerOptions = {} } = tsConfig;
-    const { declaration, declarationDir } = compilerOptions;
-    const packageJsonFullPath = nodePath.resolve(
-      cwd(),
-      packagejson
-    );
-    if (declaration) {
-      emitOnlyDeclarations(
-        {
-          declaration: true,
-          emitDeclarationOnly: true,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          declarationDir
-        },
-        typeof tsConfigPath === "string" ? tsConfigPath : tsconfig
-      );
-      const ext = nodePath.extname(input);
-      const mainEntry = declarationDir ? resolveDtsEntryFromEntry(declarationDir, input) : ext ? input.replace(nodePath.extname(input), ".d.ts") : `${input}.d.ts`;
-      const content = await nodeFs.readFile(mainEntry);
-      if (content.toString() === "") {
-        return;
-      }
-      const trimmedFile = dtsFileName || dtsEntry;
-      const config = apiExtractor.ExtractorConfig.prepare({
-        configObjectFullPath: void 0,
-        packageJsonFullPath,
-        ignoreMissingEntryPoint: true,
-        configObject: {
-          projectFolder: process.cwd(),
-          compiler: {
-            tsconfigFilePath: tsConfigFile
-          },
-          mainEntryPointFilePath: mainEntry,
-          dtsRollup: {
-            enabled: true,
-            publicTrimmedFilePath: trimmedFile
-          },
-          docModel: {
-            enabled: false
-          },
-          tsdocMetadata: {
-            enabled: false
-          }
-        }
-      });
-      const extractorResult = apiExtractor.Extractor.invoke(config, {
-        localBuild: true,
-        showDiagnostics: false,
-        showVerboseMessages: false,
-        typescriptCompilerFolder: nodePath.join(
-          require.resolve("typescript"),
-          "../.."
-        ),
-        messageCallback(message2) {
-          message2.logLevel = "none";
-        }
-      });
-      if (extractorResult.succeeded) ;
-      if (declarationDir) {
-        nodeutils.file.rmdirSync(nodePath.resolve(cwd(), declarationDir));
-      }
-      const message = ` \u2728 ${nodeutils.colors.bgBlack(
-        nodeutils.colors.bold(nodePath.relative(cwd(), input))
-      )} ${nodeutils.colors.bold("->")} ${nodePath.relative(cwd(), trimmedFile)}`;
-      term.writeLine(message);
-      term.nextLine();
-      term.nextLine();
-    }
-  }
 }
 
 var __defProp$3 = Object.defineProperty;
@@ -810,6 +792,7 @@ async function dts({
   rollup: rollup2,
   pkgJson
 }) {
+  var _a;
   const { input } = rollup2;
   const { module, main, types } = pkgJson;
   const output = module || main;
@@ -818,14 +801,11 @@ async function dts({
   const ext = nodePath.extname(inputBasename);
   const outputBasename = ext ? inputBasename.replace(ext, ".d.ts") : `${inputBasename != null ? inputBasename : "index"}.d.ts`;
   if (config.dtsRollup) {
-    await measure("dts", async () => {
-      var _a;
-      await dtsGen({
-        term,
-        input,
-        tsConfigFile: (_a = config.project) != null ? _a : tsconfig,
-        dtsFileName: types || nodePath.resolve(cwd(), outputBasepath, outputBasename)
-      });
+    await dtsGen({
+      term,
+      input,
+      tsConfigFile: (_a = config.project) != null ? _a : tsconfig,
+      dtsFileName: types || nodePath.resolve(cwd(), outputBasepath, outputBasename)
     });
   }
 }
@@ -912,15 +892,13 @@ async function startRollupBundle({
       }
     });
   } else {
-    await measure("rollup", async () => {
-      const tasks = await bundle({
-        options: bundles,
-        config,
-        pkgJson,
-        term
-      });
-      await serialize(tasks);
+    const tasks = await bundle({
+      options: bundles,
+      config,
+      pkgJson,
+      term
     });
+    await serialize(tasks);
   }
 }
 
@@ -1075,7 +1053,7 @@ var __objRest = (source, exclude) => {
 };
 async function cli(args) {
   const [, ..._args] = args;
-  const pkgJson = nodeutils.json.readJSONSync(packagejson);
+  const pkgJson = nodeutils.json.readJSONSync(packageJson);
   const beatsPkgJson = nodeutils.json.readJSONSync(
     nodePath.resolve(require.resolve(".."), "../../package.json")
   );
@@ -1098,6 +1076,7 @@ async function cli(args) {
       ` `,
       nodeutils.colors.cyan(`This a message!!!`)
     ]);
+    term.nextLine();
   }
   const tsConfig = loadTsConfigJson(project != null ? project : tsconfig);
   const config = await tryReadConfig({

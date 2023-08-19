@@ -2,13 +2,7 @@ import { type Config, type TRollupOptions } from "@/configuration";
 import bundleProgress from "@/plugins/bundleProgress";
 import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
 import esbuild from "@/plugins/esbuild";
-import {
-    cwd,
-    isSameRollupInput,
-    measure,
-    normalizeCliInput,
-    serialize,
-} from "@/utils";
+import { cwd, isSameRollupInput, normalizeCliInput, serialize } from "@/utils";
 import { colors, ms } from "@nfts/nodeutils";
 import { type IPackageJson } from "@nfts/pkg-json";
 import { type ITSConfigJson } from "@nfts/tsc-json";
@@ -308,16 +302,16 @@ async function dts({
         : `${inputBasename ?? "index"}.d.ts`;
 
     if (config.dtsRollup) {
-        await measure("dts", async () => {
-            await dtsGen({
-                term,
-                input,
-                tsConfigFile: config.project ?? CONSTANTS.tsconfig,
-                dtsFileName:
-                    types ||
-                    nodePath.resolve(cwd(), outputBasepath, outputBasename),
-            });
+        // await measure("dts", async () => {
+        await dtsGen({
+            term,
+            input,
+            tsConfigFile: config.project ?? CONSTANTS.tsconfig,
+            dtsFileName:
+                types ||
+                nodePath.resolve(cwd(), outputBasepath, outputBasename),
         });
+        // });
     }
 }
 
@@ -436,14 +430,15 @@ export async function startRollupBundle({
             },
         });
     } else {
-        await measure("rollup", async () => {
-            const tasks = await bundle({
-                options: bundles,
-                config,
-                pkgJson,
-                term,
-            });
-            await serialize(tasks);
+        // await measure("rollup", async () => {
+        const tasks = await bundle({
+            options: bundles,
+            config,
+            pkgJson,
+            term,
         });
+        await serialize(tasks);
+        // });
     }
 }
+

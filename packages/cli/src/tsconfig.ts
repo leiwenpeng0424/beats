@@ -25,10 +25,12 @@ export function loadTsConfigJson(path = "./tsconfig.json"): ITSConfigJson {
             ...raw,
             compilerOptions: options,
         }
-    )
+    );
+
 
     return {
         ...raw,
         compilerOptions: options,
     };
 }
+

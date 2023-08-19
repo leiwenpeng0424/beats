@@ -18,10 +18,7 @@
         "skipLibCheck": true,
         "strict": true,
 
-        // declaration
-        "declaration": true,
-        "declarationDir": ".declaration"
-    },
-    "exclude": ["**/npm", "**/node_modules"]
+        "noEmit": true
+    }
 }
 

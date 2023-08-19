@@ -8,7 +8,6 @@ import {
     ExtractorMessage,
 } from "@microsoft/api-extractor";
 import { file as File, colors } from "@nfts/nodeutils";
-import { type ITSConfigJson } from "@nfts/tsc-json";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
 import ts, {
@@ -17,7 +16,6 @@ import ts, {
     sys,
     type CompilerOptions,
 } from "typescript";
-import { loadTsConfigJson } from "./tsconfig";
 
 export function createCompilerProgram(
     tsConfigCompilerOptions: CompilerOptions,
@@ -49,7 +47,10 @@ export function createCompilerProgram(
     if (config) {
         return createProgram({
             host,
-            options: config.options,
+            options: {
+                ...config.options,
+                noEmit: false,
+            },
             rootNames: config.fileNames,
             projectReferences: config.projectReferences,
             configFileParsingDiagnostics:
@@ -80,117 +81,87 @@ export async function dtsGen({
     term,
     input,
     dtsFileName,
-    tsConfigFile,
+    tsConfigFile = CONSTANTS.tsconfig,
 }: IDtsGenOptions) {
-    let tsConfig: ITSConfigJson | undefined;
-    let tsConfigPath = tsConfigFile;
+    // PKG-JSON
+    const packageJsonFullPath = nodePath.resolve(cwd(), CONSTANTS.packageJson);
 
-    if (tsConfigFile) {
-        tsConfig = loadTsConfigJson(tsConfigFile);
+    emitOnlyDeclarations(
+        {
+            declaration: true,
+            emitDeclarationOnly: true,
+            declarationDir: CONSTANTS.dtsDir,
+        },
+        tsConfigFile,
+    );
+
+    const ext = nodePath.extname(input);
+
+    const mainEntry = CONSTANTS.dtsDir
+        ? resolveDtsEntryFromEntry(CONSTANTS.dtsDir, input)
+        : ext
+        ? input.replace(nodePath.extname(input), ".d.ts")
+        : `${input}.d.ts`;
+
+    const content = await nodeFs.readFile(mainEntry);
+
+    // Fix #1
+    if (content.toString() === "") {
+        return;
+    }
+
+    const trimmedFile = dtsFileName || CONSTANTS.dtsEntry;
+
+    const config = ExtractorConfig.prepare({
+        configObjectFullPath: undefined,
+        packageJsonFullPath: packageJsonFullPath,
+        ignoreMissingEntryPoint: true,
+        configObject: {
+            projectFolder: process.cwd(),
+            compiler: {
+                tsconfigFilePath: tsConfigFile,
+            },
+            mainEntryPointFilePath: mainEntry,
+            dtsRollup: {
+                enabled: true,
+                publicTrimmedFilePath: trimmedFile,
+            },
+            docModel: {
+                enabled: false,
+            },
+            tsdocMetadata: {
+                enabled: false,
+            },
+        },
+    });
+
+    const extractorResult = Extractor.invoke(config, {
+        localBuild: true,
+        showDiagnostics: false,
+        showVerboseMessages: false,
+        typescriptCompilerFolder: nodePath.join(
+            require.resolve("typescript"),
+            "../..",
+        ),
+        messageCallback(message: ExtractorMessage) {
+            message.logLevel = "none" as ExtractorLogLevel.None;
+        },
+    });
+
+    if (extractorResult.succeeded) {
+        // TODO: Add verbose message
     } else {
-        const tsConfigFile = File.findFile(`tsconfig.json`, process.cwd());
-        if (tsConfigFile) {
-            tsConfigPath = tsConfigFile;
-            tsConfig = loadTsConfigJson(tsConfigFile);
-        } else {
-            throw Error(`Can't find tsconfig.json from current project`);
-        }
+        // TODO: Throw whe meet error
     }
 
-    if (tsConfig) {
-        const { compilerOptions = {} } = tsConfig;
-        const { declaration, declarationDir } = compilerOptions;
+    File.rmdirSync(CONSTANTS.dtsDir);
 
-        const packageJsonFullPath = nodePath.resolve(
-            cwd(),
-            CONSTANTS.packagejson,
-        );
+    const message = ` ✨ ${colors.bgBlack(
+        colors.bold(nodePath.relative(cwd(), input)),
+    )} ${colors.bold("->")} ${nodePath.relative(cwd(), trimmedFile)}`;
 
-        if (declaration) {
-            // 生成 dts
-            emitOnlyDeclarations(
-                {
-                    declaration: true,
-                    emitDeclarationOnly: true,
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    declarationDir: declarationDir!,
-                },
-                typeof tsConfigPath === "string"
-                    ? tsConfigPath
-                    : CONSTANTS.tsconfig,
-            );
-
-            const ext = nodePath.extname(input);
-
-            const mainEntry = declarationDir
-                ? resolveDtsEntryFromEntry(declarationDir, input)
-                : ext
-                ? input.replace(nodePath.extname(input), ".d.ts")
-                : `${input}.d.ts`;
-
-            const content = await nodeFs.readFile(mainEntry);
-
-            // Fix #1
-            if (content.toString() === "") {
-                return;
-            }
-
-            const trimmedFile = dtsFileName || CONSTANTS.dtsEntry;
-
-            const config = ExtractorConfig.prepare({
-                configObjectFullPath: undefined,
-                packageJsonFullPath: packageJsonFullPath,
-                ignoreMissingEntryPoint: true,
-                configObject: {
-                    projectFolder: process.cwd(),
-                    compiler: {
-                        tsconfigFilePath: tsConfigFile,
-                    },
-                    mainEntryPointFilePath: mainEntry,
-                    dtsRollup: {
-                        enabled: true,
-                        publicTrimmedFilePath: trimmedFile,
-                    },
-                    docModel: {
-                        enabled: false,
-                    },
-                    tsdocMetadata: {
-                        enabled: false,
-                    },
-                },
-            });
-
-            const extractorResult = Extractor.invoke(config, {
-                localBuild: true,
-                showDiagnostics: false,
-                showVerboseMessages: false,
-                typescriptCompilerFolder: nodePath.join(
-                    require.resolve("typescript"),
-                    "../..",
-                ),
-                messageCallback(message: ExtractorMessage) {
-                    message.logLevel = "none" as ExtractorLogLevel.None;
-                },
-            });
-
-            if (extractorResult.succeeded) {
-                // TODO: Add verbose message
-            } else {
-                // TODO: Throw whe meet error
-            }
-
-            if (declarationDir) {
-                File.rmdirSync(nodePath.resolve(cwd(), declarationDir));
-            }
-
-            const message = ` ✨ ${colors.bgBlack(
-                colors.bold(nodePath.relative(cwd(), input)),
-            )} ${colors.bold("->")} ${nodePath.relative(cwd(), trimmedFile)}`;
-
-            term.writeLine(message);
-            term.nextLine();
-            term.nextLine();
-        }
-    }
+    term.writeLine(message);
+    term.nextLine();
+    term.nextLine();
 }
 

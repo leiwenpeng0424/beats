@@ -8,13 +8,6 @@
     "bin": {
         "beats": "bin/beats"
     },
-    "scripts": {
-        "dev": "npm run start",
-        "start": "node_modules/.bin/beats --watch --sourcemap",
-        "build": "node_modules/.bin/beats --clean --sourcemap --debug --verbose",
-        "build:local": "node --trace-warnings npm/index.cjs --clean --debug",
-        "vitest": "vitest --watch false"
-    },
     "publishConfig": {
         "access": "public"
     },
