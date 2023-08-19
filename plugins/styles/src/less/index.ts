@@ -1,12 +1,12 @@
-import { render } from "less";
-import nodePath from "node:path";
-import type { PluginContext, TransformResult } from "rollup";
 import {
     DefaultTransformerOptions,
     Transformer,
     type TransformerManager,
     type TransformerOptions,
-} from "../Transformer";
+} from "@/Transformer";
+import { render } from "less";
+import nodePath from "node:path";
+import type { PluginContext, TransformResult } from "rollup";
 
 export default class LessTransformer extends Transformer {
     manager: TransformerManager;

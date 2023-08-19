@@ -9,18 +9,6 @@ import postcssrc from 'postcss-load-config';
 import postcssModules from 'postcss-modules';
 import postcssUrl from 'postcss-url';
 
-var __defProp$2 = Object.defineProperty;
-var __knownSymbol = (name, symbol) => {
-  if (symbol = Symbol[name])
-    return symbol;
-  throw Error("Symbol." + name + " is not defined");
-};
-var __defNormalProp$2 = (obj, key, value) => key in obj ? __defProp$2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField$2 = (obj, key, value) => {
-  __defNormalProp$2(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
-var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
 const DefaultTransformerOptions = {
   cssModule: false,
   sourcemap: false,
@@ -30,12 +18,10 @@ const DefaultTransformerOptions = {
 class Transformer {
 }
 class TransformerManager {
-  constructor() {
-    __publicField$2(this, "transformers", []);
-    __publicField$2(this, "cssById", /* @__PURE__ */ new Map());
-    __publicField$2(this, "cssJson", /* @__PURE__ */ new Map());
-    __publicField$2(this, "depsById", /* @__PURE__ */ new Map());
-  }
+  transformers = [];
+  cssById = /* @__PURE__ */ new Map();
+  cssJson = /* @__PURE__ */ new Map();
+  depsById = /* @__PURE__ */ new Map();
   add(t) {
     this.transformers.push(t);
     return this;
@@ -50,29 +36,17 @@ class TransformerManager {
       assertions: {},
       meta: {}
     };
-    try {
-      for (var iter = __forAwait(this.transformers), more, temp, error; more = !(temp = await iter.next()).done; more = false) {
-        const transformer = temp.value;
-        if (typeof res === "string") {
-          res = { code: res };
-        }
-        if (transformer.test(extname)) {
-          res = await transformer.transform(
-            (res == null ? void 0 : res.code) || "",
-            id,
-            ctx,
-            options
-          );
-        }
+    for await (const transformer of this.transformers) {
+      if (typeof res === "string") {
+        res = { code: res };
       }
-    } catch (temp) {
-      error = [temp];
-    } finally {
-      try {
-        more && (temp = iter.return) && await temp.call(iter);
-      } finally {
-        if (error)
-          throw error[0];
+      if (transformer.test(extname)) {
+        res = await transformer.transform(
+          res?.code || "",
+          id,
+          ctx,
+          options
+        );
       }
     }
     return res;
@@ -88,16 +62,10 @@ class TransformerManager {
   }
 }
 
-var __defProp$1 = Object.defineProperty;
-var __defNormalProp$1 = (obj, key, value) => key in obj ? __defProp$1(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField$1 = (obj, key, value) => {
-  __defNormalProp$1(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
 class LessTransformer extends Transformer {
+  manager;
   constructor(manager) {
     super();
-    __publicField$1(this, "manager");
     this.manager = manager;
   }
   test(extname) {
@@ -128,7 +96,7 @@ class LessTransformer extends Transformer {
     this.manager.depsById.set(id, new Set(imports));
     return {
       code: css,
-      map: map != null ? map : { mappings: "" }
+      map: map ?? { mappings: "" }
     };
   }
 }
@@ -153,22 +121,15 @@ async function cssMinify(css, id) {
   return result.css;
 }
 
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
 class PostcssTransformer extends Transformer {
+  manager;
   constructor(manager) {
     super();
-    __publicField(this, "manager");
-    __publicField(this, "test", () => true);
-    __publicField(this, "supportCssModules", (id) => /\.module\.[A-Za-z]+$/.test(id));
     this.manager = manager;
   }
+  test = () => true;
+  supportCssModules = (id) => /\.module\.[A-Za-z]+$/.test(id);
   async transform(code, id, ctx, options) {
-    var _a, _b, _c, _d;
     const { plugins, options: options_ } = await postcssrc();
     const _plugins = [];
     _plugins.push(postcssImport({}));
@@ -196,15 +157,15 @@ class PostcssTransformer extends Transformer {
       ..._plugins,
       ...plugins
     ]).process(code, {
-      to: (_a = options_.to) != null ? _a : id,
-      from: (_b = options_.from) != null ? _b : id,
+      to: options_.to ?? id,
+      from: options_.from ?? id,
       map: options.sourcemap ? { inline: options.sourcemap === "inline" } : void 0,
       parser: options_.parser,
       syntax: options_.syntax,
       stringifier: options_.stringifier
     });
     this.manager.cssById.set(id, css);
-    const deps = (_c = this.manager.depsById.get(id)) != null ? _c : /* @__PURE__ */ new Set();
+    const deps = this.manager.depsById.get(id) ?? /* @__PURE__ */ new Set();
     for (const message of messages) {
       if (message.type === "warning") {
         ctx.warn({
@@ -221,7 +182,7 @@ class PostcssTransformer extends Transformer {
     const minifiedCss = await cssMinify(css, id);
     const _css = exportCssWithInject(
       minifiedCss,
-      (_d = this.manager.cssJson.get(id)) != null ? _d : {},
+      this.manager.cssJson.get(id) ?? {},
       supportCssModule
     );
     return {
@@ -232,8 +193,7 @@ class PostcssTransformer extends Transformer {
 }
 
 function stylesPlugin(options = DefaultTransformerOptions) {
-  var _a, _b;
-  const filter = createFilter((_a = options.include) != null ? _a : [], (_b = options.exclude) != null ? _b : [], {
+  const filter = createFilter(options.include ?? [], options.exclude ?? [], {
     resolve: process.cwd()
   });
   const transformManager = new TransformerManager();

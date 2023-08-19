@@ -5,9 +5,9 @@ import {
     DefaultTransformerOptions,
     TransformerManager,
     type TransformerOptions,
-} from "./Transformer";
-import LessTransformer from "./less";
-import PostcssTransformer from "./postcss";
+} from "@/Transformer";
+import LessTransformer from "@/less";
+import PostcssTransformer from "@/postcss";
 
 export default function stylesPlugin(
     options: TransformerOptions = DefaultTransformerOptions,

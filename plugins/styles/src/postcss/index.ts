@@ -1,3 +1,8 @@
+import {
+    Transformer,
+    TransformerManager,
+    type TransformerOptions,
+} from "@/Transformer";
 import { cssMinify, exportCssWithInject } from "@/utils";
 import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
@@ -7,11 +12,6 @@ import postcssrc from "postcss-load-config";
 import postcssModules from "postcss-modules";
 import postcssUrl from "postcss-url";
 import type { PluginContext } from "rollup";
-import {
-    Transformer,
-    TransformerManager,
-    type TransformerOptions,
-} from "../Transformer";
 
 export default class PostcssTransformer extends Transformer {
     manager: TransformerManager;
