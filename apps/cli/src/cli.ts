@@ -25,19 +25,21 @@ async function cli(args: string[]) {
         ...restInputOptions
     } = parser<CLIOptions>(_args);
 
+    // Load `.env` file if possible.
     loadEnv({ DEBUG: String(debug), VERBOSE: String(verbose) });
 
+    // Show cli info box.
     if (!restInputOptions.watch) {
         term.clearScreen().box([
             colors.red(`@nfts/beats(${beatsPkgJson.version})`),
-            ` `,
-            colors.cyan(`This a message!!!`),
         ]);
         term.nextLine();
     }
 
+    // Read `tsconfig.json`
     const tsConfig = loadTsConfigJson(project ?? CONSTANTS.tsconfig);
 
+    // Load `beats.config.json`.
     const config = await tryReadConfig({
         configPath,
         pkgJson,

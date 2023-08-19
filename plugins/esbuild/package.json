@@ -1,0 +1,42 @@
+{
+    "name": "@nfts/plugins-esbuild",
+    "version": "0.0.0",
+    "main": "./npm/index.cjs",
+    "module": "./npm/index.mjs",
+    "types": "./npm/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": "./npm/index.mjs",
+            "require": "./npm/index.cjs",
+            "types": "./npm/index.d.ts"
+        }
+    },
+    "scripts": {
+        "dev": "npm run start",
+        "start": "beats --watch --sourcemap",
+        "build": "beats --clean --sourcemap --debug --verbose",
+        "build:local": "node --trace-warnings ../../apps/cli/npm/index.cjs --clean --debug",
+        "vitest": "vitest --watch false"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "keywords": [],
+    "author": "wp.l",
+    "license": "MIT",
+    "packageManager": "pnpm@8.5.1",
+    "devDependencies": {
+        "@nfts/beats": "0.0.14",
+        "@nfts/tsc-json": "^0.1.1",
+        "@types/node": "^20.4.2",
+        "esbuild": "^0.18.13",
+        "rollup": "^3.26.3",
+        "typescript": "^5.0.4",
+        "vitest": "^0.33.0"
+    },
+    "peerDependencies": {
+        "esbuild": "^0.18.13",
+        "typescript": "^5.0.4"
+    }
+}
