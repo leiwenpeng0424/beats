@@ -1,11 +1,11 @@
-import { IPackageJson } from '@nfts/pkg-json';
-import { ModuleFormat } from 'rollup';
-import { Plugin as Plugin_2 } from 'rollup';
-import { RollupCommonJSOptions } from '@rollup/plugin-commonjs';
-import { RollupEslintOptions } from '@rollup/plugin-eslint';
-import { RollupNodeResolveOptions } from '@rollup/plugin-node-resolve';
-import { RollupOptions } from 'rollup';
-import { TransformOptions } from 'esbuild';
+import type { IPackageJson } from '@nfts/pkg-json';
+import type { ModuleFormat } from 'rollup';
+import type { Plugin as Plugin_2 } from 'rollup';
+import type { RollupCommonJSOptions } from '@rollup/plugin-commonjs';
+import type { RollupEslintOptions } from '@rollup/plugin-eslint';
+import type { RollupNodeResolveOptions } from '@rollup/plugin-node-resolve';
+import type { RollupOptions } from 'rollup';
+import type { TRollupTransformOptions } from '@nfts/plugin-esbuild';
 
 export declare interface CLIOptions {
     // eslint-disable-next-line
@@ -134,8 +134,6 @@ export declare type TRollupOptions = Omit<RollupOptions, "input"> & {
     input: string;
 };
 
-declare type TRollupTransformOptions = TransformOptions;
-
 /**
  * Read config from project.
  * @param configPath
@@ -148,7 +146,7 @@ export declare async function tryReadConfig({
     configPath?: string;
     pkgJson: IPackageJson;
 }): Promise<Config> {
-    const _cwd = cwd();
+    const _cwd = process.cwd();
 
     let config: Config;
 

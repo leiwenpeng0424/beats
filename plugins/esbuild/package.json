@@ -1,5 +1,5 @@
 {
-    "name": "@nfts/plugins-esbuild",
+    "name": "@nfts/plugin-esbuild",
     "version": "0.0.0",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",

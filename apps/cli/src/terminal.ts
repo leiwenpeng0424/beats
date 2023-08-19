@@ -1,5 +1,5 @@
-import readline from "node:readline";
 import { strSplitByLength, stripAnsi } from "@/utils";
+import readline from "node:readline";
 
 export default class Terminal {
     private readonly stdin = process.stdin;

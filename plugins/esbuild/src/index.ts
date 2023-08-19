@@ -166,7 +166,7 @@ export default function esbuild({
 
             const result = await transform(code, {
                 loader,
-                target: "es5",
+                target: "node",
                 sourcefile: id,
                 treeShaking: true,
                 tsconfigRaw,

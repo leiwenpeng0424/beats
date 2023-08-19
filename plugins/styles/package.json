@@ -1,5 +1,5 @@
 {
-    "name": "@nfts/plugins-styles",
+    "name": "@nfts/plugin-styles",
     "version": "0.0.0",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",

@@ -137,7 +137,7 @@ function esbuild({
       }
       const result = await esbuild$1.transform(code, __spreadValues({
         loader,
-        target: "es5",
+        target: "esnext",
         sourcefile: id,
         treeShaking: true,
         tsconfigRaw

@@ -1,14 +1,13 @@
 import * as CONSTANTS from "@/constants";
-import { type TRollupTransformOptions } from "@/plugins/esbuild";
-import { cwd } from "@/utils";
 import { module_ } from "@nfts/nodeutils";
-import { type IPackageJson } from "@nfts/pkg-json";
-import { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
-import { RollupEslintOptions } from "@rollup/plugin-eslint";
-import { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
+import type { IPackageJson } from "@nfts/pkg-json";
+import type { TRollupTransformOptions } from "@nfts/plugin-esbuild";
+import type { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
+import type { RollupEslintOptions } from "@rollup/plugin-eslint";
+import type { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
-import { Plugin, type ModuleFormat, type RollupOptions } from "rollup";
+import type { ModuleFormat, Plugin, RollupOptions } from "rollup";
 
 /**
  * Return output format.
@@ -211,7 +210,7 @@ export async function tryReadConfig({
     configPath?: string;
     pkgJson: IPackageJson;
 }): Promise<Config> {
-    const _cwd = cwd();
+    const _cwd = process.cwd();
 
     let config: Config;
 
@@ -252,3 +251,4 @@ export async function tryReadConfig({
         };
     }
 }
+

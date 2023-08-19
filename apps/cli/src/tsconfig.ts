@@ -1,4 +1,4 @@
-import { ITSConfigJson } from "@nfts/tsc-json";
+import type { ITSConfigJson } from "@nfts/tsc-json";
 import {
     parseJsonSourceFileConfigFileContent,
     readJsonConfigFile,

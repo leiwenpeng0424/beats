@@ -1,8 +1,8 @@
 import { verboseLog } from "@/log";
 import { colors, json as Json } from "@nfts/nodeutils";
-import { IPackageJson } from "@nfts/pkg-json";
+import type { IPackageJson } from "@nfts/pkg-json";
 import nodePath from "node:path";
-import { RollupOptions } from "rollup";
+import type { RollupOptions } from "rollup";
 
 // Clear screen.
 export const clearScreen = () => process.stdout.write("\x1Bc");
@@ -168,3 +168,4 @@ export function stripAnsi(
     const regexp = new RegExp(pattern, onlyFirst ? undefined : "g");
     return text.replace(regexp, "");
 }
+

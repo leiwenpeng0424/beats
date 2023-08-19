@@ -1,11 +1,11 @@
-import { type Config, type TRollupOptions } from "@/configuration";
-import bundleProgress from "@/plugins/bundleProgress";
-import cleanup, { RollupCleanupOptions } from "@/plugins/cleanup";
-import esbuild from "@/plugins/esbuild";
+import type { Config, TRollupOptions } from "@/configuration";
 import { cwd, isSameRollupInput, normalizeCliInput, serialize } from "@/utils";
 import { colors, ms } from "@nfts/nodeutils";
-import { type IPackageJson } from "@nfts/pkg-json";
-import { type ITSConfigJson } from "@nfts/tsc-json";
+import type { IPackageJson } from "@nfts/pkg-json";
+import cleanup, { RollupCleanupOptions } from "@nfts/plugin-cleanup";
+import esbuild from "@nfts/plugin-esbuild";
+import bundleProgress from "@nfts/plugin-progress";
+import type { ITSConfigJson } from "@nfts/tsc-json";
 import commonjs from "@rollup/plugin-commonjs";
 import eslint from "@rollup/plugin-eslint";
 import nodeResolve from "@rollup/plugin-node-resolve";
@@ -22,8 +22,9 @@ import {
 import * as CONSTANTS from "@/constants";
 import { dtsGen } from "@/dts";
 import { verboseLog } from "@/log";
-import alias, { RollupAliasOptions } from "@/plugins/alias";
-import styles from "rollup-plugin-styles";
+import alias, { RollupAliasOptions } from "@nfts/plugin-alias";
+// import styles from "rollup-plugin-styles";
+import styles from "@nfts/plugin-styles";
 import Terminal from "./terminal";
 
 export const Extensions = [

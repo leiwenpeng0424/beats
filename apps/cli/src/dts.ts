@@ -1,6 +1,6 @@
 import * as CONSTANTS from "@/constants";
 import Terminal from "@/terminal";
-import { cwd, resolveDtsEntryFromEntry } from "@/utils";
+import { resolveDtsEntryFromEntry } from "@/utils";
 import {
     Extractor,
     ExtractorConfig,
@@ -84,7 +84,10 @@ export async function dtsGen({
     tsConfigFile = CONSTANTS.tsconfig,
 }: IDtsGenOptions) {
     // PKG-JSON
-    const packageJsonFullPath = nodePath.resolve(cwd(), CONSTANTS.packageJson);
+    const packageJsonFullPath = nodePath.resolve(
+        process.cwd(),
+        CONSTANTS.packageJson,
+    );
 
     emitOnlyDeclarations(
         {
@@ -157,8 +160,8 @@ export async function dtsGen({
     File.rmdirSync(CONSTANTS.dtsDir);
 
     const message = ` ✨ ${colors.bgBlack(
-        colors.bold(nodePath.relative(cwd(), input)),
-    )} ${colors.bold("->")} ${nodePath.relative(cwd(), trimmedFile)}`;
+        colors.bold(nodePath.relative(process.cwd(), input)),
+    )} ${colors.bold("->")} ${nodePath.relative(process.cwd(), trimmedFile)}`;
 
     term.writeLine(message);
     term.nextLine();

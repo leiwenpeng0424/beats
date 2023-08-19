@@ -1,5 +1,5 @@
 {
-    "name": "@nfts/plugins-progress",
+    "name": "@nfts/plugin-progress",
     "version": "0.0.0",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",

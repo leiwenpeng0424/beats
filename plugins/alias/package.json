@@ -1,5 +1,5 @@
 {
-    "name": "@nfts/plugins-alias",
+    "name": "@nfts/plugin-alias",
     "version": "0.0.0",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",
