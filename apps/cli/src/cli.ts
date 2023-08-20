@@ -1,12 +1,12 @@
 import { tryReadConfig, type CLIOptions } from "@/configuration";
 import * as CONSTANTS from "@/constants";
-import { startRollupBundle } from "@/rollup";
+import loadEnv from "@/env";
+import { startBundle } from "@/rollup";
+import Terminal from "@/terminal";
+import { loadTsConfigJson } from "@/tsconfig";
 import { json as Json, colors, parser } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import nodePath from "node:path";
-import loadEnv from "@/env";
-import Terminal from "@/terminal";
-import { loadTsConfigJson } from "@/tsconfig";
 
 async function cli(args: string[]) {
     const [, ..._args] = args;
@@ -45,7 +45,7 @@ async function cli(args: string[]) {
         pkgJson,
     });
 
-    return startRollupBundle({
+    return startBundle({
         term,
         config: {
             ...config,
@@ -65,4 +65,3 @@ cli(process.argv.slice(1))
         console.error(e);
         process.exit();
     });
-

@@ -323,7 +323,7 @@ async function dts({
  * @param tsConfig
  * @param term
  */
-export async function startRollupBundle({
+export async function startBundle({
     term,
     config,
     pkgJson,
@@ -442,4 +442,3 @@ export async function startRollupBundle({
         // });
     }
 }
-

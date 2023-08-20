@@ -127,6 +127,7 @@ export interface CLIOptions {
      * Cleanup before output write.
      */
     clean?: boolean;
+
     /**
      * Confound bundle code.
      */
