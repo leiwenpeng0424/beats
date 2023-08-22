@@ -6,6 +6,7 @@ import type { RollupEslintOptions } from '@rollup/plugin-eslint';
 import type { RollupNodeResolveOptions } from '@rollup/plugin-node-resolve';
 import type { RollupOptions } from 'rollup';
 import type { TRollupTransformOptions } from '@nfts/plugin-esbuild';
+import { TTarget } from '@nfts/tsc-json';
 
 export declare interface CLIOptions {
     // eslint-disable-next-line
@@ -60,6 +61,11 @@ export declare interface CLIOptions {
      * Show internal debug info.
      */
     debug?: boolean;
+
+    /**
+     * Build target
+     */
+    target?: TTarget;
 }
 
 export declare interface Config extends CLIOptions {

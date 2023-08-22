@@ -2,6 +2,7 @@ import * as CONSTANTS from "@/constants";
 import { module_ } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import type { TRollupTransformOptions } from "@nfts/plugin-esbuild";
+import { TTarget } from "@nfts/tsc-json";
 import type { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
 import type { RollupEslintOptions } from "@rollup/plugin-eslint";
 import type { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
@@ -137,6 +138,11 @@ export interface CLIOptions {
      * Show internal debug info.
      */
     debug?: boolean;
+
+    /**
+     * Build target
+     */
+    target?: TTarget;
 }
 
 export interface Config extends CLIOptions {
@@ -252,3 +258,4 @@ export async function tryReadConfig({
         };
     }
 }
+

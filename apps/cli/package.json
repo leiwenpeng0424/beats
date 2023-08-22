@@ -11,6 +11,7 @@
         "dev": "npm run start",
         "start": "beats --watch --sourcemap",
         "build": "beats --clean --sourcemap --debug --verbose",
+        "dev:local": "node --trace-warnings npm/index.cjs --watch --debug",
         "build:local": "node --trace-warnings npm/index.cjs --clean --debug",
         "vitest": "vitest --watch false"
     },

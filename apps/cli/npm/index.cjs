@@ -36,6 +36,26 @@ var __knownSymbol$1 = (name, symbol) => {
     return symbol;
   throw Error("Symbol." + name + " is not defined");
 };
+var __async$4 = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
 var __forAwait$1 = (obj, it, method) => (it = obj[__knownSymbol$1("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol$1("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
 function getFormatFromFileName(output) {
   const ext = nodePath.extname(output);
@@ -70,55 +90,57 @@ const Configs = ["beats.config.js", "beats.config.ts", "beats.config.json"];
 function defineConfig(options) {
   return options;
 }
-async function tryReadConfig({
-  configPath,
-  pkgJson
-}) {
-  const _cwd = process.cwd();
-  let config;
-  if (!configPath) {
-    try {
-      for (var iter = __forAwait$1(Configs), more, temp, error; more = !(temp = await iter.next()).done; more = false) {
-        const configFile = temp.value;
+function tryReadConfig(_0) {
+  return __async$4(this, arguments, function* ({
+    configPath,
+    pkgJson
+  }) {
+    const _cwd = process.cwd();
+    let config;
+    if (!configPath) {
+      try {
+        for (var iter = __forAwait$1(Configs), more, temp, error; more = !(temp = yield iter.next()).done; more = false) {
+          const configFile = temp.value;
+          try {
+            const configFilePath = nodePath.join(_cwd, configFile);
+            yield nodeFs.access(configFilePath);
+            configPath = configFilePath;
+            break;
+          } catch (e) {
+          }
+        }
+      } catch (temp) {
+        error = [temp];
+      } finally {
         try {
-          const configFilePath = nodePath.join(_cwd, configFile);
-          await nodeFs.access(configFilePath);
-          configPath = configFilePath;
-          break;
-        } catch (e) {
+          more && (temp = iter.return) && (yield temp.call(iter));
+        } finally {
+          if (error)
+            throw error[0];
         }
       }
-    } catch (temp) {
-      error = [temp];
-    } finally {
-      try {
-        more && (temp = iter.return) && await temp.call(iter);
-      } finally {
-        if (error)
-          throw error[0];
+    }
+    if (configPath) {
+      config = nodeutils.module_.import_(configPath);
+      if (!config.bundle) {
+        Object.assign(config, {
+          bundle: getOutputFromPackageJson(
+            pkgJson,
+            config.bundleOverwrite
+          )
+        });
       }
+      if (pkgJson.types) {
+        Object.assign(config, { dtsRollup: true });
+      }
+      return config;
+    } else {
+      return {
+        dtsRollup: !!pkgJson.types,
+        bundle: getOutputFromPackageJson(pkgJson)
+      };
     }
-  }
-  if (configPath) {
-    config = nodeutils.module_.import_(configPath);
-    if (!config.bundle) {
-      Object.assign(config, {
-        bundle: getOutputFromPackageJson(
-          pkgJson,
-          config.bundleOverwrite
-        )
-      });
-    }
-    if (pkgJson.types) {
-      Object.assign(config, { dtsRollup: true });
-    }
-    return config;
-  } else {
-    return {
-      dtsRollup: !!pkgJson.types,
-      bundle: getOutputFromPackageJson(pkgJson)
-    };
-  }
+  });
 }
 
 function loadEnv(input = {}) {
@@ -134,6 +156,26 @@ const verboseLog = (...args) => {
   }
 };
 
+var __async$3 = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
 const cwd = () => process.cwd();
 const isSameRollupInput = (input1, input2) => {
   const type1 = typeof input1;
@@ -156,12 +198,14 @@ function resolveDtsEntryFromEntry(declarationDir, entry) {
   }
   return nodePath.join(cwd(), declarationDir, entryUnshiftRoot);
 }
-async function serialize(tasks) {
-  return tasks.reduce((promise, next) => {
-    return promise.then(() => {
-      return next();
-    });
-  }, Promise.resolve());
+function serialize(tasks) {
+  return __async$3(this, null, function* () {
+    return tasks.reduce((promise, next) => {
+      return promise.then(() => {
+        return next();
+      });
+    }, Promise.resolve());
+  });
 }
 function strSplitByLength(str, len) {
   const result = str.match(new RegExp(`(.{1,${len}})`, "g"));
@@ -195,6 +239,26 @@ var __spreadValues$3 = (a, b) => {
   return a;
 };
 var __spreadProps$3 = (a, b) => __defProps$3(a, __getOwnPropDescs$3(b));
+var __async$2 = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
 function createCompilerProgram(tsConfigCompilerOptions, tsconfig) {
   const config = ts.getParsedCommandLineOfConfigFile(
     tsconfig,
@@ -232,73 +296,82 @@ function emitOnlyDeclarations(tsConfigCompilerOptions, tsconfig) {
     program.emit(void 0);
   }
 }
-async function dtsGen({
-  term,
-  input,
-  dtsFileName,
-  tsConfigFile = tsconfig
-}) {
-  const packageJsonFullPath = nodePath.resolve(
-    process.cwd(),
-    packageJson
-  );
-  emitOnlyDeclarations(
-    {
-      declaration: true,
-      emitDeclarationOnly: true,
-      declarationDir: dtsDir
-    },
-    tsConfigFile
-  );
-  nodePath.extname(input);
-  const mainEntry = resolveDtsEntryFromEntry(dtsDir, input) ;
-  const content = await nodeFs.readFile(mainEntry);
-  if (content.toString() === "") {
-    return;
-  }
-  const trimmedFile = dtsFileName || dtsEntry;
-  const config = apiExtractor.ExtractorConfig.prepare({
-    configObjectFullPath: void 0,
-    packageJsonFullPath,
-    ignoreMissingEntryPoint: true,
-    configObject: {
-      projectFolder: process.cwd(),
-      compiler: {
-        tsconfigFilePath: tsConfigFile
+function dtsGen(_0) {
+  return __async$2(this, arguments, function* ({
+    term,
+    input,
+    watch,
+    dtsFileName,
+    tsConfigFile = tsconfig
+  }) {
+    const packageJsonFullPath = nodePath.resolve(
+      process.cwd(),
+      packageJson
+    );
+    emitOnlyDeclarations(
+      {
+        declaration: true,
+        emitDeclarationOnly: true,
+        declarationDir: dtsDir,
+        incremental: true
       },
-      mainEntryPointFilePath: mainEntry,
-      dtsRollup: {
-        enabled: true,
-        publicTrimmedFilePath: trimmedFile
-      },
-      docModel: {
-        enabled: false
-      },
-      tsdocMetadata: {
-        enabled: false
+      tsConfigFile
+    );
+    nodePath.extname(input);
+    const mainEntry = resolveDtsEntryFromEntry(dtsDir, input) ;
+    const content = yield nodeFs.readFile(mainEntry);
+    if (content.toString() === "") {
+      return;
+    }
+    const trimmedFile = dtsFileName || dtsEntry;
+    const config = apiExtractor.ExtractorConfig.prepare({
+      configObjectFullPath: void 0,
+      packageJsonFullPath,
+      ignoreMissingEntryPoint: true,
+      configObject: {
+        projectFolder: process.cwd(),
+        compiler: {
+          tsconfigFilePath: tsConfigFile
+        },
+        mainEntryPointFilePath: mainEntry,
+        dtsRollup: {
+          enabled: true,
+          publicTrimmedFilePath: trimmedFile
+        },
+        docModel: {
+          enabled: false
+        },
+        tsdocMetadata: {
+          enabled: false
+        }
       }
+    });
+    const extractorResult = apiExtractor.Extractor.invoke(config, {
+      localBuild: true,
+      showDiagnostics: false,
+      showVerboseMessages: false,
+      typescriptCompilerFolder: nodePath.join(
+        require.resolve("typescript"),
+        "../.."
+      ),
+      messageCallback(message) {
+        message.logLevel = "none";
+      }
+    });
+    if (extractorResult.succeeded) ;
+    nodeutils.file.rmdirSync(dtsDir);
+    if (!watch) {
+      const message = ` \u2728 ${nodeutils.colors.bgBlack(
+        nodeutils.colors.bold(nodePath.relative(process.cwd(), input))
+      )} ${nodeutils.colors.bold("->")} ${nodePath.relative(
+        process.cwd(),
+        trimmedFile
+      )}`;
+      term.writeLine(message);
+      term.nextLine();
+      term.nextLine();
     }
   });
-  const extractorResult = apiExtractor.Extractor.invoke(config, {
-    localBuild: true,
-    showDiagnostics: false,
-    showVerboseMessages: false,
-    typescriptCompilerFolder: nodePath.join(
-      require.resolve("typescript"),
-      "../.."
-    ),
-    messageCallback(message2) {
-      message2.logLevel = "none";
-    }
-  });
-  if (extractorResult.succeeded) ;
-  nodeutils.file.rmdirSync(dtsDir);
-  const message = ` \u2728 ${nodeutils.colors.bgBlack(
-    nodeutils.colors.bold(nodePath.relative(process.cwd(), input))
-  )} ${nodeutils.colors.bold("->")} ${nodePath.relative(process.cwd(), trimmedFile)}`;
-  term.writeLine(message);
-  term.nextLine();
-  term.nextLine();
 }
 
 var __defProp$3 = Object.defineProperty;
@@ -336,6 +409,26 @@ var __objRest$1 = (source, exclude) => {
         target[prop] = source[prop];
     }
   return target;
+};
+var __async$1 = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
 };
 var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
 const Extensions = [
@@ -390,20 +483,20 @@ const applyPlugins = (options) => {
     bundleProgress()
   ].filter(Boolean);
 };
-const bundle = async ({
+const bundle = (_0) => __async$1(void 0, [_0], function* ({
   term,
   options,
   config,
   pkgJson
-}) => {
+}) {
   const bundles = [];
   if (!Array.isArray(options)) {
     options = [options];
   }
   try {
-    for (var iter = __forAwait(options), more, temp, error; more = !(temp = await iter.next()).done; more = false) {
+    for (var iter = __forAwait(options), more, temp, error; more = !(temp = yield iter.next()).done; more = false) {
       const option = temp.value;
-      const bundle_ = await rollup.rollup(option);
+      const bundle_ = yield rollup.rollup(option);
       let { output } = option;
       const { input } = option;
       if (output) {
@@ -411,10 +504,10 @@ const bundle = async ({
           output = [output];
         }
         for (const output_ of output) {
-          bundles.push(async () => {
+          bundles.push(() => __async$1(void 0, null, function* () {
             const start = Date.now();
-            await bundle_.generate(output_);
-            const output2 = await bundle_.write(output_);
+            yield bundle_.generate(output_);
+            const output2 = yield bundle_.write(output_);
             const duration = Date.now() - start;
             const message = ` \u2728 ${nodeutils.colors.bgBlack(
               nodeutils.colors.bold(nodePath.relative(cwd(), input))
@@ -426,17 +519,17 @@ const bundle = async ({
             return __spreadProps$2(__spreadValues$2({}, output2), {
               duration
             });
-          });
+          }));
         }
-        bundles.push(async () => {
+        bundles.push(() => __async$1(void 0, null, function* () {
           const start = Date.now();
-          await dts({ term, config, pkgJson, rollup: option });
+          yield dts({ term, config, pkgJson, rollup: option });
           return {
             // TODO: Add input value.
             input: "",
             duration: Date.now() - start
           };
-        });
+        }));
       } else {
         verboseLog(`Output not found for input '${option.input}', skip...`);
       }
@@ -445,26 +538,26 @@ const bundle = async ({
     error = [temp];
   } finally {
     try {
-      more && (temp = iter.return) && await temp.call(iter);
+      more && (temp = iter.return) && (yield temp.call(iter));
     } finally {
       if (error)
         throw error[0];
     }
   }
   return bundles;
-};
-const watch_ = async (options, term, {
+});
+const watch_ = (_0, _1, ..._2) => __async$1(void 0, [_0, _1, ..._2], function* (options, term, {
   bundleEnd,
   bundleStart,
   start,
   end,
   error
-} = {}) => {
+} = {}) {
   const watcher = rollup.watch(options);
   let firstRun = true;
   let startTime;
   try {
-    await new Promise(() => {
+    yield new Promise(() => {
       watcher.on(`event`, (e) => {
         const code = e.code;
         switch (code) {
@@ -516,122 +609,131 @@ const watch_ = async (options, term, {
     });
   } catch (e) {
   }
-};
-async function dts({
-  term,
-  config,
-  rollup: rollup2,
-  pkgJson
-}) {
-  var _a;
-  const { input } = rollup2;
-  const { module, main, types } = pkgJson;
-  const output = module || main;
-  const inputBasename = nodePath.basename(input);
-  const outputBasepath = output ? nodePath.dirname(output) : outputDir;
-  const ext = nodePath.extname(inputBasename);
-  const outputBasename = ext ? inputBasename.replace(ext, ".d.ts") : `${inputBasename != null ? inputBasename : "index"}.d.ts`;
-  if (config.dtsRollup) {
-    await dtsGen({
-      term,
-      input,
-      tsConfigFile: (_a = config.project) != null ? _a : tsconfig,
-      dtsFileName: types || nodePath.resolve(cwd(), outputBasepath, outputBasename)
-    });
-  }
-}
-async function startBundle({
-  term,
-  config,
-  pkgJson,
-  tsConfig
-}) {
-  var _a, _b, _c, _d;
-  const paths = (_b = (_a = tsConfig.compilerOptions) == null ? void 0 : _a.paths) != null ? _b : {};
-  const target = (_d = (_c = tsConfig.compilerOptions) == null ? void 0 : _c.target) != null ? _d : "es6";
-  const {
-    eslint: eslint2,
-    commonjs: commonjs2,
-    nodeResolve: nodeResolve2,
-    esbuild: esbuild2,
-    styles: styles2,
-    rollup: rollupOpt = {},
-    // Options
-    externals,
-    minify,
-    sourcemap,
-    input: cliInput,
-    watch: watch2
-  } = config;
-  const rollupPlugins = applyPlugins({
-    eslint: eslint2,
-    commonjs: commonjs2,
-    nodeResolve: nodeResolve2,
-    esbuild: Object.assign({ minify, target }, esbuild2 != null ? esbuild2 : {}),
-    styles: styles2,
-    alias: { alias: paths },
-    clean: { active: !watch2 }
+});
+function dts(_0) {
+  return __async$1(this, arguments, function* ({
+    term,
+    config,
+    rollup: rollup2,
+    pkgJson
+  }) {
+    var _a;
+    const { input } = rollup2;
+    const { module, main, types } = pkgJson;
+    const output = module || main;
+    const inputBasename = nodePath.basename(input);
+    const outputBasepath = output ? nodePath.dirname(output) : outputDir;
+    const ext = nodePath.extname(inputBasename);
+    const outputBasename = ext ? inputBasename.replace(ext, ".d.ts") : `${inputBasename != null ? inputBasename : "index"}.d.ts`;
+    if (config.dtsRollup) {
+      yield dtsGen({
+        term,
+        input,
+        watch: config.watch,
+        tsConfigFile: (_a = config.project) != null ? _a : tsconfig,
+        dtsFileName: types || nodePath.resolve(cwd(), outputBasepath, outputBasename)
+      });
+    }
   });
-  const externalsFn = externalsGenerator(externals, pkgJson);
-  let bundles = [];
-  const _e = rollupOpt, { plugins: extraPlugins = [] } = _e, rollupOpts = __objRest$1(_e, ["plugins"]);
-  const rollupOptionWithoutInputOutput = __spreadValues$2({
-    perf: true,
-    treeshake: true,
-    strictDeprecations: true,
-    plugins: [...rollupPlugins, extraPlugins],
-    external: externalsFn
-  }, rollupOpts != null ? rollupOpts : {});
-  if (config.bundle) {
-    bundles = config.bundle.reduce((options, bundle2) => {
-      const _a2 = bundle2, { input: bundleInput } = _a2, otherProps = __objRest$1(_a2, ["input"]);
-      const option = __spreadValues$2({
-        input: bundleInput || (cliInput ? normalizeCliInput(cliInput) : input),
-        output: [__spreadProps$2(__spreadValues$2({}, otherProps), { sourcemap })]
-      }, rollupOptionWithoutInputOutput);
-      if (options.length === 0) {
-        return [option];
-      }
-      const i = options.findIndex(
-        (o) => isSameRollupInput(o.input, option.input)
-      );
-      if (i === -1) {
-        options.push(option);
-      } else {
-        options[i] = Object.assign({}, options[i], {
-          output: [
-            ...options[i].output,
-            __spreadProps$2(__spreadValues$2({}, otherProps), { sourcemap })
-          ]
-        });
-      }
-      return options;
-    }, []);
-  }
-  if (watch2) {
-    await watch_(bundles, term, {
-      async end() {
-        await Promise.all(
-          bundles.map(async (opts) => {
-            await dts({
-              term,
-              config,
-              pkgJson,
-              rollup: opts
-            });
-          })
+}
+function startBundle(_0) {
+  return __async$1(this, arguments, function* ({
+    term,
+    config,
+    pkgJson,
+    tsConfig
+  }) {
+    var _a, _b, _c;
+    const paths = (_b = (_a = tsConfig.compilerOptions) == null ? void 0 : _a.paths) != null ? _b : {};
+    const {
+      eslint: eslint2,
+      commonjs: commonjs2,
+      nodeResolve: nodeResolve2,
+      esbuild: esbuild2,
+      styles: styles2,
+      rollup: rollupOpt = {},
+      // Options
+      externals,
+      minify,
+      sourcemap,
+      input: cliInput,
+      watch: watch2
+    } = config;
+    const rollupPlugins = applyPlugins({
+      eslint: eslint2,
+      commonjs: commonjs2,
+      nodeResolve: nodeResolve2,
+      esbuild: Object.assign(
+        { minify, target: (_c = config.target) != null ? _c : "ES2015" },
+        esbuild2 != null ? esbuild2 : {}
+      ),
+      styles: styles2,
+      alias: { alias: paths },
+      clean: { active: !watch2 }
+    });
+    const externalsFn = externalsGenerator(externals, pkgJson);
+    let bundles = [];
+    const _d = rollupOpt, { plugins: extraPlugins = [] } = _d, rollupOpts = __objRest$1(_d, ["plugins"]);
+    const rollupOptionWithoutInputOutput = __spreadValues$2({
+      perf: true,
+      treeshake: true,
+      strictDeprecations: true,
+      plugins: [...rollupPlugins, extraPlugins],
+      external: externalsFn
+    }, rollupOpts != null ? rollupOpts : {});
+    if (config.bundle) {
+      bundles = config.bundle.reduce((options, bundle2) => {
+        const _a2 = bundle2, { input: bundleInput } = _a2, otherProps = __objRest$1(_a2, ["input"]);
+        const option = __spreadValues$2({
+          input: bundleInput || (cliInput ? normalizeCliInput(cliInput) : input),
+          output: [__spreadProps$2(__spreadValues$2({}, otherProps), { sourcemap })]
+        }, rollupOptionWithoutInputOutput);
+        if (options.length === 0) {
+          return [option];
+        }
+        const i = options.findIndex(
+          (o) => isSameRollupInput(o.input, option.input)
         );
-      }
-    });
-  } else {
-    const tasks = await bundle({
-      options: bundles,
-      config,
-      pkgJson,
-      term
-    });
-    await serialize(tasks);
-  }
+        if (i === -1) {
+          options.push(option);
+        } else {
+          options[i] = Object.assign({}, options[i], {
+            output: [
+              ...options[i].output,
+              __spreadProps$2(__spreadValues$2({}, otherProps), { sourcemap })
+            ]
+          });
+        }
+        return options;
+      }, []);
+    }
+    if (watch2) {
+      yield watch_(bundles, term, {
+        end() {
+          return __async$1(this, null, function* () {
+            yield Promise.all(
+              bundles.map((opts) => __async$1(this, null, function* () {
+                yield dts({
+                  term,
+                  config,
+                  pkgJson,
+                  rollup: opts
+                });
+              }))
+            );
+          });
+        }
+      });
+    } else {
+      const tasks = yield bundle({
+        options: bundles,
+        config,
+        pkgJson,
+        term
+      });
+      yield serialize(tasks);
+    }
+  });
 }
 
 var __defProp$2 = Object.defineProperty;
@@ -813,45 +915,67 @@ var __objRest = (source, exclude) => {
     }
   return target;
 };
-async function cli(args) {
-  const [, ..._args] = args;
-  const pkgJson = nodeutils.json.readJSONSync(packageJson);
-  const beatsPkgJson = nodeutils.json.readJSONSync(
-    nodePath.resolve(require.resolve(".."), "../../package.json")
-  );
-  const term = new Terminal();
-  const _a = nodeutils.parser(_args), {
-    project,
-    config: configPath
-  } = _a, inputOptions = __objRest(_a, [
-    "project",
-    "config"
-  ]);
-  loadEnv();
-  const isWatch = inputOptions.watch;
-  if (!isWatch) {
-    term.clearScreen().box([
-      nodeutils.colors.red(`@nfts/beats(${beatsPkgJson.version})`)
-    ]);
-  }
-  term.writeLine(`Read ts config from ${project || tsconfig}`);
-  term.nextLine();
-  const tsConfig = loadTsConfigJson(project != null ? project : tsconfig);
-  if (configPath) {
-    term.writeLine(`Read beats config from ${configPath}`);
-    term.nextLine();
-  }
-  const config = await tryReadConfig({
-    configPath,
-    pkgJson
+var __async = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
   });
-  return startBundle({
-    term,
-    config: __spreadProps(__spreadValues(__spreadValues({}, config), inputOptions), {
-      project
-    }),
-    pkgJson,
-    tsConfig
+};
+function cli(args) {
+  return __async(this, null, function* () {
+    const [, ..._args] = args;
+    const pkgJson = nodeutils.json.readJSONSync(packageJson);
+    const beatsPkgJson = nodeutils.json.readJSONSync(
+      nodePath.resolve(require.resolve(".."), "../../package.json")
+    );
+    const term = new Terminal();
+    const _a = nodeutils.parser(_args), {
+      project,
+      config: configPath
+    } = _a, inputOptions = __objRest(_a, [
+      "project",
+      "config"
+    ]);
+    loadEnv();
+    const isWatch = inputOptions.watch;
+    if (!isWatch) {
+      term.clearScreen().box([
+        nodeutils.colors.red(`@nfts/beats(${beatsPkgJson.version})`)
+      ]);
+    }
+    term.writeLine(`Read ts config from ${project || tsconfig}`);
+    term.nextLine();
+    const tsConfig = loadTsConfigJson(project != null ? project : tsconfig);
+    if (configPath) {
+      term.writeLine(`Read beats config from ${configPath}`);
+      term.nextLine();
+    }
+    const config = yield tryReadConfig({
+      configPath,
+      pkgJson
+    });
+    return startBundle({
+      term,
+      config: __spreadProps(__spreadValues(__spreadValues({}, config), inputOptions), {
+        project
+      }),
+      pkgJson,
+      tsConfig
+    });
   });
 }
 cli(process.argv.slice(1)).then(() => {
@@ -863,4 +987,3 @@ cli(process.argv.slice(1)).then(() => {
 
 exports.defineConfig = defineConfig;
 exports.tryReadConfig = tryReadConfig;
-//# sourceMappingURL=index.cjs.map

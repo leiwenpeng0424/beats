@@ -303,16 +303,15 @@ async function dts({
         : `${inputBasename ?? "index"}.d.ts`;
 
     if (config.dtsRollup) {
-        // await measure("dts", async () => {
         await dtsGen({
             term,
             input,
+            watch: config.watch,
             tsConfigFile: config.project ?? CONSTANTS.tsconfig,
             dtsFileName:
                 types ||
                 nodePath.resolve(cwd(), outputBasepath, outputBasename),
         });
-        // });
     }
 }
 
@@ -328,7 +327,7 @@ export async function startBundle({
     tsConfig: ITSConfigJson;
 }) {
     const paths = tsConfig.compilerOptions?.paths ?? {};
-    const target = tsConfig.compilerOptions?.target ?? "es6";
+
     const {
         eslint,
         commonjs,
@@ -348,7 +347,10 @@ export async function startBundle({
         eslint,
         commonjs,
         nodeResolve,
-        esbuild: Object.assign({ minify, target }, esbuild ?? {}),
+        esbuild: Object.assign(
+            { minify, target: config.target ?? "ES2015" },
+            esbuild ?? {},
+        ),
         styles,
         alias: { alias: paths },
         clean: { active: !watch },
@@ -436,3 +438,4 @@ export async function startBundle({
         // });
     }
 }
+

@@ -80,6 +80,7 @@ export interface IDtsGenOptions {
 export async function dtsGen({
     term,
     input,
+    watch,
     dtsFileName,
     tsConfigFile = CONSTANTS.tsconfig,
 }: IDtsGenOptions) {
@@ -94,6 +95,7 @@ export async function dtsGen({
             declaration: true,
             emitDeclarationOnly: true,
             declarationDir: CONSTANTS.dtsDir,
+            incremental: true,
         },
         tsConfigFile,
     );
@@ -159,12 +161,17 @@ export async function dtsGen({
 
     File.rmdirSync(CONSTANTS.dtsDir);
 
-    const message = ` ✨ ${colors.bgBlack(
-        colors.bold(nodePath.relative(process.cwd(), input)),
-    )} ${colors.bold("->")} ${nodePath.relative(process.cwd(), trimmedFile)}`;
+    if (!watch) {
+        const message = ` ✨ ${colors.bgBlack(
+            colors.bold(nodePath.relative(process.cwd(), input)),
+        )} ${colors.bold("->")} ${nodePath.relative(
+            process.cwd(),
+            trimmedFile,
+        )}`;
 
-    term.writeLine(message);
-    term.nextLine();
-    term.nextLine();
+        term.writeLine(message);
+        term.nextLine();
+        term.nextLine();
+    }
 }
 
