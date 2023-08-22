@@ -316,13 +316,6 @@ async function dts({
     }
 }
 
-/**
- * Start rollup bundle process.
- * @param config
- * @param pkgJson
- * @param tsConfig
- * @param term
- */
 export async function startBundle({
     term,
     config,
@@ -335,6 +328,7 @@ export async function startBundle({
     tsConfig: ITSConfigJson;
 }) {
     const paths = tsConfig.compilerOptions?.paths ?? {};
+    const target = tsConfig.compilerOptions?.target ?? "es6";
     const {
         eslint,
         commonjs,
@@ -354,7 +348,7 @@ export async function startBundle({
         eslint,
         commonjs,
         nodeResolve,
-        esbuild: Object.assign({ minify }, esbuild ?? {}),
+        esbuild: Object.assign({ minify, target }, esbuild ?? {}),
         styles,
         alias: { alias: paths },
         clean: { active: !watch },

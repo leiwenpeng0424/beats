@@ -11,6 +11,7 @@ import nodePath from "node:path";
 async function cli(args: string[]) {
     const [, ..._args] = args;
     const pkgJson = Json.readJSONSync<IPackageJson>(CONSTANTS.packageJson);
+
     const beatsPkgJson = Json.readJSONSync<IPackageJson>(
         nodePath.resolve(require.resolve(".."), "../../package.json"),
     );
@@ -20,24 +21,32 @@ async function cli(args: string[]) {
     const {
         project,
         config: configPath,
-        debug = false,
-        verbose = false,
-        ...restInputOptions
+        ...inputOptions
     } = parser<CLIOptions>(_args);
 
     // Load `.env` file if possible.
-    loadEnv({ DEBUG: String(debug), VERBOSE: String(verbose) });
+    loadEnv();
+
+    const isWatch = inputOptions.watch;
 
     // Show cli info box.
-    if (!restInputOptions.watch) {
+    if (!isWatch) {
         term.clearScreen().box([
             colors.red(`@nfts/beats(${beatsPkgJson.version})`),
         ]);
-        term.nextLine();
+        // term.nextLine();
     }
+
+    term.writeLine(`Read ts config from ${project || CONSTANTS.tsconfig}`);
+    term.nextLine();
 
     // Read `tsconfig.json`
     const tsConfig = loadTsConfigJson(project ?? CONSTANTS.tsconfig);
+
+    if (configPath) {
+        term.writeLine(`Read beats config from ${configPath}`);
+        term.nextLine();
+    }
 
     // Load `beats.config.json`.
     const config = await tryReadConfig({
@@ -49,7 +58,7 @@ async function cli(args: string[]) {
         term,
         config: {
             ...config,
-            ...restInputOptions,
+            ...inputOptions,
             project,
         },
         pkgJson,
