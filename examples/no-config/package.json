@@ -5,5 +5,8 @@
     "types": "./index.d.ts",
     "scripts": {
         "build": "beats"
+    },
+    "devDependencies": {
+        "@nfts/cli": "workspace:*"
     }
 }

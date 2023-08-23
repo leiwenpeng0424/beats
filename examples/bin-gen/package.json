@@ -8,5 +8,8 @@
     "bin": {
         "beats": "./bin/beats.js",
         "beatsx": "./bin/beatsx.js"
+    },
+    "devDependencies": {
+        "@nfts/cli": "workspace:*"
     }
 }

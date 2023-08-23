@@ -528,10 +528,7 @@ function dtsGen(_0) {
       const duration = Date.now() - start;
       const message = `${nodeutils.colors.bgBlack(
         nodeutils.colors.bold(nodePath.relative(process.cwd(), input))
-      )} ${nodeutils.colors.bold("->")} ${nodePath.relative(
-        process.cwd(),
-        trimmedFile
-      )} (${nodeutils.ms(duration)})`;
+      )} ${nodeutils.colors.bold("->")} ${trimmedFile} (${nodeutils.ms(duration)})`;
       log.info(message);
     }
   });
