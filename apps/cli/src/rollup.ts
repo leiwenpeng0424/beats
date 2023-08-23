@@ -1,10 +1,13 @@
 import type { Config, TRollupOptions } from "@/configuration";
+import * as CONSTANTS from "@/constants";
+import { dtsGen } from "@/dts";
+import log from "@/log";
 import { cwd, isSameRollupInput, normalizeCliInput, serialize } from "@/utils";
 import { colors, ms } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
+import alias, { RollupAliasOptions } from "@nfts/plugin-alias";
 import cleanup, { RollupCleanupOptions } from "@nfts/plugin-cleanup";
 import esbuild from "@nfts/plugin-esbuild";
-import bundleProgress from "@nfts/plugin-progress";
 import type { ITSConfigJson } from "@nfts/tsc-json";
 import commonjs from "@rollup/plugin-commonjs";
 import eslint from "@rollup/plugin-eslint";
@@ -18,29 +21,8 @@ import {
     type RollupOutput,
     type RollupWatchOptions,
 } from "rollup";
-// import postcssPlugin from "@/plugins/styles";
-import * as CONSTANTS from "@/constants";
-import { dtsGen } from "@/dts";
-import { verboseLog } from "@/log";
-import alias, { RollupAliasOptions } from "@nfts/plugin-alias";
 // import styles from "rollup-plugin-styles";
 import styles from "@nfts/plugin-styles";
-import Terminal from "./terminal";
-
-export const Extensions = [
-    ".js",
-    ".jsx",
-    ".ts",
-    ".tsx",
-    ".json",
-    ".mjs",
-    ".cjs",
-    ".mts",
-    ".cts",
-    ".node",
-];
-
-export const StyleSheetExtensions = [".css", ".less", ".scss", ".sass"];
 
 /**
  *
@@ -97,16 +79,19 @@ export const applyPlugins = (
                 {
                     rootDir: cwd(),
                     preferBuiltins: false,
-                    extensions: Extensions,
+                    extensions: CONSTANTS.Extensions,
                 },
                 options?.nodeResolve ?? {},
             ),
         ),
         commonjs(
-            Object.assign({ extensions: Extensions }, options?.commonjs ?? {}),
+            Object.assign(
+                { extensions: CONSTANTS.Extensions },
+                options?.commonjs ?? {},
+            ),
         ),
         eslint(Object.assign({}, options?.eslint ?? {})),
-        bundleProgress(),
+        // bundleProgress(),
     ].filter(Boolean);
 };
 
@@ -123,12 +108,10 @@ export type TBundleOutput =
  *
  */
 export const bundle = async ({
-    term,
     options,
     config,
     pkgJson,
 }: {
-    term: Terminal;
     options: TRollupOptions | TRollupOptions[];
     config: Config;
     pkgJson: IPackageJson;
@@ -140,6 +123,7 @@ export const bundle = async ({
     }
 
     for await (const option of options) {
+        const start = Date.now();
         const bundle_ = await rollup(option);
         let { output } = option;
         const { input } = option;
@@ -151,20 +135,16 @@ export const bundle = async ({
             for (const output_ of output) {
                 // Add bundle task
                 bundles.push(async () => {
-                    const start = Date.now();
                     await bundle_.generate(output_);
                     const output = await bundle_.write(output_);
-
                     const duration = Date.now() - start;
-
-                    const message = ` ✨ ${colors.bgBlack(
+                    const message = `${colors.bgBlack(
                         colors.bold(nodePath.relative(cwd(), input)),
                     )} ${colors.bold("->")} ${output_.file as string} (${ms(
                         duration,
                     )})`;
 
-                    term.writeLine(message);
-                    term.nextLine();
+                    log.info(`${message}`);
 
                     return {
                         ...output,
@@ -176,7 +156,11 @@ export const bundle = async ({
             // One bundle one dts.
             bundles.push(async () => {
                 const start = Date.now();
-                await dts({ term, config, pkgJson, rollup: option });
+                await dts({
+                    config,
+                    pkgJson,
+                    input: option["input"],
+                });
                 return {
                     // TODO: Add input value.
                     input: "",
@@ -184,7 +168,9 @@ export const bundle = async ({
                 };
             });
         } else {
-            verboseLog(`Output not found for input '${option.input}', skip...`);
+            log.verbose(
+                `Output not found for input '${option.input}', skip...`,
+            );
         }
     }
 
@@ -198,78 +184,78 @@ export const bundle = async ({
  */
 export const watch_ = async (
     options: RollupWatchOptions | RollupWatchOptions[],
-    term: Terminal,
     {
-        bundleEnd,
-        bundleStart,
-        start,
-        end,
-        error,
+        config,
+        pkgJson,
     }: {
-        bundleEnd?: () => void;
-        bundleStart?: () => void;
-        start?: () => void;
-        end?: () => Promise<void>;
-        error?: () => void;
-    } = {},
+        config: Config;
+        pkgJson: IPackageJson;
+    },
 ) => {
     const watcher = watch(options);
     let firstRun = true;
-    let startTime: number;
+
     try {
         await new Promise<void>(() => {
-            watcher.on(`event`, (e) => {
-                const code = e.code;
-                switch (code) {
-                    case "START": {
-                        term.clearScreen();
-                        start?.();
-                        if (firstRun) {
-                            term.writeLine(`Start rollup watching bundle.`);
+            watcher
+                .on(`event`, (e) => {
+                    const { code } = e;
+                    switch (code) {
+                        case "START": {
+                            firstRun && log.info("Start watching process");
+                            break;
                         }
-                        startTime = new Date().getTime();
-                        break;
-                    }
 
-                    case "BUNDLE_START": {
-                        bundleStart?.();
-                        break;
-                    }
+                        case "BUNDLE_START": {
+                            break;
+                        }
 
-                    case "BUNDLE_END": {
-                        bundleEnd?.();
-                        break;
-                    }
+                        case "BUNDLE_END": {
+                            const { input, output, duration } = e;
+                            log.info(
+                                `${input} -> ${output
+                                    .map((outputPath) =>
+                                        nodePath.relative(
+                                            process.cwd(),
+                                            outputPath,
+                                        ),
+                                    )
+                                    .join(", ")}`,
+                            );
+                            log.info(`Bundle end in ${ms(duration)}`);
+                            break;
+                        }
 
-                    case "END": {
-                        end?.().finally(() => {
-                            if (firstRun) {
-                                term.writeLine(
-                                    `Bundle end in ${ms(
-                                        new Date().getTime() - startTime,
-                                    )}`,
-                                );
-                            } else {
-                                term.writeLine(
-                                    `Re-bundle end ${ms(
-                                        new Date().getTime() - startTime,
-                                    )}`,
-                                );
-                            }
+                        case "END": {
                             firstRun = false;
-                        });
+                            const startTime = new Date().getTime();
 
-                        break;
+                            const input = Array.isArray(options)
+                                ? (options[0]["input"] as string)
+                                : (options.input as string);
+
+                            dts({
+                                input,
+                                config,
+                                pkgJson,
+                            }).then(() => {
+                                log.info(`${input} -> ${pkgJson.types}`);
+                                log.info(
+                                    `Dts end in ${ms(Date.now() - startTime)}`,
+                                );
+                            });
+                            break;
+                        }
+                        case "ERROR": {
+                            log.error(e.error.message);
+                            break;
+                        }
                     }
-                    case "ERROR": {
-                        error?.();
-                        term.clearScreen().writeLine(
-                            `Bundle Error: ${e.error.message}`,
-                        );
-                        break;
-                    }
-                }
-            });
+                })
+                .on("change", (file) => {
+                    log.info(`changed: ${file}`);
+                })
+                .on("restart", () => log.info(`Restart`));
         });
     } catch (e) {
         //
@@ -277,17 +263,14 @@ export const watch_ = async (
 };
 
 async function dts({
-    term,
+    input,
     config,
-    rollup,
     pkgJson,
 }: {
-    term: Terminal;
+    input: string;
     config: Config;
-    rollup: TRollupOptions;
     pkgJson: IPackageJson;
 }): Promise<void> {
-    const { input } = rollup;
     const { module, main, types } = pkgJson;
     const output = module || main;
 
@@ -304,7 +287,6 @@ async function dts({
 
     if (config.dtsRollup) {
         await dtsGen({
-            term,
             input,
             watch: config.watch,
             tsConfigFile: config.project ?? CONSTANTS.tsconfig,
@@ -316,12 +298,10 @@ async function dts({
 }
 
 export async function startBundle({
-    term,
     config,
     pkgJson,
     tsConfig,
 }: {
-    term: Terminal;
     config: Config;
     pkgJson: IPackageJson;
     tsConfig: ITSConfigJson;
@@ -412,30 +392,14 @@ export async function startBundle({
     }
 
     if (watch) {
-        await watch_(bundles, term, {
-            async end() {
-                await Promise.all(
-                    bundles.map(async (opts) => {
-                        await dts({
-                            term,
-                            config,
-                            pkgJson,
-                            rollup: opts,
-                        });
-                    }),
-                );
-            },
-        });
+        await watch_(bundles, { config, pkgJson });
     } else {
-        // await measure("rollup", async () => {
         const tasks = await bundle({
             options: bundles,
             config,
             pkgJson,
-            term,
         });
         await serialize(tasks);
-        // });
     }
 }
 

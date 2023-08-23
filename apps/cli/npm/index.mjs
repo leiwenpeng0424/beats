@@ -1,21 +1,20 @@
-import { module_, file, colors, ms, json, parser } from '@nfts/nodeutils';
+import { module_, colors, file, ms, json, parser } from '@nfts/nodeutils';
 import nodeFs from 'node:fs/promises';
 import nodePath from 'node:path';
 import dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
+import readline from 'node:readline';
+import { ExtractorConfig, Extractor } from '@microsoft/api-extractor';
+import ts, { sys, createIncrementalCompilerHost, createIncrementalProgram, readJsonConfigFile, parseJsonSourceFileConfigFileContent } from 'typescript';
+import alias from '@nfts/plugin-alias';
 import cleanup from '@nfts/plugin-cleanup';
 import esbuild from '@nfts/plugin-esbuild';
-import bundleProgress from '@nfts/plugin-progress';
 import commonjs from '@rollup/plugin-commonjs';
 import eslint from '@rollup/plugin-eslint';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import Module from 'node:module';
 import { rollup, watch } from 'rollup';
-import { ExtractorConfig, Extractor } from '@microsoft/api-extractor';
-import ts, { sys, createCompilerHost, createProgram, readJsonConfigFile, parseJsonSourceFileConfigFileContent } from 'typescript';
-import alias from '@nfts/plugin-alias';
 import styles from '@nfts/plugin-styles';
-import readline from 'node:readline';
 
 const tsconfig = "./tsconfig.json";
 const packageJson = "./package.json";
@@ -28,6 +27,18 @@ const esmExt = [".mjs", ".mts"];
 const cjsExt = [".cjs", ".cts"];
 const esmMiddleNames = [".esm.", ".es."];
 const cjsMiddleNames = [".cjs."];
+const Extensions = [
+  ".js",
+  ".jsx",
+  ".ts",
+  ".tsx",
+  ".json",
+  ".mjs",
+  ".cjs",
+  ".mts",
+  ".cts",
+  ".node"
+];
 
 var __knownSymbol$1 = (name, symbol) => {
   if (symbol = Symbol[name])
@@ -148,11 +159,176 @@ function loadEnv(input = {}) {
   dotenvExpand.expand(config);
 }
 
-const verboseLog = (...args) => {
-  if (process.env.VERBOSE) {
-    console.log(...args);
-  }
+var __defProp$5 = Object.defineProperty;
+var __defNormalProp$5 = (obj, key, value) => key in obj ? __defProp$5(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField$1 = (obj, key, value) => {
+  __defNormalProp$5(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
 };
+function strSplitByLength(str, len) {
+  const result = str.match(new RegExp(`(.{1,${len}})`, "g"));
+  return result != null ? result : [];
+}
+function stripAnsi(text, { onlyFirst } = { onlyFirst: true }) {
+  const pattern = [
+    "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
+    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))"
+  ].join("|");
+  const regexp = new RegExp(pattern, onlyFirst ? void 0 : "g");
+  return text.replace(regexp, "");
+}
+class Terminal {
+  constructor() {
+    __publicField$1(this, "stdin", process.stdin);
+    __publicField$1(this, "stdout", process.stdout);
+    __publicField$1(this, "x");
+    __publicField$1(this, "y");
+    __publicField$1(this, "maxCols");
+    __publicField$1(this, "rl");
+    this.rl = readline.createInterface({
+      input: this.stdin,
+      output: this.stdout,
+      historySize: 0,
+      removeHistoryDuplicates: true,
+      tabSize: 4,
+      prompt: "",
+      terminal: process.stdout.isTTY
+    });
+    const pos = this.rl.getCursorPos();
+    this.x = pos.cols;
+    this.y = pos.rows;
+    this.maxCols = process.stdout.columns > 60 ? 60 : process.stdout.columns;
+  }
+  _write(content) {
+    readline.clearScreenDown(this.stdin);
+    const segments = strSplitByLength(content, this.maxCols);
+    segments.forEach((text) => {
+      this.rl.write(text);
+      this.y += 1;
+    });
+    return this;
+  }
+  nextLine() {
+    this.y += 1;
+    this.rl.write("\r");
+    return this;
+  }
+  clearLine(cb) {
+    process.stdout.cursorTo(0);
+    process.stdout.clearLine(1, () => {
+      cb == null ? void 0 : cb();
+    });
+    return this;
+  }
+  writeSameLine(content) {
+    this.clearLine(() => {
+      this._write(content);
+    });
+    return this;
+  }
+  writeLine(content, options = {
+    endWithNewLine: false
+  }) {
+    this._write(content);
+    if (options.endWithNewLine) {
+      this.nextLine();
+    }
+    return this;
+  }
+  clearScreen() {
+    this.x = 0;
+    this.y = 0;
+    readline.cursorTo(this.stdin, this.x, this.y);
+    readline.clearScreenDown(this.stdin);
+    return this;
+  }
+  box(content) {
+    this.writeLine(
+      `\u256D${Array(this.maxCols - 2).fill("\u2500").join("")}\u256E`
+    );
+    this.nextLine();
+    const padding = 4;
+    const writeCenter = (text) => {
+      const originLen = text.length;
+      const stripLen = stripAnsi(text).length;
+      const len = stripAnsi(text).length - (originLen - stripLen) - 0;
+      const restLen = this.maxCols - padding * 2;
+      if (restLen < len) {
+        strSplitByLength(text, restLen).forEach((t) => {
+          writeCenter(t);
+        });
+      } else {
+        const left = Math.ceil((restLen - len) / 2);
+        const leftPadding = "\u2502" + Array(left + padding - 1).fill(" ").join("");
+        const rightPadding = Array(restLen - left - len + padding - 1).fill(" ").join("") + "\u2502";
+        this.writeLine(`${leftPadding}${text}${rightPadding}`);
+        this.nextLine();
+      }
+    };
+    const contents = [
+      " ",
+      typeof content === "string" ? content : content,
+      " "
+    ].flat();
+    contents.forEach((t) => {
+      writeCenter(t);
+    });
+    this.writeLine(
+      `\u2570${Array(this.maxCols - 2).fill("\u2500").join("")}\u256F`
+    );
+    this.nextLine();
+    return this;
+  }
+}
+
+var __defProp$4 = Object.defineProperty;
+var __defNormalProp$4 = (obj, key, value) => key in obj ? __defProp$4(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp$4(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+class Log {
+  constructor({ term: term2 }) {
+    __publicField(this, "term");
+    this.term = term2;
+  }
+  info(text) {
+    if (process.env.DEBUG) {
+      this.term.writeLine(
+        `${colors.magenta(colors.bold("INFO"))} \u25B6\uFE0E ${text}`
+      );
+      term.nextLine();
+    }
+  }
+  debug(text) {
+    if (process.env.DEBUG) {
+      this.term.writeLine(
+        `${colors.magenta(colors.bold("DEBUG"))} \u25B6\uFE0E ${text}`
+      );
+      term.nextLine();
+    }
+  }
+  verbose(text) {
+    if (process.env.VERBOSE) {
+      this.term.writeLine(
+        `${colors.magenta(colors.bold("VERBOSE"))} \u25B6\uFE0E ${text}`
+      );
+      term.nextLine();
+    }
+  }
+  error(text) {
+    this.term.writeLine(`${colors.red(colors.bold("ERROR"))}`);
+    term.nextLine();
+    this.term.writeLine(`${text}`);
+    term.nextLine();
+  }
+  warn(text) {
+    this.term.writeLine(`${colors.yellow(colors.bold("WARN"))} \u25B6\uFE0E ${text}`);
+    term.nextLine();
+  }
+}
+const term = new Terminal();
+var log = new Log({ term });
 
 var __async$3 = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
@@ -205,34 +381,22 @@ function serialize(tasks) {
     }, Promise.resolve());
   });
 }
-function strSplitByLength(str, len) {
-  const result = str.match(new RegExp(`(.{1,${len}})`, "g"));
-  return result != null ? result : [];
-}
-function stripAnsi(text, { onlyFirst } = { onlyFirst: true }) {
-  const pattern = [
-    "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
-    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))"
-  ].join("|");
-  const regexp = new RegExp(pattern, onlyFirst ? void 0 : "g");
-  return text.replace(regexp, "");
-}
 
-var __defProp$4 = Object.defineProperty;
+var __defProp$3 = Object.defineProperty;
 var __defProps$3 = Object.defineProperties;
 var __getOwnPropDescs$3 = Object.getOwnPropertyDescriptors;
 var __getOwnPropSymbols$3 = Object.getOwnPropertySymbols;
 var __hasOwnProp$3 = Object.prototype.hasOwnProperty;
 var __propIsEnum$3 = Object.prototype.propertyIsEnumerable;
-var __defNormalProp$4 = (obj, key, value) => key in obj ? __defProp$4(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __defNormalProp$3 = (obj, key, value) => key in obj ? __defProp$3(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __spreadValues$3 = (a, b) => {
   for (var prop in b || (b = {}))
     if (__hasOwnProp$3.call(b, prop))
-      __defNormalProp$4(a, prop, b[prop]);
+      __defNormalProp$3(a, prop, b[prop]);
   if (__getOwnPropSymbols$3)
     for (var prop of __getOwnPropSymbols$3(b)) {
       if (__propIsEnum$3.call(b, prop))
-        __defNormalProp$4(a, prop, b[prop]);
+        __defNormalProp$3(a, prop, b[prop]);
     }
   return a;
 };
@@ -268,16 +432,16 @@ function createCompilerProgram(tsConfigCompilerOptions, tsconfig) {
       fileExists: sys.fileExists,
       readFile: sys.readFile,
       onUnRecoverableConfigFileDiagnostic: function(diagnostic) {
-        console.log(
+        console.error(
           `onUnRecoverableConfigFileDiagnostic`,
           diagnostic.messageText
         );
       }
     }
   );
-  const host = createCompilerHost(tsConfigCompilerOptions);
+  const host = createIncrementalCompilerHost(tsConfigCompilerOptions);
   if (config) {
-    return createProgram({
+    return createIncrementalProgram({
       host,
       options: __spreadProps$3(__spreadValues$3({}, config.options), {
         noEmit: false
@@ -296,7 +460,6 @@ function emitOnlyDeclarations(tsConfigCompilerOptions, tsconfig) {
 }
 function dtsGen(_0) {
   return __async$2(this, arguments, function* ({
-    term,
     input,
     watch,
     dtsFileName,
@@ -306,6 +469,7 @@ function dtsGen(_0) {
       process.cwd(),
       packageJson
     );
+    const start = Date.now();
     emitOnlyDeclarations(
       {
         declaration: true,
@@ -359,20 +523,19 @@ function dtsGen(_0) {
     if (extractorResult.succeeded) ;
     file.rmdirSync(dtsDir);
     if (!watch) {
-      const message = ` \u2728 ${colors.bgBlack(
+      const duration = Date.now() - start;
+      const message = `${colors.bgBlack(
         colors.bold(nodePath.relative(process.cwd(), input))
       )} ${colors.bold("->")} ${nodePath.relative(
         process.cwd(),
         trimmedFile
-      )}`;
-      term.writeLine(message);
-      term.nextLine();
-      term.nextLine();
+      )} (${ms(duration)})`;
+      log.info(message);
     }
   });
 }
 
-var __defProp$3 = Object.defineProperty;
+var __defProp$2 = Object.defineProperty;
 var __defProps$2 = Object.defineProperties;
 var __getOwnPropDescs$2 = Object.getOwnPropertyDescriptors;
 var __getOwnPropSymbols$2 = Object.getOwnPropertySymbols;
@@ -383,15 +546,15 @@ var __knownSymbol = (name, symbol) => {
     return symbol;
   throw Error("Symbol." + name + " is not defined");
 };
-var __defNormalProp$3 = (obj, key, value) => key in obj ? __defProp$3(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __defNormalProp$2 = (obj, key, value) => key in obj ? __defProp$2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __spreadValues$2 = (a, b) => {
   for (var prop in b || (b = {}))
     if (__hasOwnProp$2.call(b, prop))
-      __defNormalProp$3(a, prop, b[prop]);
+      __defNormalProp$2(a, prop, b[prop]);
   if (__getOwnPropSymbols$2)
     for (var prop of __getOwnPropSymbols$2(b)) {
       if (__propIsEnum$2.call(b, prop))
-        __defNormalProp$3(a, prop, b[prop]);
+        __defNormalProp$2(a, prop, b[prop]);
     }
   return a;
 };
@@ -429,18 +592,6 @@ var __async$1 = (__this, __arguments, generator) => {
   });
 };
 var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
-const Extensions = [
-  ".js",
-  ".jsx",
-  ".ts",
-  ".tsx",
-  ".json",
-  ".mjs",
-  ".cjs",
-  ".mts",
-  ".cts",
-  ".node"
-];
 const externalsGenerator = (externals = [], pkgJson) => {
   const { dependencies = {}, peerDependencies = {} } = pkgJson;
   const nativeModules = Module.builtinModules.concat(Module.builtinModules.map((m) => `node:${m}`)).concat(
@@ -475,14 +626,16 @@ const applyPlugins = (options) => {
       )
     ),
     commonjs(
-      Object.assign({ extensions: Extensions }, (_c = options == null ? void 0 : options.commonjs) != null ? _c : {})
+      Object.assign(
+        { extensions: Extensions },
+        (_c = options == null ? void 0 : options.commonjs) != null ? _c : {}
+      )
     ),
-    eslint(Object.assign({}, (_d = options == null ? void 0 : options.eslint) != null ? _d : {})),
-    bundleProgress()
+    eslint(Object.assign({}, (_d = options == null ? void 0 : options.eslint) != null ? _d : {}))
+    // bundleProgress(),
   ].filter(Boolean);
 };
 const bundle = (_0) => __async$1(void 0, [_0], function* ({
-  term,
   options,
   config,
   pkgJson
@@ -494,6 +647,7 @@ const bundle = (_0) => __async$1(void 0, [_0], function* ({
   try {
     for (var iter = __forAwait(options), more, temp, error; more = !(temp = yield iter.next()).done; more = false) {
       const option = temp.value;
+      const start = Date.now();
       const bundle_ = yield rollup(option);
       let { output } = option;
       const { input } = option;
@@ -503,33 +657,37 @@ const bundle = (_0) => __async$1(void 0, [_0], function* ({
         }
         for (const output_ of output) {
           bundles.push(() => __async$1(void 0, null, function* () {
-            const start = Date.now();
             yield bundle_.generate(output_);
             const output2 = yield bundle_.write(output_);
             const duration = Date.now() - start;
-            const message = ` \u2728 ${colors.bgBlack(
+            const message = `${colors.bgBlack(
               colors.bold(nodePath.relative(cwd(), input))
             )} ${colors.bold("->")} ${output_.file} (${ms(
               duration
             )})`;
-            term.writeLine(message);
-            term.nextLine();
+            log.info(`${message}`);
             return __spreadProps$2(__spreadValues$2({}, output2), {
               duration
             });
           }));
         }
         bundles.push(() => __async$1(void 0, null, function* () {
-          const start = Date.now();
-          yield dts({ term, config, pkgJson, rollup: option });
+          const start2 = Date.now();
+          yield dts({
+            config,
+            pkgJson,
+            input: option["input"]
+          });
           return {
             // TODO: Add input value.
             input: "",
-            duration: Date.now() - start
+            duration: Date.now() - start2
           };
         }));
       } else {
-        verboseLog(`Output not found for input '${option.input}', skip...`);
+        log.verbose(
+          `Output not found for input '${option.input}', skip...`
+        );
       }
     }
   } catch (temp) {
@@ -544,79 +702,72 @@ const bundle = (_0) => __async$1(void 0, [_0], function* ({
   }
   return bundles;
 });
-const watch_ = (_0, _1, ..._2) => __async$1(void 0, [_0, _1, ..._2], function* (options, term, {
-  bundleEnd,
-  bundleStart,
-  start,
-  end,
-  error
-} = {}) {
+const watch_ = (_0, _1) => __async$1(void 0, [_0, _1], function* (options, {
+  config,
+  pkgJson
+}) {
   const watcher = watch(options);
   let firstRun = true;
-  let startTime;
   try {
     yield new Promise(() => {
       watcher.on(`event`, (e) => {
-        const code = e.code;
+        const { code } = e;
         switch (code) {
           case "START": {
-            term.clearScreen();
-            start == null ? void 0 : start();
-            if (firstRun) {
-              term.writeLine(`Start rollup watching bundle.`);
-            }
-            startTime = (/* @__PURE__ */ new Date()).getTime();
+            firstRun && log.info("Start watching process");
             break;
           }
           case "BUNDLE_START": {
-            bundleStart == null ? void 0 : bundleStart();
             break;
           }
           case "BUNDLE_END": {
-            bundleEnd == null ? void 0 : bundleEnd();
+            const { input, output, duration } = e;
+            log.info(
+              `${input} -> ${output.map(
+                (outputPath) => nodePath.relative(
+                  process.cwd(),
+                  outputPath
+                )
+              ).join(", ")}`
+            );
+            log.info(`Bundle end in ${ms(duration)}`);
             break;
           }
           case "END": {
-            end == null ? void 0 : end().finally(() => {
-              if (firstRun) {
-                term.writeLine(
-                  `Bundle end in ${ms(
-                    ( new Date()).getTime() - startTime
-                  )}`
-                );
-              } else {
-                term.writeLine(
-                  `Re-bundle end ${ms(
-                    ( new Date()).getTime() - startTime
-                  )}`
-                );
-              }
-              firstRun = false;
+            firstRun = false;
+            const startTime = (/* @__PURE__ */ new Date()).getTime();
+            const input = Array.isArray(options) ? options[0]["input"] : options.input;
+            dts({
+              input,
+              config,
+              pkgJson
+            }).then(() => {
+              log.info(`${input} -> ${pkgJson.types}`);
+              log.info(
+                `Dts end in ${ms(Date.now() - startTime)}`
+              );
             });
             break;
           }
           case "ERROR": {
-            error == null ? void 0 : error();
-            term.clearScreen().writeLine(
-              `Bundle Error: ${e.error.message}`
-            );
+            log.error(e.error.message);
             break;
           }
         }
-      });
+      }).on("change", (file) => {
+        log.info(`changed: ${file}`);
+      }).on("restart", () => log.info(`Restart`));
     });
   } catch (e) {
   }
 });
 function dts(_0) {
   return __async$1(this, arguments, function* ({
-    term,
+    input,
     config,
-    rollup: rollup2,
     pkgJson
   }) {
     var _a;
-    const { input } = rollup2;
     const { module, main, types } = pkgJson;
     const output = module || main;
     const inputBasename = nodePath.basename(input);
@@ -625,7 +776,6 @@ function dts(_0) {
     const outputBasename = ext ? inputBasename.replace(ext, ".d.ts") : `${inputBasename != null ? inputBasename : "index"}.d.ts`;
     if (config.dtsRollup) {
       yield dtsGen({
-        term,
         input,
         watch: config.watch,
         tsConfigFile: (_a = config.project) != null ? _a : tsconfig,
@@ -636,7 +786,6 @@ function dts(_0) {
 }
 function startBundle(_0) {
   return __async$1(this, arguments, function* ({
-    term,
     config,
     pkgJson,
     tsConfig
@@ -706,143 +855,16 @@ function startBundle(_0) {
       }, []);
     }
     if (watch2) {
-      yield watch_(bundles, term, {
-        end() {
-          return __async$1(this, null, function* () {
-            yield Promise.all(
-              bundles.map((opts) => __async$1(this, null, function* () {
-                yield dts({
-                  term,
-                  config,
-                  pkgJson,
-                  rollup: opts
-                });
-              }))
-            );
-          });
-        }
-      });
+      yield watch_(bundles, { config, pkgJson });
     } else {
       const tasks = yield bundle({
         options: bundles,
         config,
-        pkgJson,
-        term
+        pkgJson
       });
       yield serialize(tasks);
     }
   });
-}
-
-var __defProp$2 = Object.defineProperty;
-var __defNormalProp$2 = (obj, key, value) => key in obj ? __defProp$2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp$2(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
-class Terminal {
-  constructor() {
-    __publicField(this, "stdin", process.stdin);
-    __publicField(this, "stdout", process.stdout);
-    __publicField(this, "x");
-    __publicField(this, "y");
-    __publicField(this, "maxCols");
-    __publicField(this, "rl");
-    this.rl = readline.createInterface({
-      input: this.stdin,
-      output: this.stdout,
-      historySize: 0,
-      removeHistoryDuplicates: true,
-      tabSize: 4,
-      prompt: "",
-      terminal: process.stdout.isTTY
-    });
-    const pos = this.rl.getCursorPos();
-    this.x = pos.cols;
-    this.y = pos.rows;
-    this.maxCols = process.stdout.columns > 60 ? 60 : process.stdout.columns;
-  }
-  _write(content) {
-    readline.clearScreenDown(this.stdin);
-    const segments = strSplitByLength(content, this.maxCols);
-    segments.forEach((text) => {
-      this.rl.write(text);
-      this.y += 1;
-    });
-    return this;
-  }
-  nextLine() {
-    this.y += 1;
-    this.rl.write("\r");
-    return this;
-  }
-  clearLine(cb) {
-    process.stdout.cursorTo(0);
-    process.stdout.clearLine(1, () => {
-      cb == null ? void 0 : cb();
-    });
-    return this;
-  }
-  writeSameLine(content) {
-    this.clearLine(() => {
-      this._write(content);
-    });
-    return this;
-  }
-  writeLine(content, options = {
-    endWithNewLine: false
-  }) {
-    this._write(content);
-    if (options.endWithNewLine) {
-      this.nextLine();
-    }
-    return this;
-  }
-  clearScreen() {
-    this.x = 0;
-    this.y = 0;
-    readline.cursorTo(this.stdin, this.x, this.y);
-    readline.clearScreenDown(this.stdin);
-    return this;
-  }
-  box(content) {
-    this.nextLine();
-    this.writeLine(
-      `\u256D${Array(this.maxCols - 2).fill("\u2500").join("")}\u256E`
-    );
-    this.nextLine();
-    const padding = 4;
-    const writeCenter = (text) => {
-      const originLen = text.length;
-      const stripLen = stripAnsi(text).length;
-      const len = stripAnsi(text).length - (originLen - stripLen) - 0;
-      const restLen = this.maxCols - padding * 2;
-      if (restLen < len) {
-        strSplitByLength(text, restLen).forEach((t) => {
-          writeCenter(t);
-        });
-      } else {
-        const left = Math.ceil((restLen - len) / 2);
-        const leftPadding = "\u2502" + Array(left + padding - 1).fill(" ").join("");
-        const rightPadding = Array(restLen - left - len + padding - 1).fill(" ").join("") + "\u2502";
-        this.writeLine(`${leftPadding}${text}${rightPadding}`);
-        this.nextLine();
-      }
-    };
-    const contents = [
-      " ",
-      typeof content === "string" ? content : content,
-      " "
-    ].flat();
-    contents.forEach((t) => {
-      writeCenter(t);
-    });
-    this.writeLine(
-      `\u2570${Array(this.maxCols - 2).fill("\u2500").join("")}\u256F`
-    );
-    this.nextLine();
-    return this;
-  }
 }
 
 var __defProp$1 = Object.defineProperty;
@@ -940,7 +962,6 @@ function cli(args) {
     const beatsPkgJson = json.readJSONSync(
       nodePath.resolve(require.resolve(".."), "../../package.json")
     );
-    const term = new Terminal();
     const _a = parser(_args), {
       project,
       config: configPath
@@ -949,25 +970,17 @@ function cli(args) {
       "config"
     ]);
     loadEnv();
-    const isWatch = inputOptions.watch;
-    if (!isWatch) {
-      term.clearScreen().box([
-        colors.red(`@nfts/beats(${beatsPkgJson.version})`)
-      ]);
-    }
-    term.writeLine(`Read ts config from ${project || tsconfig}`);
-    term.nextLine();
+    log.info(`@nfts/beats v${beatsPkgJson.version}`);
+    log.info(`tsconfig from ${project || tsconfig}`);
     const tsConfig = loadTsConfigJson(project != null ? project : tsconfig);
     if (configPath) {
-      term.writeLine(`Read beats config from ${configPath}`);
-      term.nextLine();
+      log.info(`beats config from ${configPath}`);
     }
     const config = yield tryReadConfig({
       configPath,
       pkgJson
     });
     return startBundle({
-      term,
       config: __spreadProps(__spreadValues(__spreadValues({}, config), inputOptions), {
         project
       }),

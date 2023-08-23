@@ -1,5 +1,27 @@
-import { strSplitByLength, stripAnsi } from "@/utils";
 import readline from "node:readline";
+
+/**
+ * Split text by length.
+ * @param str
+ * @param len
+ */
+export function strSplitByLength(str: string, len: number): string[] {
+    const result = str.match(new RegExp(`(.{1,${len}})`, "g"));
+    return result ?? [];
+}
+
+/** @link https://github.com/chalk/strip-ansi/blob/main/index.js */
+export function stripAnsi(
+    text: string,
+    { onlyFirst }: { onlyFirst: boolean } = { onlyFirst: true },
+) {
+    const pattern = [
+        "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
+        "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))",
+    ].join("|");
+    const regexp = new RegExp(pattern, onlyFirst ? undefined : "g");
+    return text.replace(regexp, "");
+}
 
 export default class Terminal {
     private readonly stdin = process.stdin;
@@ -84,7 +106,6 @@ export default class Terminal {
     }
 
     public box(content: string | string[]) {
-        this.nextLine();
         this.writeLine(
             `╭${Array(this.maxCols - 2)
                 .fill("─")
@@ -136,3 +157,4 @@ export default class Terminal {
         return this;
     }
 }
+

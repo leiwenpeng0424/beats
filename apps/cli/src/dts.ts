@@ -1,5 +1,5 @@
 import * as CONSTANTS from "@/constants";
-import Terminal from "@/terminal";
+import log from "@/log";
 import { resolveDtsEntryFromEntry } from "@/utils";
 import {
     Extractor,
@@ -7,12 +7,12 @@ import {
     ExtractorLogLevel,
     ExtractorMessage,
 } from "@microsoft/api-extractor";
-import { file as File, colors } from "@nfts/nodeutils";
+import { file as File, colors, ms } from "@nfts/nodeutils";
 import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
 import ts, {
-    createCompilerHost,
-    createProgram,
+    createIncrementalCompilerHost,
+    createIncrementalProgram,
     sys,
     type CompilerOptions,
 } from "typescript";
@@ -20,8 +20,7 @@ import ts, {
 export function createCompilerProgram(
     tsConfigCompilerOptions: CompilerOptions,
     tsconfig: string,
-): ts.Program | undefined {
-    // TODO：可配置来创建 incremental program
+): ts.BuilderProgram | undefined {
     const config = ts.getParsedCommandLineOfConfigFile(
         tsconfig,
         tsConfigCompilerOptions,
@@ -34,7 +33,7 @@ export function createCompilerProgram(
             onUnRecoverableConfigFileDiagnostic: function (
                 diagnostic: ts.Diagnostic,
             ): void {
-                console.log(
+                console.error(
                     `onUnRecoverableConfigFileDiagnostic`,
                     diagnostic.messageText,
                 );
@@ -42,10 +41,10 @@ export function createCompilerProgram(
         },
     );
 
-    const host = createCompilerHost(tsConfigCompilerOptions);
+    const host = createIncrementalCompilerHost(tsConfigCompilerOptions);
 
     if (config) {
-        return createProgram({
+        return createIncrementalProgram({
             host,
             options: {
                 ...config.options,
@@ -70,7 +69,6 @@ export function emitOnlyDeclarations(
 }
 
 export interface IDtsGenOptions {
-    term: Terminal;
     input: string;
     tsConfigFile?: string;
     dtsFileName?: string;
@@ -78,7 +76,6 @@ export interface IDtsGenOptions {
 }
 
 export async function dtsGen({
-    term,
     input,
     watch,
     dtsFileName,
@@ -89,6 +86,8 @@ export async function dtsGen({
         process.cwd(),
         CONSTANTS.packageJson,
     );
+
+    const start = Date.now();
 
     emitOnlyDeclarations(
         {
@@ -162,16 +161,15 @@ export async function dtsGen({
     File.rmdirSync(CONSTANTS.dtsDir);
 
     if (!watch) {
-        const message = ` ✨ ${colors.bgBlack(
+        const duration = Date.now() - start;
+        const message = `${colors.bgBlack(
             colors.bold(nodePath.relative(process.cwd(), input)),
         )} ${colors.bold("->")} ${nodePath.relative(
             process.cwd(),
             trimmedFile,
-        )}`;
+        )} (${ms(duration)})`;
 
-        term.writeLine(message);
-        term.nextLine();
-        term.nextLine();
+        log.info(message);
     }
 }
 

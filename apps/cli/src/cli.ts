@@ -1,10 +1,10 @@
 import { tryReadConfig, type CLIOptions } from "@/configuration";
 import * as CONSTANTS from "@/constants";
 import loadEnv from "@/env";
+import log from "@/log";
 import { startBundle } from "@/rollup";
-import Terminal from "@/terminal";
 import { loadTsConfigJson } from "@/tsconfig";
-import { json as Json, colors, parser } from "@nfts/nodeutils";
+import { json as Json, parser } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import nodePath from "node:path";
 
@@ -16,8 +16,6 @@ async function cli(args: string[]) {
         nodePath.resolve(require.resolve(".."), "../../package.json"),
     );
 
-    const term = new Terminal();
-
     const {
         project,
         config: configPath,
@@ -27,25 +25,14 @@ async function cli(args: string[]) {
     // Load `.env` file if possible.
     loadEnv();
 
-    const isWatch = inputOptions.watch;
-
-    // Show cli info box.
-    if (!isWatch) {
-        term.clearScreen().box([
-            colors.red(`@nfts/beats(${beatsPkgJson.version})`),
-        ]);
-        // term.nextLine();
-    }
-
-    term.writeLine(`Read ts config from ${project || CONSTANTS.tsconfig}`);
-    term.nextLine();
+    log.info(`@nfts/beats v${beatsPkgJson.version}`);
+    log.info(`tsconfig from ${project || CONSTANTS.tsconfig}`);
 
     // Read `tsconfig.json`
     const tsConfig = loadTsConfigJson(project ?? CONSTANTS.tsconfig);
 
     if (configPath) {
-        term.writeLine(`Read beats config from ${configPath}`);
-        term.nextLine();
+        log.info(`beats config from ${configPath}`);
     }
 
     // Load `beats.config.json`.
@@ -55,7 +42,6 @@ async function cli(args: string[]) {
     });
 
     return startBundle({
-        term,
         config: {
             ...config,
             ...inputOptions,
@@ -74,3 +60,4 @@ cli(process.argv.slice(1))
         console.error(e);
         process.exit();
     });
+
