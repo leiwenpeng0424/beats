@@ -62,6 +62,7 @@ function getOutputFromPackageJson(
                 return externalOutputOptions({
                     format,
                     file: output,
+                    exports: "named",
                 });
             })
     );
@@ -83,6 +84,7 @@ export type TBundleConfig = {
         [K: string]: string;
     };
     sourcemap?: boolean | "inline" | "hidden";
+    exports?: "auto" | "default" | "named" | "none";
 };
 
 export interface CLIOptions {

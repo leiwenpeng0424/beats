@@ -1,88 +1,77 @@
 'use strict';
 
-var nodePath = require('node:path');
+var path = require('node:path');
 
-var __knownSymbol = (name, symbol) => {
-  if (symbol = Symbol[name])
-    return symbol;
-  throw Error("Symbol." + name + " is not defined");
-};
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
+function _interopNamespaceDefault(e) {
+    var n = Object.create(null);
+    if (e) {
+        Object.keys(e).forEach(function (k) {
+            if (k !== 'default') {
+                var d = Object.getOwnPropertyDescriptor(e, k);
+                Object.defineProperty(n, k, d.get ? d : {
+                    enumerable: true,
+                    get: function () { return e[k]; }
+                });
+            }
+        });
+    }
+    n.default = e;
+    return Object.freeze(n);
+}
+
+var path__namespace = /*#__PURE__*/_interopNamespaceDefault(path);
+
+const aliasToModulePath = (alias2 = {}) => {
+  const aliasLen = Object.keys(alias2).length;
+  return (id) => {
+    if (aliasLen === 0) {
+      return null;
+    }
+    for (const key in alias2) {
+      if (Object.prototype.hasOwnProperty.call(alias2, key)) {
+        const element = alias2[key];
+        if (element.length === 0) {
+          return null;
+        }
+        if (key === id) {
+          return element[0];
+        }
+        const regexp = new RegExp(
+          `${key.replace("/*", "/(.+)$")}`
+        ).exec(id);
+        if (regexp) {
+          const subpath = regexp[1];
+          return element[0].replace("*", subpath);
+        }
       }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
+    }
+    return "";
+  };
 };
-var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
 function alias({ alias: alias2 }) {
-  const aliasNames = Object.keys(alias2);
+  const resolve = aliasToModulePath(alias2);
   return {
     name: "alias",
     resolveId: {
       order: "pre",
-      handler(id, importer) {
-        return __async(this, null, function* () {
-          if (aliasNames.length === 0)
-            return null;
-          const aliasNamesMatched = aliasNames.filter(
-            (name) => id.startsWith(name.replace(/\*/g, ""))
+      async handler(id, importer) {
+        const moduleId = resolve(id);
+        if (moduleId) {
+          const resolution = await this.resolve(
+            path__namespace.resolve(process.cwd(), moduleId),
+            importer,
+            {
+              skipSelf: true
+            }
           );
-          if (aliasNamesMatched.length === 0)
-            return null;
-          const matchedPathName = aliasNamesMatched[0];
-          const matchedPathAlias = alias2[matchedPathName];
-          let resolution;
-          try {
-            for (var iter = __forAwait(matchedPathAlias), more, temp, error; more = !(temp = yield iter.next()).done; more = false) {
-              const path = temp.value;
-              const pathStripStar = path.replace(/\*/g, "");
-              const matchedPathNameStripStar = matchedPathName.replace(
-                /\*/g,
-                ""
-              );
-              const realId = nodePath.join(
-                process.cwd(),
-                `./${id.replace(
-                  matchedPathNameStripStar,
-                  pathStripStar
-                )}`
-              );
-              resolution = yield this.resolve(realId, importer, {
-                skipSelf: true
-              });
-              if (resolution) {
-                break;
-              }
-            }
-          } catch (temp) {
-            error = [temp];
-          } finally {
-            try {
-              more && (temp = iter.return) && (yield temp.call(iter));
-            } finally {
-              if (error)
-                throw error[0];
-            }
-          }
           return resolution;
-        });
+        }
+        return null;
       }
     }
   };
 }
 
-module.exports = alias;
+exports.alias = alias;
+exports.aliasToModulePath = aliasToModulePath;
+//# sourceMappingURL=index.cjs.map

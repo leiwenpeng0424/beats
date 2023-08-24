@@ -135,6 +135,7 @@ export declare type TBundleConfig = {
         [K: string]: string;
     };
     sourcemap?: boolean | "inline" | "hidden";
+    exports?: "auto" | "default" | "named" | "none";
 };
 
 export declare type TRollupOptions = Omit<RollupOptions, "input"> & {

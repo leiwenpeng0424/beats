@@ -8,7 +8,7 @@ var dotenvExpand = require('dotenv-expand');
 var readline = require('node:readline');
 var apiExtractor = require('@microsoft/api-extractor');
 var ts = require('typescript');
-var alias = require('@nfts/plugin-alias');
+var pluginAlias = require('@nfts/plugin-alias');
 var cleanup = require('@nfts/plugin-cleanup');
 var esbuild = require('@nfts/plugin-esbuild');
 var commonjs = require('@rollup/plugin-commonjs');
@@ -93,7 +93,8 @@ function getOutputFromPackageJson(pkgJson, externalOutputOptions = (o) => o) {
     }
     return externalOutputOptions({
       format,
-      file: output$1
+      file: output$1,
+      exports: "named"
     });
   });
 }
@@ -591,6 +592,7 @@ var __async$1 = (__this, __arguments, generator) => {
   });
 };
 var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
+console.log("alias", pluginAlias.alias);
 const externalsGenerator = (externals = [], pkgJson) => {
   const { dependencies = {}, peerDependencies = {} } = pkgJson;
   const nativeModules = Module.builtinModules.concat(Module.builtinModules.map((m) => `node:${m}`)).concat(
@@ -605,7 +607,7 @@ const applyPlugins = (options) => {
   return [
     cleanup(options == null ? void 0 : options.clean),
     styles(options == null ? void 0 : options.styles),
-    alias((_a = options == null ? void 0 : options.alias) != null ? _a : { alias: {} }),
+    pluginAlias.alias((_a = options == null ? void 0 : options.alias) != null ? _a : { alias: {} }),
     // @TODO
     // postcssPlugin({ cssModules: true }),
     esbuild(

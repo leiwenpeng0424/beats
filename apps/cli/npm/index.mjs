@@ -6,7 +6,7 @@ import dotenvExpand from 'dotenv-expand';
 import readline from 'node:readline';
 import { ExtractorConfig, Extractor } from '@microsoft/api-extractor';
 import ts, { sys, createIncrementalCompilerHost, createIncrementalProgram, readJsonConfigFile, parseJsonSourceFileConfigFileContent } from 'typescript';
-import alias from '@nfts/plugin-alias';
+import { alias } from '@nfts/plugin-alias';
 import cleanup from '@nfts/plugin-cleanup';
 import esbuild from '@nfts/plugin-esbuild';
 import commonjs from '@rollup/plugin-commonjs';
@@ -91,7 +91,8 @@ function getOutputFromPackageJson(pkgJson, externalOutputOptions = (o) => o) {
     }
     return externalOutputOptions({
       format,
-      file: output$1
+      file: output$1,
+      exports: "named"
     });
   });
 }
@@ -589,6 +590,7 @@ var __async$1 = (__this, __arguments, generator) => {
   });
 };
 var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
+console.log("alias", alias);
 const externalsGenerator = (externals = [], pkgJson) => {
   const { dependencies = {}, peerDependencies = {} } = pkgJson;
   const nativeModules = Module.builtinModules.concat(Module.builtinModules.map((m) => `node:${m}`)).concat(

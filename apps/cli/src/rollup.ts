@@ -5,7 +5,7 @@ import log from "@/log";
 import { cwd, isSameRollupInput, normalizeCliInput, serialize } from "@/utils";
 import { colors, ms } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
-import alias, { RollupAliasOptions } from "@nfts/plugin-alias";
+import { alias, RollupAliasOptions } from "@nfts/plugin-alias";
 import cleanup, { RollupCleanupOptions } from "@nfts/plugin-cleanup";
 import esbuild from "@nfts/plugin-esbuild";
 import type { ITSConfigJson } from "@nfts/tsc-json";
@@ -23,6 +23,8 @@ import {
 } from "rollup";
 // import styles from "rollup-plugin-styles";
 import styles from "@nfts/plugin-styles";
+
+console.log("alias", alias);
 
 /**
  *
