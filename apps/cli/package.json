@@ -1,11 +1,11 @@
 {
-    "name": "@nfts/cli",
+    "name": "wqnl",
     "version": "0.0.14",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
     "bin": {
-        "beats": "bin/beats"
+        "wqnl": "bin/wqnl"
     },
     "scripts": {
         "dev": "npm run start",
@@ -13,7 +13,9 @@
         "build": "beats --clean --sourcemap --debug --verbose",
         "dev:local": "node --trace-warnings npm/index.cjs --watch --debug",
         "build:local": "node --trace-warnings npm/index.cjs --clean --debug",
-        "vitest": "vitest --watch false"
+        "vitest": "vitest --watch false",
+        "check": "tsc --noEmit",
+        "prepublishOnly": "pnpm check"
     },
     "publishConfig": {
         "access": "public"
