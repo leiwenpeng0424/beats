@@ -9,14 +9,14 @@ var readline = require('node:readline');
 var apiExtractor = require('@microsoft/api-extractor');
 var ts = require('typescript');
 var pluginAlias = require('@nfts/plugin-alias');
-var cleanup = require('@nfts/plugin-cleanup');
+var pluginCleanup = require('@nfts/plugin-cleanup');
 var esbuild = require('@nfts/plugin-esbuild');
 var commonjs = require('@rollup/plugin-commonjs');
 var eslint = require('@rollup/plugin-eslint');
 var nodeResolve = require('@rollup/plugin-node-resolve');
 var Module = require('node:module');
 var rollup = require('rollup');
-var styles = require('@nfts/plugin-styles');
+var styles = require('rollup-plugin-styles');
 
 const tsconfig = "./tsconfig.json";
 const packageJson = "./package.json";
@@ -592,7 +592,6 @@ var __async$1 = (__this, __arguments, generator) => {
   });
 };
 var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
-console.log("alias", pluginAlias.alias);
 const externalsGenerator = (externals = [], pkgJson) => {
   const { dependencies = {}, peerDependencies = {} } = pkgJson;
   const nativeModules = Module.builtinModules.concat(Module.builtinModules.map((m) => `node:${m}`)).concat(
@@ -605,7 +604,7 @@ const externalsGenerator = (externals = [], pkgJson) => {
 const applyPlugins = (options) => {
   var _a, _b, _c, _d;
   return [
-    cleanup(options == null ? void 0 : options.clean),
+    pluginCleanup.cleanup(options == null ? void 0 : options.clean),
     styles(options == null ? void 0 : options.styles),
     pluginAlias.alias((_a = options == null ? void 0 : options.alias) != null ? _a : { alias: {} }),
     // @TODO
@@ -816,8 +815,8 @@ function startBundle(_0) {
         esbuild2 != null ? esbuild2 : {}
       ),
       styles: styles2,
-      alias: { alias: paths },
-      clean: { active: !watch2 }
+      alias: { alias: paths }
+      // clean: { active: !watch },
     });
     const externalsFn = externalsGenerator(externals, pkgJson);
     let bundles = [];

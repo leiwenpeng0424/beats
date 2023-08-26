@@ -6,7 +6,7 @@ import { cwd, isSameRollupInput, normalizeCliInput, serialize } from "@/utils";
 import { colors, ms } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import { alias, RollupAliasOptions } from "@nfts/plugin-alias";
-import cleanup, { RollupCleanupOptions } from "@nfts/plugin-cleanup";
+import { cleanup, RollupCleanupOptions } from "@nfts/plugin-cleanup";
 import esbuild from "@nfts/plugin-esbuild";
 import type { ITSConfigJson } from "@nfts/tsc-json";
 import commonjs from "@rollup/plugin-commonjs";
@@ -21,10 +21,8 @@ import {
     type RollupOutput,
     type RollupWatchOptions,
 } from "rollup";
-// import styles from "rollup-plugin-styles";
-import styles from "@nfts/plugin-styles";
-
-console.log("alias", alias);
+import styles from "rollup-plugin-styles";
+// import styles from "@nfts/plugin-styles";
 
 /**
  *
@@ -335,7 +333,7 @@ export async function startBundle({
         ),
         styles,
         alias: { alias: paths },
-        clean: { active: !watch },
+        // clean: { active: !watch },
     });
 
     const externalsFn = externalsGenerator(externals, pkgJson);
@@ -404,4 +402,3 @@ export async function startBundle({
         await serialize(tasks);
     }
 }
-

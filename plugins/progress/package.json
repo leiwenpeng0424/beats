@@ -4,14 +4,6 @@
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
-    "exports": {
-        "./package.json": "./package.json",
-        ".": {
-            "import": "./npm/index.mjs",
-            "require": "./npm/index.cjs",
-            "types": "./npm/index.d.ts"
-        }
-    },
     "scripts": {
         "dev": "npm run start",
         "start": "beats --watch --sourcemap",
@@ -34,4 +26,3 @@
         "vitest": "^0.33.0"
     }
 }
-

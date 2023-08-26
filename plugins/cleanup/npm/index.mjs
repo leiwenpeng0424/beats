@@ -1,24 +1,19 @@
-import nodePath from 'node:path';
-import nodeFs from 'node:fs/promises';
+import { file } from '@nfts/nodeutils';
 
-function cleanup({ active } = { active: true }) {
+function cleanup({ dir } = { dir: "./npm" }) {
+  let removed = false;
   return {
     name: "rmdir",
-    version: "0.0.1",
-    async generateBundle(output, _, isWrite) {
-      if (active && !isWrite) {
-        if (output.file) {
-          const absPath = nodePath.join(process.cwd(), output.file);
-          try {
-            await nodeFs.access(absPath);
-            await nodeFs.unlink(absPath);
-            await nodeFs.unlink(`${absPath}.map`);
-          } catch (e) {
-          }
-        }
+    generateBundle: {
+      handler() {
+        if (removed)
+          return;
+        console.log(`Removing ${file.normalize(dir)}`);
+        file.rmdirSync(file.normalize(dir));
+        removed = true;
       }
     }
   };
 }
 
-export { cleanup as default };
+export { cleanup };
