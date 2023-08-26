@@ -15,7 +15,7 @@
         "build:local": "node --trace-warnings npm/index.cjs --clean --debug",
         "vitest": "vitest --watch false",
         "check": "tsc --noEmit",
-        "prepublishOnly": "pnpm check"
+        "prepublishOnly": "pnpm check && pnpm build:local"
     },
     "publishConfig": {
         "access": "public"
