@@ -897,7 +897,6 @@ function loadTsConfigJson(path = "./tsconfig.json") {
     "."
   );
   const { raw = {}, options } = parsedCommandLine;
-  console.log(options);
   return __spreadProps$1(__spreadValues$1({}, raw), {
     compilerOptions: options
   });

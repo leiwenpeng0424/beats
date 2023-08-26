@@ -20,8 +20,6 @@ export function loadTsConfigJson(path = "./tsconfig.json"): ITSConfigJson {
 
     const { raw = {}, options } = parsedCommandLine;
 
-    console.log(options);
-
     return {
         ...raw,
         compilerOptions: options,
