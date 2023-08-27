@@ -1,5 +1,6 @@
 import { type Plugin } from "rollup";
 import { file } from "@nfts/nodeutils";
+import * as nodeFs from "node:fs";
 
 export interface RollupCleanupOptions {
     dir: string;
@@ -19,10 +20,13 @@ export function cleanup(
         generateBundle: {
             handler() {
                 if (removed) return;
-                console.log(`Removing ${file.normalize(dir)}`);
-                file.rmdirSync(file.normalize(dir));
-                removed = true;
+                const realPath = file.normalize(dir);
+                if (nodeFs.existsSync(realPath)) {
+                    file.rmdirSync(realPath);
+                    removed = true;
+                }
             },
         },
     };
 }
+

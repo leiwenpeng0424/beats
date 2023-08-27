@@ -4,9 +4,9 @@
     "main": "./index.bundle.js",
     "types": "./index.d.ts",
     "scripts": {
-        "build": "beats"
+        "build": "wqnl"
     },
     "devDependencies": {
-        "@nfts/cli": "workspace:*"
+        "wqnl": "workspace:*"
     }
 }

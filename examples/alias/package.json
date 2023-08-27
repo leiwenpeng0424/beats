@@ -5,13 +5,12 @@
     "main": "npm/index.js",
     "types": "npm/index.d.ts",
     "scripts": {
-        "build": "beats --clean --sourcemap"
+        "build": "wqnl --clean --sourcemap"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "@nfts/cli": "workspace:*"
+        "wqnl": "workspace:*"
     }
 }
-
