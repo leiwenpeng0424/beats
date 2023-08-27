@@ -16,7 +16,7 @@
         "dev": "npm run start",
         "start": "beats --watch --sourcemap",
         "build": "beats --clean --sourcemap --debug --verbose",
-        "build:local": "node --trace-warnings ../../apps/cli/npm/index.cjs --clean --debug",
+        "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.cjs --clean --debug",
         "vitest": "vitest --watch false"
     },
     "publishConfig": {

@@ -60,4 +60,3 @@ cli(process.argv.slice(1))
         console.error(e);
         process.exit();
     });
-

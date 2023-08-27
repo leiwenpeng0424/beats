@@ -46,26 +46,19 @@ function getOutputFromPackageJson(
     externalOutputOptions: (opt: TBundleConfig) => TBundleConfig = (o) => o,
 ): TBundleConfig[] {
     const { main, module: m } = pkgJson;
-    return (
-        [main, m]
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            .filter<string>(Boolean)
-            .map((output) => {
-                const format = getFormatFromFileName(output);
+    return ([main, m].filter(Boolean) as string[]).map((output) => {
+        const format = getFormatFromFileName(output);
 
-                // dot mark fallback to ./index.js
-                if (output === ".") {
-                    output = CONSTANTS.output;
-                }
+        if (output === ".") {
+            output = CONSTANTS.output;
+        }
 
-                return externalOutputOptions({
-                    format,
-                    file: output,
-                    exports: "named",
-                });
-            })
-    );
+        return externalOutputOptions({
+            format,
+            file: output,
+            exports: "named",
+        });
+    });
 }
 
 /**
