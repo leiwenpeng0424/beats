@@ -1,6 +1,6 @@
 {
     "name": "@nfts/plugin-progress",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
