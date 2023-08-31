@@ -1,5 +1,5 @@
 {
-    "name": "postcss-experimental",
+    "name": "example-postcss-experimental",
     "version": "0.0.0",
     "main": "npm/index.cjs",
     "module": "npm/index.mjs",
@@ -20,3 +20,4 @@
         "react": "^18.2.0"
     }
 }
+

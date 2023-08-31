@@ -1,5 +1,5 @@
 {
-    "name": "bin-gen",
+    "name": "example-bin-gen",
     "version": "0.0.0",
     "main": "./dist/index.cjs",
     "scripts": {
