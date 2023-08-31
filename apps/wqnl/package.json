@@ -1,6 +1,6 @@
 {
     "name": "wqnl",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",

@@ -1,6 +1,6 @@
 {
     "name": "@nfts/plugin-styles",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
