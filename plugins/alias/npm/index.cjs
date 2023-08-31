@@ -21,6 +21,26 @@ function _interopNamespaceDefault(e) {
 
 var path__namespace = /*#__PURE__*/_interopNamespaceDefault(path);
 
+var __async = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
 const aliasToModulePath = (alias2 = {}) => {
   const aliasLen = Object.keys(alias2).length;
   return (id) => {
@@ -54,19 +74,21 @@ function alias({ alias: alias2 }) {
     name: "alias",
     resolveId: {
       order: "pre",
-      async handler(id, importer) {
-        const moduleId = resolve(id);
-        if (moduleId) {
-          const resolution = await this.resolve(
-            path__namespace.resolve(process.cwd(), moduleId),
-            importer,
-            {
-              skipSelf: true
-            }
-          );
-          return resolution;
-        }
-        return null;
+      handler(id, importer) {
+        return __async(this, null, function* () {
+          const moduleId = resolve(id);
+          if (moduleId) {
+            const resolution = yield this.resolve(
+              path__namespace.resolve(process.cwd(), moduleId),
+              importer,
+              {
+                skipSelf: true
+              }
+            );
+            return resolution;
+          }
+          return null;
+        });
       }
     }
   };

@@ -17,6 +17,7 @@
         "start": "beats --watch --sourcemap",
         "build": "beats --clean --sourcemap --debug --verbose",
         "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.cjs --clean --debug",
+        "dev:local": "node --trace-warnings ../../apps/wqnl/npm/index.cjs --clean --sourcemap --watch",
         "vitest": "vitest --watch false"
     },
     "publishConfig": {
@@ -31,7 +32,7 @@
         "@nfts/tsc-json": "^0.1.1",
         "@types/node": "^20.4.2",
         "rollup": "^3.26.3",
-        "typescript": "^5.0.4",
+        "typescript": "5.1.6",
         "vitest": "^0.33.0"
     }
 }
