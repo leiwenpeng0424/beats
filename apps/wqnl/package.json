@@ -11,8 +11,8 @@
         "dev": "npm run start",
         "start": "beats --watch --sourcemap",
         "build": "beats --clean --sourcemap --debug --verbose",
-        "dev:local": "node --trace-warnings npm/index.cjs --watch --debug",
-        "build:local": "node --trace-warnings npm/index.cjs --clean --debug",
+        "dev:local": "node --trace-warnings npm/index.cjs --watch",
+        "build:local": "node --trace-warnings npm/index.cjs --clean",
         "vitest": "vitest --watch false",
         "check": "tsc --noEmit",
         "prepublishOnly": "pnpm check && pnpm build:local"

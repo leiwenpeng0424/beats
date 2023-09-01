@@ -36,8 +36,8 @@ export default class Terminal {
 
     constructor() {
         this.rl = readline.createInterface({
-            input: this.stdin,
-            output: this.stdout,
+            input: process.stdin,
+            output: process.stdout,
             historySize: 0,
             removeHistoryDuplicates: true,
             tabSize: 4,
@@ -63,8 +63,8 @@ export default class Terminal {
         return this;
     }
 
-    public nextLine() {
-        this.y += 1;
+    public nextLine(count = 1) {
+        this.y += count;
         this.rl.write("\r");
         return this;
     }
@@ -157,4 +157,3 @@ export default class Terminal {
         return this;
     }
 }
-

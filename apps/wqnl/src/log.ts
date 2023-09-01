@@ -8,16 +8,14 @@ class Log {
         this.term = term;
     }
 
-    info(text: string) {
-        if (process.env.DEBUG) {
-            this.term.writeLine(
-                `${colors.magenta(colors.bold("INFO"))} ▶︎ ${text}`,
-            );
-            term.nextLine();
-        }
+    public info(text: string) {
+        this.term.writeLine(
+            `${colors.magenta(colors.bold("INFO"))} ▶︎ ${text}`,
+        );
+        term.nextLine();
     }
 
-    debug(text: string) {
+    public debug(text: string) {
         if (process.env.DEBUG) {
             this.term.writeLine(
                 `${colors.magenta(colors.bold("DEBUG"))} ▶︎ ${text}`,
@@ -26,7 +24,7 @@ class Log {
         }
     }
 
-    verbose(text: string) {
+    public verbose(text: string) {
         if (process.env.VERBOSE) {
             this.term.writeLine(
                 `${colors.magenta(colors.bold("VERBOSE"))} ▶︎ ${text}`,
@@ -35,15 +33,18 @@ class Log {
         }
     }
 
-    error(text: string) {
-        this.term.writeLine(`${colors.red(colors.bold("ERROR"))}`);
-        term.nextLine();
-        this.term.writeLine(`${text}`);
+    public warn(text: string) {
+        this.term.writeLine(`${colors.yellow(colors.bold("WARN"))} ▶︎ ${text}`);
         term.nextLine();
     }
 
-    warn(text: string) {
-        this.term.writeLine(`${colors.yellow(colors.bold("WARN"))} ▶︎ ${text}`);
+    public error(text: string) {
+        this.term.writeLine(
+            `${colors.red(colors.bold("ERROR"))} ▶︎ ${colors.bgRed(
+                colors.black(` ${text} `),
+            )}`,
+        );
+        term.nextLine();
         term.nextLine();
     }
 }
@@ -51,4 +52,3 @@ class Log {
 const term = new Terminal();
 
 export default new Log({ term });
-

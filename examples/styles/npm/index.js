@@ -40,4 +40,4 @@ function App() {
 }
 
 exports.default = App;
-//# sourceMappingURL=index.cjs.map
+//# sourceMappingURL=index.js.map

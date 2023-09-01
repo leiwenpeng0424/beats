@@ -1,11 +1,11 @@
 {
     "name": "example-postcss-experimental",
     "version": "0.0.0",
-    "main": "npm/index.cjs",
-    "module": "npm/index.mjs",
-    "types": "npm/index.d.ts",
+    "main": "./npm/index.js",
+    "module": "./npm/index.mjs",
+    "types": "./npm/index.d.ts",
     "scripts": {
-        "build": "wqnl --clean --sourcemap --debug"
+        "build": "wqnl --clean --sourcemap"
     },
     "devDependencies": {
         "@types/react": "^18.2.15",

@@ -1,7 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "outDir": "bundle",
         "lib": ["es2020"],
         "module": "CommonJS",
         "target": "ESNext",

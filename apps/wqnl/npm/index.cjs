@@ -189,8 +189,8 @@ class Terminal {
     __publicField$1(this, "maxCols");
     __publicField$1(this, "rl");
     this.rl = readline.createInterface({
-      input: this.stdin,
-      output: this.stdout,
+      input: process.stdin,
+      output: process.stdout,
       historySize: 0,
       removeHistoryDuplicates: true,
       tabSize: 4,
@@ -211,8 +211,8 @@ class Terminal {
     });
     return this;
   }
-  nextLine() {
-    this.y += 1;
+  nextLine(count = 1) {
+    this.y += count;
     this.rl.write("\r");
     return this;
   }
@@ -296,12 +296,10 @@ class Log {
     this.term = term2;
   }
   info(text) {
-    if (process.env.DEBUG) {
-      this.term.writeLine(
-        `${nodeutils.colors.magenta(nodeutils.colors.bold("INFO"))} \u25B6\uFE0E ${text}`
-      );
-      term.nextLine();
-    }
+    this.term.writeLine(
+      `${nodeutils.colors.magenta(nodeutils.colors.bold("INFO"))} \u25B6\uFE0E ${text}`
+    );
+    term.nextLine();
   }
   debug(text) {
     if (process.env.DEBUG) {
@@ -319,14 +317,17 @@ class Log {
       term.nextLine();
     }
   }
-  error(text) {
-    this.term.writeLine(`${nodeutils.colors.red(nodeutils.colors.bold("ERROR"))}`);
-    term.nextLine();
-    this.term.writeLine(`${text}`);
-    term.nextLine();
-  }
   warn(text) {
     this.term.writeLine(`${nodeutils.colors.yellow(nodeutils.colors.bold("WARN"))} \u25B6\uFE0E ${text}`);
+    term.nextLine();
+  }
+  error(text) {
+    this.term.writeLine(
+      `${nodeutils.colors.red(nodeutils.colors.bold("ERROR"))} \u25B6\uFE0E ${nodeutils.colors.bgRed(
+        nodeutils.colors.black(` ${text} `)
+      )}`
+    );
+    term.nextLine();
     term.nextLine();
   }
 }
@@ -887,21 +888,28 @@ var __spreadValues$1 = (a, b) => {
 };
 var __spreadProps$1 = (a, b) => __defProps$1(a, __getOwnPropDescs$1(b));
 function loadTsConfigJson(path = "./tsconfig.json") {
-  const sourceFile = ts.readJsonConfigFile(path, ts.sys.readFile);
-  const parsedCommandLine = ts.parseJsonSourceFileConfigFileContent(
-    sourceFile,
-    {
-      useCaseSensitiveFileNames: true,
-      readDirectory: ts.sys.readDirectory,
-      readFile: ts.sys.readFile,
-      fileExists: ts.sys.fileExists
-    },
-    "."
-  );
-  const { raw = {}, options } = parsedCommandLine;
-  return __spreadProps$1(__spreadValues$1({}, raw), {
-    compilerOptions: options
-  });
+  try {
+    const sourceFile = ts.readJsonConfigFile(path, ts.sys.readFile);
+    const parsedCommandLine = ts.parseJsonSourceFileConfigFileContent(
+      sourceFile,
+      {
+        useCaseSensitiveFileNames: true,
+        readDirectory: ts.sys.readDirectory,
+        readFile: ts.sys.readFile,
+        fileExists: ts.sys.fileExists
+      },
+      process.cwd()
+    );
+    const { raw = {}, options } = parsedCommandLine;
+    return __spreadProps$1(__spreadValues$1({}, raw), {
+      compilerOptions: options
+    });
+  } catch (e) {
+    log.error(
+      `Error while read tsconfig.json from ${path}, is tsconfig.json exist ?`
+    );
+    process.exit(1);
+  }
 }
 
 var __defProp = Object.defineProperty;
