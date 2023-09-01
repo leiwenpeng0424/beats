@@ -1,26 +1,43 @@
 'use strict';
 
-var nodePath = require('node:path');
-var nodeFs = require('node:fs/promises');
+var nodeutils = require('@nfts/nodeutils');
+var nodeFs = require('node:fs');
 
-function cleanup({ active } = { active: true }) {
+function _interopNamespaceDefault(e) {
+    var n = Object.create(null);
+    if (e) {
+        Object.keys(e).forEach(function (k) {
+            if (k !== 'default') {
+                var d = Object.getOwnPropertyDescriptor(e, k);
+                Object.defineProperty(n, k, d.get ? d : {
+                    enumerable: true,
+                    get: function () { return e[k]; }
+                });
+            }
+        });
+    }
+    n.default = e;
+    return Object.freeze(n);
+}
+
+var nodeFs__namespace = /*#__PURE__*/_interopNamespaceDefault(nodeFs);
+
+function cleanup({ dir } = { dir: "./npm" }) {
+  let removed = false;
   return {
     name: "rmdir",
-    version: "0.0.1",
-    async generateBundle(output, _, isWrite) {
-      if (active && !isWrite) {
-        if (output.file) {
-          const absPath = nodePath.join(process.cwd(), output.file);
-          try {
-            await nodeFs.access(absPath);
-            await nodeFs.unlink(absPath);
-            await nodeFs.unlink(`${absPath}.map`);
-          } catch (e) {
-          }
+    generateBundle: {
+      handler() {
+        if (removed)
+          return;
+        const realPath = nodeutils.file.normalize(dir);
+        if (nodeFs__namespace.existsSync(realPath)) {
+          nodeutils.file.rmdirSync(realPath);
+          removed = true;
         }
       }
     }
   };
 }
 
-module.exports = cleanup;
+exports.cleanup = cleanup;

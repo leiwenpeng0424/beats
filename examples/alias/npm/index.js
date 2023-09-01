@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 const a = 1;
 
 const b = 2;
@@ -10,5 +12,4 @@ function App() {
   return a + b + c;
 }
 
-module.exports = App;
-//# sourceMappingURL=index.js.map
+exports.default = App;

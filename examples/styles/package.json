@@ -1,18 +1,20 @@
 {
-    "name": "postcss-experimental",
+    "name": "example-postcss-experimental",
     "version": "0.0.0",
-    "main": "npm/index.cjs",
-    "module": "npm/index.mjs",
-    "types": "npm/index.d.ts",
+    "main": "./npm/index.js",
+    "module": "./npm/index.mjs",
+    "types": "./npm/index.d.ts",
     "scripts": {
-        "build": "beats --clean --sourcemap --debug"
+        "build": "wqnl --clean --sourcemap"
     },
     "devDependencies": {
         "@types/react": "^18.2.15",
         "autoprefixer": "^10.4.14",
+        "less": "^4.2.0",
         "postcss-nesting": "^12.0.1",
         "react": "^18.2.0",
-        "tailwindcss": "^3.3.3"
+        "tailwindcss": "^3.3.3",
+        "wqnl": "workspace:*"
     },
     "peerDependencies": {
         "react": "^18.2.0"

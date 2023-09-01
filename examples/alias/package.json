@@ -1,13 +1,17 @@
 {
-    "name": "alias",
+    "name": "example-alias",
     "version": "1.0.0",
     "description": "",
     "main": "npm/index.js",
+    "module": "npm/index.mjs",
     "types": "npm/index.d.ts",
     "scripts": {
-        "build": "beats --clean --sourcemap"
+        "build": "wqnl --clean --sourcemap"
     },
     "keywords": [],
     "author": "",
-    "license": "ISC"
+    "license": "ISC",
+    "devDependencies": {
+        "wqnl": "workspace:*"
+    }
 }

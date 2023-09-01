@@ -1,4 +1,4 @@
-import { defineConfig } from "@nfts/beats";
+import { defineConfig } from "wqnl";
 
 export default defineConfig({
     dtsRollup: true,

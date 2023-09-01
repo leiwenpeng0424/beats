@@ -1,60 +1,77 @@
-import { type Plugin } from "rollup";
 import { type IPathObject } from "@nfts/tsc-json";
-import nodePath from "node:path";
+import { type Plugin } from "rollup";
+import * as path from "node:path";
 
 export type RollupAliasOptions = { alias: IPathObject };
 
 /**
- * tsconfig paths to alias.
- * this plugin need to be the first one of the rollup plugin array.
+ * Map alias to realpath.
+ * @param alias
+ * @returns
+ */
+export const aliasToModulePath = (alias: IPathObject = {}) => {
+    const aliasLen = Object.keys(alias).length;
+
+    return (id: string): string | null => {
+        if (aliasLen === 0) {
+            return null;
+        }
+
+        for (const key in alias) {
+            if (Object.prototype.hasOwnProperty.call(alias, key)) {
+                const element = alias[key];
+
+                if (element.length === 0) {
+                    return null;
+                }
+
+                if (key === id) {
+                    return element[0];
+                }
+
+                const regexp = new RegExp(
+                    `${key.replace("/*", "/(.+)$")}`,
+                ).exec(id);
+
+                if (regexp) {
+                    const subpath = regexp[1];
+
+                    return element[0].replace("*", subpath);
+                }
+            }
+        }
+
+        return "";
+    };
+};
+
+/**
+ * ts-config paths to alias.
+ * This plugin need to be the first one of the rollup plugin array.
  * @param alias
  */
-export default function alias({ alias }: RollupAliasOptions): Plugin {
-    const aliasNames = Object.keys(alias);
+export function alias({ alias }: RollupAliasOptions): Plugin {
+    const resolve = aliasToModulePath(alias);
 
     return {
         name: "alias",
         resolveId: {
             order: "pre",
             async handler(id, importer) {
-                if (aliasNames.length === 0) return null;
+                const moduleId = resolve(id);
 
-                const aliasNamesMatched = aliasNames.filter((name) =>
-                    id.startsWith(name.replace(/\*/g, "")),
-                );
-
-                if (aliasNamesMatched.length === 0) return null;
-
-                const matchedPathName = aliasNamesMatched[0];
-                const matchedPathAlias = alias[matchedPathName];
-
-                let resolution;
-
-                for await (const path of matchedPathAlias) {
-                    const pathStripStar = path.replace(/\*/g, "");
-                    const matchedPathNameStripStar = matchedPathName.replace(
-                        /\*/g,
-                        "",
+                if (moduleId) {
+                    const resolution = await this.resolve(
+                        path.resolve(process.cwd(), moduleId),
+                        importer,
+                        {
+                            skipSelf: true,
+                        },
                     );
 
-                    const realId = nodePath.join(
-                        process.cwd(),
-                        `./${id.replace(
-                            matchedPathNameStripStar,
-                            pathStripStar,
-                        )}`,
-                    );
-
-                    resolution = await this.resolve(realId, importer, {
-                        skipSelf: true,
-                    });
-
-                    if (resolution) {
-                        break;
-                    }
+                    return resolution;
                 }
-
-                return resolution;
+                return null;
             },
         },
     };

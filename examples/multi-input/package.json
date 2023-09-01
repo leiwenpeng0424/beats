@@ -1,8 +1,11 @@
 {
-  "name": "multi-input",
-  "version": "0.0.0",
-  "main": "bin/cli.js",
-  "scripts": {
-    "build": "beats --clean --sourcemap"
-  }
+    "name": "example-multi-input",
+    "version": "0.0.0",
+    "main": "bin/cli.js",
+    "scripts": {
+        "build": "wqnl --clean --sourcemap"
+    },
+    "devDependencies": {
+        "wqnl": "workspace:*"
+    }
 }

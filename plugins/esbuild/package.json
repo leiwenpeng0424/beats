@@ -1,6 +1,6 @@
 {
     "name": "@nfts/plugin-esbuild",
-    "version": "0.0.0",
+    "version": "0.0.2",
     "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
@@ -16,7 +16,7 @@
         "dev": "npm run start",
         "start": "beats --watch --sourcemap",
         "build": "beats --clean --sourcemap --debug --verbose",
-        "build:local": "node --trace-warnings ../../apps/cli/npm/index.cjs --clean --debug",
+        "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.cjs --clean --debug",
         "vitest": "vitest --watch false"
     },
     "publishConfig": {
@@ -32,7 +32,7 @@
         "@types/node": "^20.4.2",
         "esbuild": "^0.18.13",
         "rollup": "^3.26.3",
-        "typescript": "^5.0.4",
+        "typescript": "5.1.6",
         "vitest": "^0.33.0"
     },
     "peerDependencies": {
