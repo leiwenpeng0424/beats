@@ -68,19 +68,19 @@ export function emitOnlyDeclarations(
     }
 }
 
-export interface IDtsGenOptions {
+export interface IDtsRollupOptions {
     input: string;
     tsConfigFile?: string;
     dtsFileName?: string;
     watch?: boolean;
 }
 
-export async function dtsGen({
+export async function dtsRollup({
     input,
     watch,
     dtsFileName,
     tsConfigFile = CONSTANTS.tsconfig,
-}: IDtsGenOptions) {
+}: IDtsRollupOptions) {
     // PKG-JSON
     const packageJsonFullPath = nodePath.resolve(
         process.cwd(),
@@ -169,4 +169,3 @@ export async function dtsGen({
         log.info(message);
     }
 }
-

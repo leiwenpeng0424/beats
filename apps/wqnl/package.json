@@ -7,6 +7,14 @@
     "bin": {
         "wqnl": "bin/wqnl"
     },
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": "./npm/index.mjs",
+            "require": "./npm/index.cjs",
+            "types": "./npm/index.d.ts"
+        }
+    },
     "scripts": {
         "dev": "npm run start",
         "start": "beats --watch --sourcemap",
@@ -42,6 +50,7 @@
         "@nfts/tsc-json": "^0.1.1",
         "@rollup/plugin-commonjs": "^25.0.3",
         "@rollup/plugin-eslint": "^9.0.4",
+        "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.1.0",
         "@rollup/pluginutils": "^5.0.2",
         "dotenv": "^16.3.1",

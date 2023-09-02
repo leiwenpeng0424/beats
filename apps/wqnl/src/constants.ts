@@ -12,7 +12,7 @@ export const esmExt = [".mjs", ".mts"];
 export const cjsExt = [".cjs", ".cts"];
 
 export const esmMiddleNames = [".esm.", ".es."];
-export const cjsMiddleNames = [".cjs."];
+export const cjsMiddleNames = [".cjs.", ".node."];
 
 export const Extensions = [
     ".js",
@@ -34,4 +34,3 @@ export const StyleSheetExtensions = [
     ".scss",
     ".sass",
 ];
-

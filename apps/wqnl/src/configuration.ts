@@ -81,8 +81,6 @@ export type TBundleConfig = {
 };
 
 export interface CLIOptions {
-    // eslint-disable-next-line
-    [K: string]: any;
     /**
      * Entry file for all bundle output. If you are not specified in bundle item.
      * this would be the default input.
@@ -90,47 +88,47 @@ export interface CLIOptions {
     input?: string;
 
     /**
-     * Should generate .d.ts file for bundle.
+     * Output declarations rollup file.
      */
     dtsRollup?: boolean;
 
     /**
-     * Generate .map file for bundle output.
+     * Generate .map file for each output.
      */
     sourcemap?: boolean | "inline" | "hidden";
 
     /**
-     * Specified beats config file path.
+     * `wqnl` config file.
      */
     config?: string;
 
     /**
-     * tsconfig file path.
+     * tsconfig file.
      */
     project?: string;
 
     /**
-     * Print more info in terminal during bundle.
+     * Print verbose message.
      */
     verbose?: boolean;
 
     /**
-     * Watch mode.
+     * Start watch mode.
      */
     watch?: boolean;
 
     /**
-     * Cleanup before output write.
+     * Cleanup before bundle write.
      */
     clean?: boolean;
 
     /**
-     * Confound bundle code.
+     * minify output code.
      */
     minify?: boolean;
 
     /**
-     * Show internal debug info.
+     * Show debug message.
      */
     debug?: boolean;
 

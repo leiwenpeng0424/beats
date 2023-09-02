@@ -1,6 +1,6 @@
 import type { Config, TRollupOptions } from "@/configuration";
 import * as CONSTANTS from "@/constants";
-import { dtsGen } from "@/dts";
+import { dtsRollup } from "@/dts";
 import log from "@/log";
 import { cwd, isSameRollupInput, normalizeCliInput, serialize } from "@/utils";
 import { colors, ms } from "@nfts/nodeutils";
@@ -286,7 +286,7 @@ async function dts({
         : `${inputBasename ?? "index"}.d.ts`;
 
     if (config.dtsRollup) {
-        await dtsGen({
+        await dtsRollup({
             input,
             watch: config.watch,
             tsConfigFile: config.project ?? CONSTANTS.tsconfig,

@@ -28,7 +28,7 @@ const dtsDir = ".dts";
 const esmExt = [".mjs", ".mts"];
 const cjsExt = [".cjs", ".cts"];
 const esmMiddleNames = [".esm.", ".es."];
-const cjsMiddleNames = [".cjs."];
+const cjsMiddleNames = [".cjs.", ".node."];
 const Extensions = [
   ".js",
   ".jsx",
@@ -387,8 +387,8 @@ function serialize(tasks) {
 }
 
 var __defProp$3 = Object.defineProperty;
-var __defProps$3 = Object.defineProperties;
-var __getOwnPropDescs$3 = Object.getOwnPropertyDescriptors;
+var __defProps$2 = Object.defineProperties;
+var __getOwnPropDescs$2 = Object.getOwnPropertyDescriptors;
 var __getOwnPropSymbols$3 = Object.getOwnPropertySymbols;
 var __hasOwnProp$3 = Object.prototype.hasOwnProperty;
 var __propIsEnum$3 = Object.prototype.propertyIsEnumerable;
@@ -404,7 +404,7 @@ var __spreadValues$3 = (a, b) => {
     }
   return a;
 };
-var __spreadProps$3 = (a, b) => __defProps$3(a, __getOwnPropDescs$3(b));
+var __spreadProps$2 = (a, b) => __defProps$2(a, __getOwnPropDescs$2(b));
 var __async$2 = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
@@ -447,7 +447,7 @@ function createCompilerProgram(tsConfigCompilerOptions, tsconfig) {
   if (config) {
     return ts.createIncrementalProgram({
       host,
-      options: __spreadProps$3(__spreadValues$3({}, config.options), {
+      options: __spreadProps$2(__spreadValues$3({}, config.options), {
         noEmit: false
       }),
       rootNames: config.fileNames,
@@ -537,8 +537,8 @@ function dtsGen(_0) {
 }
 
 var __defProp$2 = Object.defineProperty;
-var __defProps$2 = Object.defineProperties;
-var __getOwnPropDescs$2 = Object.getOwnPropertyDescriptors;
+var __defProps$1 = Object.defineProperties;
+var __getOwnPropDescs$1 = Object.getOwnPropertyDescriptors;
 var __getOwnPropSymbols$2 = Object.getOwnPropertySymbols;
 var __hasOwnProp$2 = Object.prototype.hasOwnProperty;
 var __propIsEnum$2 = Object.prototype.propertyIsEnumerable;
@@ -559,8 +559,8 @@ var __spreadValues$2 = (a, b) => {
     }
   return a;
 };
-var __spreadProps$2 = (a, b) => __defProps$2(a, __getOwnPropDescs$2(b));
-var __objRest$1 = (source, exclude) => {
+var __spreadProps$1 = (a, b) => __defProps$1(a, __getOwnPropDescs$1(b));
+var __objRest = (source, exclude) => {
   var target = {};
   for (var prop in source)
     if (__hasOwnProp$2.call(source, prop) && exclude.indexOf(prop) < 0)
@@ -667,7 +667,7 @@ const bundle = (_0) => __async$1(void 0, [_0], function* ({
               duration
             )})`;
             log.info(`${message}`);
-            return __spreadProps$2(__spreadValues$2({}, output2), {
+            return __spreadProps$1(__spreadValues$2({}, output2), {
               duration
             });
           }));
@@ -821,7 +821,7 @@ function startBundle(_0) {
     });
     const externalsFn = externalsGenerator(externals, pkgJson);
     let bundles = [];
-    const _d = rollupOpt, { plugins: extraPlugins = [] } = _d, rollupOpts = __objRest$1(_d, ["plugins"]);
+    const _d = rollupOpt, { plugins: extraPlugins = [] } = _d, rollupOpts = __objRest(_d, ["plugins"]);
     const rollupOptionWithoutInputOutput = __spreadValues$2({
       perf: true,
       treeshake: true,
@@ -831,10 +831,10 @@ function startBundle(_0) {
     }, rollupOpts != null ? rollupOpts : {});
     if (config.bundle) {
       bundles = config.bundle.reduce((options, bundle2) => {
-        const _a2 = bundle2, { input: bundleInput } = _a2, otherProps = __objRest$1(_a2, ["input"]);
+        const _a2 = bundle2, { input: bundleInput } = _a2, otherProps = __objRest(_a2, ["input"]);
         const option = __spreadValues$2({
           input: bundleInput || (cliInput ? normalizeCliInput(cliInput) : input),
-          output: [__spreadProps$2(__spreadValues$2({}, otherProps), { sourcemap })]
+          output: [__spreadProps$1(__spreadValues$2({}, otherProps), { sourcemap })]
         }, rollupOptionWithoutInputOutput);
         if (options.length === 0) {
           return [option];
@@ -848,7 +848,7 @@ function startBundle(_0) {
           options[i] = Object.assign({}, options[i], {
             output: [
               ...options[i].output,
-              __spreadProps$2(__spreadValues$2({}, otherProps), { sourcemap })
+              __spreadProps$1(__spreadValues$2({}, otherProps), { sourcemap })
             ]
           });
         }
@@ -869,8 +869,8 @@ function startBundle(_0) {
 }
 
 var __defProp$1 = Object.defineProperty;
-var __defProps$1 = Object.defineProperties;
-var __getOwnPropDescs$1 = Object.getOwnPropertyDescriptors;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
 var __getOwnPropSymbols$1 = Object.getOwnPropertySymbols;
 var __hasOwnProp$1 = Object.prototype.hasOwnProperty;
 var __propIsEnum$1 = Object.prototype.propertyIsEnumerable;
@@ -886,7 +886,7 @@ var __spreadValues$1 = (a, b) => {
     }
   return a;
 };
-var __spreadProps$1 = (a, b) => __defProps$1(a, __getOwnPropDescs$1(b));
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 function loadTsConfigJson(path = "./tsconfig.json") {
   try {
     const sourceFile = ts.readJsonConfigFile(path, ts.sys.readFile);
@@ -901,7 +901,7 @@ function loadTsConfigJson(path = "./tsconfig.json") {
       process.cwd()
     );
     const { raw = {}, options } = parsedCommandLine;
-    return __spreadProps$1(__spreadValues$1({}, raw), {
+    return __spreadProps(__spreadValues$1({}, raw), {
       compilerOptions: options
     });
   } catch (e) {
@@ -913,8 +913,6 @@ function loadTsConfigJson(path = "./tsconfig.json") {
 }
 
 var __defProp = Object.defineProperty;
-var __defProps = Object.defineProperties;
-var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __propIsEnum = Object.prototype.propertyIsEnumerable;
@@ -929,19 +927,6 @@ var __spreadValues = (a, b) => {
         __defNormalProp(a, prop, b[prop]);
     }
   return a;
-};
-var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-var __objRest = (source, exclude) => {
-  var target = {};
-  for (var prop in source)
-    if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
-      target[prop] = source[prop];
-  if (source != null && __getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(source)) {
-      if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
-        target[prop] = source[prop];
-    }
-  return target;
 };
 var __async = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
@@ -965,33 +950,26 @@ var __async = (__this, __arguments, generator) => {
 };
 function cli(args) {
   return __async(this, null, function* () {
+    var _a;
     const [, ..._args] = args;
     const pkgJson = nodeutils.json.readJSONSync(packageJson);
     const beatsPkgJson = nodeutils.json.readJSONSync(
       nodePath.resolve(require.resolve(".."), "../../package.json")
     );
-    const _a = nodeutils.parser(_args), {
-      project,
-      config: configPath
-    } = _a, inputOptions = __objRest(_a, [
-      "project",
-      "config"
-    ]);
+    const options = nodeutils.parser(_args);
     loadEnv();
     log.info(`@nfts/beats v${beatsPkgJson.version}`);
-    log.info(`tsconfig from ${project || tsconfig}`);
-    const tsConfig = loadTsConfigJson(project != null ? project : tsconfig);
-    if (configPath) {
-      log.info(`beats config from ${configPath}`);
+    log.info(`tsconfig from ${options.project || tsconfig}`);
+    const tsConfig = loadTsConfigJson((_a = options.project) != null ? _a : tsconfig);
+    if (options.project) {
+      log.info(`beats config from ${options.project}`);
     }
     const config = yield tryReadConfig({
-      configPath,
+      configPath: options.config,
       pkgJson
     });
     return startBundle({
-      config: __spreadProps(__spreadValues(__spreadValues({}, config), inputOptions), {
-        project
-      }),
+      config: __spreadValues(__spreadValues({}, config), options),
       pkgJson,
       tsConfig
     });
