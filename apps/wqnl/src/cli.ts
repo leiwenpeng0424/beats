@@ -16,36 +16,31 @@ async function cli(args: string[]) {
         nodePath.resolve(require.resolve(".."), "../../package.json"),
     );
 
-    const {
-        project,
-        config: configPath,
-        ...inputOptions
-    } = parser<CLIOptions>(_args);
+    const options = parser<CLIOptions>(_args);
 
     // Load `.env` file if possible.
     loadEnv();
 
     log.info(`@nfts/beats v${beatsPkgJson.version}`);
-    log.info(`tsconfig from ${project || CONSTANTS.tsconfig}`);
+    log.info(`tsconfig from ${options.project || CONSTANTS.tsconfig}`);
 
     // Read `tsconfig.json`
-    const tsConfig = loadTsConfigJson(project ?? CONSTANTS.tsconfig);
+    const tsConfig = loadTsConfigJson(options.project ?? CONSTANTS.tsconfig);
 
-    if (configPath) {
-        log.info(`beats config from ${configPath}`);
+    if (options.project) {
+        log.info(`beats config from ${options.project}`);
     }
 
     // Load `beats.config.json`.
     const config = await tryReadConfig({
-        configPath,
+        configPath: options.config,
         pkgJson,
     });
 
     return startBundle({
         config: {
             ...config,
-            ...inputOptions,
-            project,
+            ...options,
         },
         pkgJson,
         tsConfig,
