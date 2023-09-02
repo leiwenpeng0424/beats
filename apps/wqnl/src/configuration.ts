@@ -1,5 +1,5 @@
 import * as CONSTANTS from "@/constants";
-import { module_ } from "@nfts/nodeutils";
+import { m } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import type { TRollupTransformOptions } from "@nfts/plugin-esbuild";
 import { TTarget } from "@nfts/tsc-json";
@@ -228,7 +228,7 @@ export async function tryReadConfig({
     }
 
     if (configPath) {
-        config = module_.import_<Config>(configPath);
+        config = m.import_<Config>(configPath);
 
         if (!config.bundle) {
             Object.assign(config, {

@@ -170,7 +170,7 @@ export declare async function tryReadConfig({
     }
 
     if (configPath) {
-        config = module_.import_<Config>(configPath);
+        config = m.import_<Config>(configPath);
 
         if (!config.bundle) {
             Object.assign(config, {

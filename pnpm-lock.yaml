@@ -26,8 +26,8 @@ importers:
         specifier: ^7.36.2
         version: 7.36.2(@types/node@20.4.2)
       '@nfts/nodeutils':
-        specifier: ^0.0.6
-        version: 0.0.6
+        specifier: 0.0.8
+        version: 0.0.8
       '@nfts/pkg-json':
         specifier: ^0.1.1
         version: 0.1.1
@@ -903,6 +903,13 @@ packages:
       json5: 2.2.3
       tslib: 2.6.0
       typescript: 4.9.5
+
+  /@nfts/nodeutils@0.0.8:
+    resolution: {integrity: sha512-tpa+fdogJroy21U7kF5YUd104EbUJvRVVawBiYg9AKtDTS1h/Z9H6+GjvYP4ztIoc0ckKAOYgapjzm3H7NYVCg==}
+    dependencies:
+      json5: 2.2.3
+      typescript: 5.1.6
+    dev: false
 
   /@nfts/pkg-json@0.1.1:
     resolution: {integrity: sha512-ipsuZBGDFwVNbqzccah7fnMHnYkhFvLvjh0xKtAWTmMCuyzWjWtb+LMfDms8RNI8McgsIpGvTsXhDqW6Iz8+qQ==}

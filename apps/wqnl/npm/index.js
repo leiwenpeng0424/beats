@@ -5,7 +5,6 @@ var nodeFs = require('node:fs/promises');
 var nodePath = require('node:path');
 var dotenv = require('dotenv');
 var dotenvExpand = require('dotenv-expand');
-var readline = require('node:readline');
 var apiExtractor = require('@microsoft/api-extractor');
 var ts = require('typescript');
 var pluginAlias = require('@nfts/plugin-alias');
@@ -85,8 +84,8 @@ function getFormatFromFileName(output) {
   return "cjs";
 }
 function getOutputFromPackageJson(pkgJson, externalOutputOptions = (o) => o) {
-  const { main, module: m } = pkgJson;
-  return [main, m].filter(Boolean).map((output$1) => {
+  const { main, module: m2 } = pkgJson;
+  return [main, m2].filter(Boolean).map((output$1) => {
     const format = getFormatFromFileName(output$1);
     if (output$1 === ".") {
       output$1 = output;
@@ -133,7 +132,7 @@ function tryReadConfig(_0) {
       }
     }
     if (configPath) {
-      config = nodeutils.module_.import_(configPath);
+      config = nodeutils.m.import_(configPath);
       if (!config.bundle) {
         Object.assign(config, {
           bundle: getOutputFromPackageJson(
@@ -160,128 +159,6 @@ function loadEnv(input = {}) {
     processEnv: input
   });
   dotenvExpand.expand(config);
-}
-
-var __defProp$5 = Object.defineProperty;
-var __defNormalProp$5 = (obj, key, value) => key in obj ? __defProp$5(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField$1 = (obj, key, value) => {
-  __defNormalProp$5(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
-function strSplitByLength(str, len) {
-  const result = str.match(new RegExp(`(.{1,${len}})`, "g"));
-  return result != null ? result : [];
-}
-function stripAnsi(text, { onlyFirst } = { onlyFirst: true }) {
-  const pattern = [
-    "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
-    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))"
-  ].join("|");
-  const regexp = new RegExp(pattern, onlyFirst ? void 0 : "g");
-  return text.replace(regexp, "");
-}
-class Terminal {
-  constructor() {
-    __publicField$1(this, "stdin", process.stdin);
-    __publicField$1(this, "stdout", process.stdout);
-    __publicField$1(this, "x");
-    __publicField$1(this, "y");
-    __publicField$1(this, "maxCols");
-    __publicField$1(this, "rl");
-    this.rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      historySize: 0,
-      removeHistoryDuplicates: true,
-      tabSize: 4,
-      prompt: "",
-      terminal: process.stdout.isTTY
-    });
-    const pos = this.rl.getCursorPos();
-    this.x = pos.cols;
-    this.y = pos.rows;
-    this.maxCols = process.stdout.columns > 60 ? 60 : process.stdout.columns;
-  }
-  _write(content) {
-    readline.clearScreenDown(this.stdin);
-    const segments = strSplitByLength(content, this.maxCols);
-    segments.forEach((text) => {
-      this.rl.write(text);
-      this.y += 1;
-    });
-    return this;
-  }
-  nextLine(count = 1) {
-    this.y += count;
-    this.rl.write("\r");
-    return this;
-  }
-  clearLine(cb) {
-    process.stdout.cursorTo(0);
-    process.stdout.clearLine(1, () => {
-      cb == null ? void 0 : cb();
-    });
-    return this;
-  }
-  writeSameLine(content) {
-    this.clearLine(() => {
-      this._write(content);
-    });
-    return this;
-  }
-  writeLine(content, options = {
-    endWithNewLine: false
-  }) {
-    this._write(content);
-    if (options.endWithNewLine) {
-      this.nextLine();
-    }
-    return this;
-  }
-  clearScreen() {
-    this.x = 0;
-    this.y = 0;
-    readline.cursorTo(this.stdin, this.x, this.y);
-    readline.clearScreenDown(this.stdin);
-    return this;
-  }
-  box(content) {
-    this.writeLine(
-      `\u256D${Array(this.maxCols - 2).fill("\u2500").join("")}\u256E`
-    );
-    this.nextLine();
-    const padding = 4;
-    const writeCenter = (text) => {
-      const originLen = text.length;
-      const stripLen = stripAnsi(text).length;
-      const len = stripAnsi(text).length - (originLen - stripLen) - 0;
-      const restLen = this.maxCols - padding * 2;
-      if (restLen < len) {
-        strSplitByLength(text, restLen).forEach((t) => {
-          writeCenter(t);
-        });
-      } else {
-        const left = Math.ceil((restLen - len) / 2);
-        const leftPadding = "\u2502" + Array(left + padding - 1).fill(" ").join("");
-        const rightPadding = Array(restLen - left - len + padding - 1).fill(" ").join("") + "\u2502";
-        this.writeLine(`${leftPadding}${text}${rightPadding}`);
-        this.nextLine();
-      }
-    };
-    const contents = [
-      " ",
-      typeof content === "string" ? content : content,
-      " "
-    ].flat();
-    contents.forEach((t) => {
-      writeCenter(t);
-    });
-    this.writeLine(
-      `\u2570${Array(this.maxCols - 2).fill("\u2500").join("")}\u256F`
-    );
-    this.nextLine();
-    return this;
-  }
 }
 
 var __defProp$4 = Object.defineProperty;
@@ -331,7 +208,7 @@ class Log {
     term.nextLine();
   }
 }
-const term = new Terminal();
+const term = new nodeutils.Terminal();
 var log = new Log({ term });
 
 var __async$3 = (__this, __arguments, generator) => {
@@ -462,7 +339,7 @@ function emitOnlyDeclarations(tsConfigCompilerOptions, tsconfig) {
     program.emit(void 0);
   }
 }
-function dtsGen(_0) {
+function dtsRollup(_0) {
   return __async$2(this, arguments, function* ({
     input,
     watch,
@@ -525,7 +402,7 @@ function dtsGen(_0) {
       }
     });
     if (extractorResult.succeeded) ;
-    nodeutils.file.rmdirSync(dtsDir);
+    nodeutils.file.rmdirSync(dtsDir, false);
     if (!watch) {
       const duration = Date.now() - start;
       const message = `${nodeutils.colors.bgBlack(
@@ -776,7 +653,7 @@ function dts(_0) {
     const ext = nodePath.extname(inputBasename);
     const outputBasename = ext ? inputBasename.replace(ext, ".d.ts") : `${inputBasename != null ? inputBasename : "index"}.d.ts`;
     if (config.dtsRollup) {
-      yield dtsGen({
+      yield dtsRollup({
         input,
         watch: config.watch,
         tsConfigFile: (_a = config.project) != null ? _a : tsconfig,

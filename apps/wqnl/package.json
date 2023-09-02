@@ -1,7 +1,7 @@
 {
     "name": "wqnl",
     "version": "0.0.4",
-    "main": "./npm/index.cjs",
+    "main": "./npm/index.js",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
     "bin": {
@@ -10,8 +10,8 @@
     "exports": {
         "./package.json": "./package.json",
         ".": {
+            "require": "./npm/index.js",
             "import": "./npm/index.mjs",
-            "require": "./npm/index.cjs",
             "types": "./npm/index.d.ts"
         }
     },
@@ -19,11 +19,11 @@
         "dev": "npm run start",
         "start": "beats --watch --sourcemap",
         "build": "beats --clean --sourcemap --debug --verbose",
-        "dev:local": "node --trace-warnings npm/index.cjs --watch",
-        "build:local": "node --trace-warnings npm/index.cjs --clean",
+        "dev:local": "node --trace-warnings npm/index.js --watch",
+        "build:local": "node --trace-warnings npm/index.js --clean",
         "vitest": "vitest --watch false",
-        "check": "tsc --noEmit",
-        "prepublishOnly": "pnpm check && pnpm build:local"
+        "typecheck": "tsc --noEmit",
+        "prepublishOnly": "pnpm typecheck && pnpm build:local"
     },
     "publishConfig": {
         "access": "public"
@@ -40,7 +40,7 @@
     },
     "dependencies": {
         "@microsoft/api-extractor": "^7.36.2",
-        "@nfts/nodeutils": "^0.0.6",
+        "@nfts/nodeutils": "0.0.8",
         "@nfts/pkg-json": "^0.1.1",
         "@nfts/plugin-alias": "workspace:*",
         "@nfts/plugin-cleanup": "workspace:*",
@@ -60,3 +60,4 @@
         "typescript": "5.1.6"
     }
 }
+

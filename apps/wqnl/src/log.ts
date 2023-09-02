@@ -1,5 +1,4 @@
-import Terminal from "@/terminal";
-import { colors } from "@nfts/nodeutils";
+import { colors, Terminal } from "@nfts/nodeutils";
 
 class Log {
     public readonly term: Terminal;

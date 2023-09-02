@@ -8,7 +8,8 @@ import {
     ExtractorMessage,
 } from "@microsoft/api-extractor";
 import { file as File, colors, ms } from "@nfts/nodeutils";
-import nodeFs from "node:fs/promises";
+import nodeFsPromise from "node:fs/promises";
+import nodeFs from "node:fs";
 import nodePath from "node:path";
 import ts, {
     createIncrementalCompilerHost,
@@ -107,7 +108,7 @@ export async function dtsRollup({
         ? input.replace(nodePath.extname(input), ".d.ts")
         : `${input}.d.ts`;
 
-    const content = await nodeFs.readFile(mainEntry);
+    const content = await nodeFsPromise.readFile(mainEntry);
 
     // Fix #1
     if (content.toString() === "") {
@@ -158,7 +159,7 @@ export async function dtsRollup({
         // TODO: Throw whe meet error
     }
 
-    File.rmdirSync(CONSTANTS.dtsDir);
+    File.rmdirSync(CONSTANTS.dtsDir, false);
 
     if (!watch) {
         const duration = Date.now() - start;
@@ -169,3 +170,4 @@ export async function dtsRollup({
         log.info(message);
     }
 }
+

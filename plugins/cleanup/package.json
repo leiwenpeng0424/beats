@@ -8,8 +8,8 @@
         "dev": "npm run start",
         "start": "beats --watch --sourcemap",
         "build": "beats --clean --sourcemap --debug --verbose",
-        "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.cjs --clean --debug",
-        "dev:local": "node --trace-warnings ../../apps/wqnl/npm/index.cjs --watch --debug",
+        "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean --debug",
+        "dev:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --watch --debug",
         "vitest": "vitest --watch false"
     },
     "publishConfig": {
