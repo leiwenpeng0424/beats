@@ -21,9 +21,9 @@
         "build": "beats --clean --sourcemap --debug --verbose",
         "dev:local": "node --trace-warnings npm/index.js --watch",
         "build:local": "node --trace-warnings npm/index.js --clean",
-        "vitest": "vitest --watch false",
+        "test": "vitest --watch false",
         "typecheck": "tsc --noEmit",
-        "prepublishOnly": "pnpm typecheck && pnpm build:local"
+        "prepublishOnly": "pnpm typecheck && pnpm build:local && pnpm test"
     },
     "publishConfig": {
         "access": "public"
@@ -60,4 +60,3 @@
         "typescript": "5.1.6"
     }
 }
-

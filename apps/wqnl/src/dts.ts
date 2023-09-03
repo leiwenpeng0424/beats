@@ -9,7 +9,6 @@ import {
 } from "@microsoft/api-extractor";
 import { file as File, colors, ms } from "@nfts/nodeutils";
 import nodeFsPromise from "node:fs/promises";
-import nodeFs from "node:fs";
 import nodePath from "node:path";
 import ts, {
     createIncrementalCompilerHost,
@@ -170,4 +169,3 @@ export async function dtsRollup({
         log.info(message);
     }
 }
-
