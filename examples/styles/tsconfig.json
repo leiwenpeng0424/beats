@@ -4,7 +4,7 @@
         "lib": ["es2020"],
         "module": "CommonJS",
         "target": "ESNext",
-        "importHelpers": true,
+        "importHelpers": false,
         "strict": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,

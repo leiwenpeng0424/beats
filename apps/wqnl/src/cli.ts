@@ -4,14 +4,14 @@ import loadEnv from "@/env";
 import log from "@/log";
 import { startBundle } from "@/rollup";
 import { loadTsConfigJson } from "@/tsconfig";
-import { json as Json, parser } from "@nfts/nodeutils";
+import { json as Json, colors, parser } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import nodePath from "node:path";
 
 async function cli(args: string[]) {
     const [, ..._args] = args;
-    const pkgJson = Json.readJSONSync<IPackageJson>(CONSTANTS.packageJson);
 
+    const pkgJson = Json.readJSONSync<IPackageJson>(CONSTANTS.packageJson);
     const beatsPkgJson = Json.readJSONSync<IPackageJson>(
         nodePath.resolve(require.resolve(".."), "../../package.json"),
     );
@@ -21,14 +21,14 @@ async function cli(args: string[]) {
     // Load `.env` file if possible.
     loadEnv();
 
-    log.info(`@nfts/beats v${beatsPkgJson.version}`);
+    log.info(`${colors.brightRed(beatsPkgJson.name)} v${beatsPkgJson.version}`);
     log.info(`tsconfig from ${options.project || CONSTANTS.tsconfig}`);
 
     // Read `tsconfig.json`
     const tsConfig = loadTsConfigJson(options.project ?? CONSTANTS.tsconfig);
 
-    if (options.project) {
-        log.info(`beats config from ${options.project}`);
+    if (options.config) {
+        log.info(`${beatsPkgJson.name} configuration from ${options.config}`);
     }
 
     // Load `beats.config.json`.

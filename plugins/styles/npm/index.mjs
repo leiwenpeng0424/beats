@@ -1,4 +1,3 @@
-import { createFilter } from '@rollup/pluginutils';
 import nodePath from 'node:path';
 import { render } from 'less';
 import cssnano from 'cssnano';
@@ -8,6 +7,7 @@ import postcssImport from 'postcss-import';
 import postcssrc from 'postcss-load-config';
 import postcssModules from 'postcss-modules';
 import postcssUrl from 'postcss-url';
+import { createFilter } from '@rollup/pluginutils';
 
 var __defProp$2 = Object.defineProperty;
 var __knownSymbol = (name, symbol) => {
@@ -339,7 +339,7 @@ var __async = (__this, __arguments, generator) => {
     step((generator = generator.apply(__this, __arguments)).next());
   });
 };
-function stylesPlugin(options = DefaultTransformerOptions) {
+function styles(options = DefaultTransformerOptions) {
   var _a, _b;
   const filter = createFilter((_a = options.include) != null ? _a : [], (_b = options.exclude) != null ? _b : [], {
     resolve: process.cwd()
@@ -390,4 +390,4 @@ function stylesPlugin(options = DefaultTransformerOptions) {
   };
 }
 
-export { stylesPlugin as default };
+export { styles };

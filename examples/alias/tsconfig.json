@@ -13,7 +13,8 @@
 
         // path alias
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": ["src/*"],
+            "externals:*": ["./libs/*"]
         }
     },
     "include": ["src/"]

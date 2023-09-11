@@ -1,7 +1,6 @@
 import { Plugin as Plugin_2 } from 'rollup';
 
-declare function stylesPlugin(options?: TransformerOptions): Plugin_2;
-export default stylesPlugin;
+export declare function styles(options?: TransformerOptions): Plugin_2;
 
 declare interface TransformerOptions {
     sourcemap?: boolean | "inline";

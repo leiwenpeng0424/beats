@@ -13,9 +13,6 @@
         }
     },
     "scripts": {
-        "dev": "npm run start",
-        "start": "beats --watch --sourcemap",
-        "build": "beats --clean --sourcemap --debug --verbose",
         "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean --debug",
         "dev:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean --sourcemap --watch",
         "vitest": "vitest --watch false"
@@ -28,7 +25,6 @@
     "license": "MIT",
     "packageManager": "pnpm@8.5.1",
     "devDependencies": {
-        "@nfts/beats": "0.0.14",
         "@nfts/tsc-json": "^0.1.1",
         "@types/node": "^20.4.2",
         "rollup": "^3.26.3",

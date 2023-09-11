@@ -5,10 +5,8 @@
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
     "scripts": {
-        "dev": "npm run start",
-        "start": "beats --watch --sourcemap",
-        "build": "beats --clean --sourcemap --debug --verbose",
-        "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean --debug",
+        "dev:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --watch --clean",
+        "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean --sourcemap",
         "vitest": "vitest --watch false"
     },
     "publishConfig": {
@@ -19,7 +17,6 @@
     "license": "MIT",
     "packageManager": "pnpm@8.5.1",
     "devDependencies": {
-        "@nfts/beats": "0.0.14",
         "@types/node": "^20.4.2",
         "rollup": "^3.26.3",
         "typescript": "5.1.6",

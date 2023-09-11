@@ -1,6 +1,3 @@
-import { createFilter } from "@rollup/pluginutils";
-import nodePath from "node:path";
-import { Plugin } from "rollup";
 import {
     DefaultTransformerOptions,
     TransformerManager,
@@ -8,8 +5,11 @@ import {
 } from "@/Transformer";
 import LessTransformer from "@/less";
 import PostcssTransformer from "@/postcss";
+import { createFilter } from "@rollup/pluginutils";
+import nodePath from "node:path";
+import { Plugin } from "rollup";
 
-export default function stylesPlugin(
+export function styles(
     options: TransformerOptions = DefaultTransformerOptions,
 ): Plugin {
     const filter = createFilter(options.include ?? [], options.exclude ?? [], {
@@ -70,4 +70,3 @@ export default function stylesPlugin(
         },
     };
 }
-

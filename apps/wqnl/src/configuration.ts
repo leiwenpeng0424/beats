@@ -10,34 +10,22 @@ import nodeFs from "node:fs/promises";
 import nodePath from "node:path";
 import type { ModuleFormat, Plugin, RollupOptions } from "rollup";
 
+const esFormatFileRegexp = (name: string) =>
+    /((.+)\.mjs)|((.+)\.esm?\.js)/g.test(name);
+
 /**
- * Return output format.
  * @param output
  */
 function getFormatFromFileName(output: string): ModuleFormat {
-    const ext = nodePath.extname(output);
-
-    if (CONSTANTS.esmExt.includes(ext) || output.endsWith(".d.ts")) {
-        return "es";
+    const basename = nodePath.basename(output);
+    if (esFormatFileRegexp(basename)) {
+        return "esm";
     }
 
-    if (CONSTANTS.cjsExt.includes(ext)) {
-        return "cjs";
-    }
-
-    if (CONSTANTS.esmMiddleNames.some((name) => output.includes(name))) {
-        return "es";
-    }
-
-    if (CONSTANTS.cjsMiddleNames.some((name) => output.includes(name))) {
-        return "cjs";
-    }
-
-    return "cjs";
+    return "commonjs";
 }
 
 /**
- * Get outputs from package.json
  * @param pkgJson
  * @param externalOutputOptions
  */
@@ -163,14 +151,6 @@ export interface Config extends CLIOptions {
     nodeResolve?: RollupNodeResolveOptions;
 
     /**
-     * TODO:
-     *  rollup-plugin-styles is no longer actively update,
-     *  Try to replace rollup-plugin-styles with new plugin.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    styles?: any;
-
-    /**
      * Extra rollup options.
      */
     rollup?: Exclude<TRollupOptions, "output" | "input">;
@@ -184,6 +164,8 @@ export interface Config extends CLIOptions {
      * Overwrite bundle config
      */
     bundleOverwrite?: (b: TBundleConfig) => TBundleConfig;
+
+    paths?: { [K: string]: string }[];
 }
 
 export type TRollupOptions = Omit<RollupOptions, "input"> & {

@@ -29,19 +29,18 @@ export const aliasToModulePath = (alias: IPathObject = {}) => {
                     return element[0];
                 }
 
-                const regexp = new RegExp(
-                    `${key.replace("/*", "/(.+)$")}`,
-                ).exec(id);
+                const regexp = new RegExp(`${key.replace("*", "(.+)$")}`).exec(
+                    id,
+                );
 
                 if (regexp) {
                     const subpath = regexp[1];
-
                     return element[0].replace("*", subpath);
                 }
             }
         }
 
-        return "";
+        return null;
     };
 };
 
@@ -56,7 +55,6 @@ export function alias({ alias }: RollupAliasOptions): Plugin {
     return {
         name: "alias",
         resolveId: {
-            order: "pre",
             async handler(id, importer) {
                 const moduleId = resolve(id);
 
@@ -76,4 +74,3 @@ export function alias({ alias }: RollupAliasOptions): Plugin {
         },
     };
 }
-

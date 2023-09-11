@@ -91,14 +91,6 @@ export declare interface Config extends CLIOptions {
     nodeResolve?: RollupNodeResolveOptions;
 
     /**
-     * TODO:
-     *  rollup-plugin-styles is no longer actively update,
-     *  Try to replace rollup-plugin-styles with new plugin.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    styles?: any;
-
-    /**
      * Extra rollup options.
      */
     rollup?: Exclude<TRollupOptions, "output" | "input">;
@@ -112,6 +104,8 @@ export declare interface Config extends CLIOptions {
      * Overwrite bundle config
      */
     bundleOverwrite?: (b: TBundleConfig) => TBundleConfig;
+
+    paths?: { [K: string]: string }[];
 }
 
 /**

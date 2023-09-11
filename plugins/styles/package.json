@@ -1,23 +1,22 @@
 {
     "name": "@nfts/plugin-styles",
     "version": "0.0.2",
-    "main": "./npm/index.cjs",
+    "main": "./npm/index.js",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
     "exports": {
         "./package.json": "./package.json",
         ".": {
             "import": "./npm/index.mjs",
-            "require": "./npm/index.cjs",
+            "require": "./npm/index.js",
             "types": "./npm/index.d.ts"
         }
     },
     "scripts": {
-        "dev": "npm run start",
-        "start": "beats --watch --sourcemap",
-        "build": "beats --clean --sourcemap --debug --verbose",
-        "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean --debug",
-        "vitest": "vitest --watch false"
+        "dev:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --watch --clean",
+        "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean",
+        "vitest": "vitest --watch false",
+        "typecheck": "tsc --noEmit"
     },
     "publishConfig": {
         "access": "public"
@@ -27,7 +26,6 @@
     "license": "MIT",
     "packageManager": "pnpm@8.5.1",
     "devDependencies": {
-        "@nfts/beats": "0.0.14",
         "@types/less": "^3.0.3",
         "@types/node": "^20.4.2",
         "@types/postcss-import": "^14.0.0",

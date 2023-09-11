@@ -56,16 +56,16 @@ const aliasToModulePath = (alias2 = {}) => {
         if (key === id) {
           return element[0];
         }
-        const regexp = new RegExp(
-          `${key.replace("/*", "/(.+)$")}`
-        ).exec(id);
+        const regexp = new RegExp(`${key.replace("*", "(.+)$")}`).exec(
+          id
+        );
         if (regexp) {
           const subpath = regexp[1];
           return element[0].replace("*", subpath);
         }
       }
     }
-    return "";
+    return null;
   };
 };
 function alias({ alias: alias2 }) {
@@ -73,7 +73,6 @@ function alias({ alias: alias2 }) {
   return {
     name: "alias",
     resolveId: {
-      order: "pre",
       handler(id, importer) {
         return __async(this, null, function* () {
           const moduleId = resolve(id);
@@ -96,4 +95,3 @@ function alias({ alias: alias2 }) {
 
 exports.alias = alias;
 exports.aliasToModulePath = aliasToModulePath;
-//# sourceMappingURL=index.cjs.map

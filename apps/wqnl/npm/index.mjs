@@ -13,7 +13,7 @@ import eslint from '@rollup/plugin-eslint';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import Module from 'node:module';
 import { rollup, watch } from 'rollup';
-import styles from 'rollup-plugin-styles';
+import { styles } from '@nfts/plugin-styles';
 
 const tsconfig = "./tsconfig.json";
 const packageJson = "./package.json";
@@ -22,10 +22,6 @@ const output = "./index.js";
 const input = "./src/index";
 const outputDir = "npm";
 const dtsDir = ".dts";
-const esmExt = [".mjs", ".mts"];
-const cjsExt = [".cjs", ".cts"];
-const esmMiddleNames = [".esm.", ".es."];
-const cjsMiddleNames = [".cjs.", ".node."];
 const Extensions = [
   ".js",
   ".jsx",
@@ -65,21 +61,13 @@ var __async$4 = (__this, __arguments, generator) => {
   });
 };
 var __forAwait$1 = (obj, it, method) => (it = obj[__knownSymbol$1("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol$1("iterator")](), it = {}, method = (key, fn) => (fn = obj[key]) && (it[key] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value) => yes({ value, done }), no)))), method("next"), method("return"), it);
+const esFormatFileRegexp = (name) => /((.+)\.mjs)|((.+)\.esm?\.js)/g.test(name);
 function getFormatFromFileName(output) {
-  const ext = nodePath.extname(output);
-  if (esmExt.includes(ext) || output.endsWith(".d.ts")) {
-    return "es";
+  const basename = nodePath.basename(output);
+  if (esFormatFileRegexp(basename)) {
+    return "esm";
   }
-  if (cjsExt.includes(ext)) {
-    return "cjs";
-  }
-  if (esmMiddleNames.some((name) => output.includes(name))) {
-    return "es";
-  }
-  if (cjsMiddleNames.some((name) => output.includes(name))) {
-    return "cjs";
-  }
-  return "cjs";
+  return "commonjs";
 }
 function getOutputFromPackageJson(pkgJson, externalOutputOptions = (o) => o) {
   const { main, module: m2 } = pkgJson;
@@ -474,17 +462,15 @@ const externalsGenerator = (externals = [], pkgJson) => {
     Object.keys(dependencies).concat(Object.keys(peerDependencies))
   );
   return (id) => {
-    return (externals == null ? void 0 : externals.includes(id)) || nativeModules.includes(id);
+    return nativeModules.includes(id) || (externals == null ? void 0 : externals.includes(id)) || /^externals:/.test(id);
   };
 };
 const applyPlugins = (options) => {
   var _a, _b, _c, _d;
   return [
     cleanup(options == null ? void 0 : options.clean),
-    styles(options == null ? void 0 : options.styles),
+    styles(),
     alias((_a = options == null ? void 0 : options.alias) != null ? _a : { alias: {} }),
-    // @TODO
-    // postcssPlugin({ cssModules: true }),
     esbuild(
       Object.assign({
         options: options == null ? void 0 : options.esbuild,
@@ -494,7 +480,6 @@ const applyPlugins = (options) => {
     nodeResolve(
       Object.assign(
         {
-          rootDir: cwd(),
           preferBuiltins: false,
           extensions: Extensions
         },
@@ -503,7 +488,10 @@ const applyPlugins = (options) => {
     ),
     commonjs(
       Object.assign(
-        { extensions: Extensions },
+        {
+          extensions: Extensions,
+          requireReturnsDefault: "preferred"
+        },
         (_c = options == null ? void 0 : options.commonjs) != null ? _c : {}
       )
     ),
@@ -673,7 +661,6 @@ function startBundle(_0) {
       commonjs: commonjs2,
       nodeResolve: nodeResolve2,
       esbuild: esbuild2,
-      styles: styles2,
       rollup: rollupOpt = {},
       // Options
       externals,
@@ -690,7 +677,6 @@ function startBundle(_0) {
         { minify, target: (_c = config.target) != null ? _c : "ES2015" },
         esbuild2 != null ? esbuild2 : {}
       ),
-      styles: styles2,
       alias: { alias: paths }
       // clean: { active: !watch },
     });
@@ -709,7 +695,25 @@ function startBundle(_0) {
         const _a2 = bundle2, { input: bundleInput } = _a2, otherProps = __objRest(_a2, ["input"]);
         const option = __spreadValues$2({
           input: bundleInput || (cliInput ? normalizeCliInput(cliInput) : input),
-          output: [__spreadProps$1(__spreadValues$2({}, otherProps), { sourcemap })]
+          output: [
+            __spreadProps$1(__spreadValues$2({}, otherProps), {
+              sourcemap,
+              paths: function(id) {
+                const result = /^externals:(.+)/.exec(id);
+                if (result) {
+                  const alias2 = Object.entries(paths).find(
+                    (s) => s[0].startsWith("externals")
+                  );
+                  if (alias2) {
+                    const [, realNames] = alias2;
+                    const [realName] = realNames;
+                    return realName.replace("*", result[1]);
+                  }
+                }
+                return id;
+              }
+            })
+          ]
         }, rollupOptionWithoutInputOutput);
         if (options.length === 0) {
           return [option];
@@ -833,11 +837,11 @@ function cli(args) {
     );
     const options = parser(_args);
     loadEnv();
-    log.info(`@nfts/beats v${beatsPkgJson.version}`);
+    log.info(`${colors.brightRed(beatsPkgJson.name)} v${beatsPkgJson.version}`);
     log.info(`tsconfig from ${options.project || tsconfig}`);
     const tsConfig = loadTsConfigJson((_a = options.project) != null ? _a : tsconfig);
-    if (options.project) {
-      log.info(`beats config from ${options.project}`);
+    if (options.config) {
+      log.info(`${beatsPkgJson.name} configuration from ${options.config}`);
     }
     const config = yield tryReadConfig({
       configPath: options.config,

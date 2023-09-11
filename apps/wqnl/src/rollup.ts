@@ -21,8 +21,7 @@ import {
     type RollupOutput,
     type RollupWatchOptions,
 } from "rollup";
-import styles from "rollup-plugin-styles";
-// import styles from "@nfts/plugin-styles";
+import { styles } from "@nfts/plugin-styles";
 
 /**
  *
@@ -46,7 +45,11 @@ export const externalsGenerator = (
         );
 
     return (id: string) => {
-        return externals?.includes(id) || nativeModules.includes(id);
+        return (
+            nativeModules.includes(id) ||
+            externals?.includes(id) ||
+            /^externals:/.test(id)
+        );
     };
 };
 
@@ -56,7 +59,7 @@ export const externalsGenerator = (
 export const applyPlugins = (
     options?: Pick<
         Config,
-        "eslint" | "nodeResolve" | "commonjs" | "esbuild" | "styles"
+        "eslint" | "nodeResolve" | "commonjs" | "esbuild"
     > & {
         clean?: RollupCleanupOptions;
         alias?: RollupAliasOptions;
@@ -64,10 +67,8 @@ export const applyPlugins = (
 ) => {
     return [
         cleanup(options?.clean),
-        styles(options?.styles),
+        styles(),
         alias(options?.alias ?? { alias: {} }),
-        // @TODO
-        // postcssPlugin({ cssModules: true }),
         esbuild(
             Object.assign({
                 options: options?.esbuild,
@@ -77,7 +78,6 @@ export const applyPlugins = (
         nodeResolve(
             Object.assign(
                 {
-                    rootDir: cwd(),
                     preferBuiltins: false,
                     extensions: CONSTANTS.Extensions,
                 },
@@ -86,7 +86,10 @@ export const applyPlugins = (
         ),
         commonjs(
             Object.assign(
-                { extensions: CONSTANTS.Extensions },
+                {
+                    extensions: CONSTANTS.Extensions,
+                    requireReturnsDefault: "preferred",
+                },
                 options?.commonjs ?? {},
             ),
         ),
@@ -313,7 +316,6 @@ export async function startBundle({
         commonjs,
         nodeResolve,
         esbuild,
-        styles,
         rollup: rollupOpt = {} as TRollupOptions,
         // Options
         externals,
@@ -331,7 +333,6 @@ export async function startBundle({
             { minify, target: config.target ?? "ES2015" },
             esbuild ?? {},
         ),
-        styles,
         alias: { alias: paths },
         // clean: { active: !watch },
     });
@@ -364,7 +365,29 @@ export async function startBundle({
                     (cliInput
                         ? normalizeCliInput(cliInput as string)
                         : CONSTANTS.input),
-                output: [{ ...otherProps, sourcemap }],
+                output: [
+                    {
+                        ...otherProps,
+                        sourcemap,
+                        paths: function (id) {
+                            const result = /^externals:(.+)/.exec(id);
+                            if (result) {
+                                const alias = Object.entries(paths).find((s) =>
+                                    s[0].startsWith("externals"),
+                                );
+
+                                if (alias) {
+                                    const [, realNames] = alias;
+                                    const [realName] = realNames;
+
+                                    return realName.replace("*", result[1]);
+                                }
+                            }
+
+                            return id;
+                        },
+                    },
+                ],
                 ...rollupOptionWithoutInputOutput,
             } as TRollupOptions;
 

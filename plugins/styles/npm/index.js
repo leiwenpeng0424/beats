@@ -1,8 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var pluginutils = require('@rollup/pluginutils');
 var nodePath = require('node:path');
 var less = require('less');
 var cssnano = require('cssnano');
@@ -12,6 +9,7 @@ var postcssImport = require('postcss-import');
 var postcssrc = require('postcss-load-config');
 var postcssModules = require('postcss-modules');
 var postcssUrl = require('postcss-url');
+var pluginutils = require('@rollup/pluginutils');
 
 var __defProp$2 = Object.defineProperty;
 var __knownSymbol = (name, symbol) => {
@@ -343,7 +341,7 @@ var __async = (__this, __arguments, generator) => {
     step((generator = generator.apply(__this, __arguments)).next());
   });
 };
-function stylesPlugin(options = DefaultTransformerOptions) {
+function styles(options = DefaultTransformerOptions) {
   var _a, _b;
   const filter = pluginutils.createFilter((_a = options.include) != null ? _a : [], (_b = options.exclude) != null ? _b : [], {
     resolve: process.cwd()
@@ -394,4 +392,4 @@ function stylesPlugin(options = DefaultTransformerOptions) {
   };
 }
 
-exports.default = stylesPlugin;
+exports.styles = styles;
