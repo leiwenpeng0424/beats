@@ -8,12 +8,12 @@ import ts, { sys, createIncrementalCompilerHost, createIncrementalProgram, readJ
 import { alias } from '@nfts/plugin-alias';
 import { cleanup } from '@nfts/plugin-cleanup';
 import esbuild from '@nfts/plugin-esbuild';
+import { styles } from '@nfts/plugin-styles';
 import commonjs from '@rollup/plugin-commonjs';
 import eslint from '@rollup/plugin-eslint';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import Module from 'node:module';
 import { rollup, watch } from 'rollup';
-import { styles } from '@nfts/plugin-styles';
 
 const tsconfig = "./tsconfig.json";
 const packageJson = "./package.json";

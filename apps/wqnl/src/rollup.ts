@@ -8,6 +8,7 @@ import type { IPackageJson } from "@nfts/pkg-json";
 import { RollupAliasOptions, alias } from "@nfts/plugin-alias";
 import { RollupCleanupOptions, cleanup } from "@nfts/plugin-cleanup";
 import esbuild from "@nfts/plugin-esbuild";
+import { styles } from "@nfts/plugin-styles";
 import type { ITSConfigJson } from "@nfts/tsc-json";
 import commonjs from "@rollup/plugin-commonjs";
 import eslint from "@rollup/plugin-eslint";
@@ -21,22 +22,16 @@ import {
     type RollupOutput,
     type RollupWatchOptions,
 } from "rollup";
-import { styles } from "@nfts/plugin-styles";
 
 /**
- *
- * @desc Externals function for rollup.externals,
- * by default, all devDependencies and dependencies in package.json
+ * Externals function for rollup.externals,
+ * by default, all deps and peer deps in package.json
  * will be ignored.
- *
  */
 export const externalsGenerator = (
     externals: string[] = [],
     pkgJson: IPackageJson,
 ) => {
-    /**
-     * Default exclude deps and peerDeps
-     */
     const { dependencies = {}, peerDependencies = {} } = pkgJson;
     const nativeModules = Module.builtinModules
         .concat(Module.builtinModules.map((m) => `node:${m}`))

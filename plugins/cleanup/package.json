@@ -5,7 +5,6 @@
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
     "scripts": {
-        "dev": "npm run start",
         "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean --debug",
         "dev:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --watch --debug",
         "vitest": "vitest --watch false"

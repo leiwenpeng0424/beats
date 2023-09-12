@@ -305,9 +305,9 @@ class PostcssTransformer extends Transformer {
         }
       }
       this.manager.depsById.set(id, deps);
-      const minifiedCss = yield cssMinify(css, id);
+      const nanocss = yield cssMinify(css, id);
       const _css = exportCssWithInject(
-        minifiedCss,
+        nanocss,
         (_d = this.manager.cssJson.get(id)) != null ? _d : {},
         supportCssModule
       );

@@ -19,7 +19,7 @@ import {
 function createCompilerProgram(
     compilerOptions: CompilerOptions,
     tsconfig: string,
-) {
+): Program | undefined {
     const config = getParsedCommandLineOfConfigFile(tsconfig, compilerOptions, {
         useCaseSensitiveFileNames: true,
         getCurrentDirectory: sys.getCurrentDirectory,
@@ -199,4 +199,3 @@ export default function esbuild({
         },
     };
 }
-

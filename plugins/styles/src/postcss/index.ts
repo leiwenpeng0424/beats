@@ -94,9 +94,11 @@ export default class PostcssTransformer extends Transformer {
         }
 
         this.manager.depsById.set(id, deps);
-        const minifiedCss = await cssMinify(css, id);
+
+        const nanocss = await cssMinify(css, id);
+
         const _css = exportCssWithInject(
-            minifiedCss,
+            nanocss,
             this.manager.cssJson.get(id) ?? {},
             supportCssModule,
         );
@@ -107,4 +109,3 @@ export default class PostcssTransformer extends Transformer {
         };
     }
 }
-

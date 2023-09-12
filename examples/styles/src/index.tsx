@@ -4,9 +4,9 @@ import styles from "./styles.module.css";
 import lessStyles from "./style.module.less";
 
 export default function App() {
-    return (
-        <h1 className={`bg-amber-500 ${styles.link} ${lessStyles.link}`}>
-            {"App"}
-        </h1>
-    );
+  return (
+    <h1 className={`bg-amber-500 ${styles.link} ${lessStyles.link}`}>
+      {"App"}
+    </h1>
+  );
 }

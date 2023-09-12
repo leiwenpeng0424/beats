@@ -10,12 +10,12 @@ var ts = require('typescript');
 var pluginAlias = require('@nfts/plugin-alias');
 var pluginCleanup = require('@nfts/plugin-cleanup');
 var esbuild = require('@nfts/plugin-esbuild');
+var pluginStyles = require('@nfts/plugin-styles');
 var commonjs = require('@rollup/plugin-commonjs');
 var eslint = require('@rollup/plugin-eslint');
 var nodeResolve = require('@rollup/plugin-node-resolve');
 var Module = require('node:module');
 var rollup = require('rollup');
-var pluginStyles = require('@nfts/plugin-styles');
 
 const tsconfig = "./tsconfig.json";
 const packageJson = "./package.json";
