@@ -693,6 +693,7 @@ function startBundle(_0) {
     if (config.bundle) {
       bundles = config.bundle.reduce((options, bundle2) => {
         const _a2 = bundle2, { input: bundleInput } = _a2, otherProps = __objRest(_a2, ["input"]);
+        otherProps.file;
         const option = __spreadValues$2({
           input: bundleInput || (cliInput ? normalizeCliInput(cliInput) : input),
           output: [
@@ -707,7 +708,10 @@ function startBundle(_0) {
                   if (alias2) {
                     const [, realNames] = alias2;
                     const [realName] = realNames;
-                    return realName.replace("*", result[1]);
+                    return nodePath.resolve(
+                      process.cwd(),
+                      realName.replace("*", result[1])
+                    );
                   }
                 }
                 return id;

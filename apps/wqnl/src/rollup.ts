@@ -358,7 +358,7 @@ export async function startBundle({
     if (config.bundle) {
         bundles = config.bundle.reduce((options, bundle) => {
             const { input: bundleInput, ...otherProps } = bundle;
-
+            const outfile = otherProps.file;
             const option = {
                 input:
                     bundleInput ||
@@ -380,7 +380,10 @@ export async function startBundle({
                                     const [, realNames] = alias;
                                     const [realName] = realNames;
 
-                                    return realName.replace("*", result[1]);
+                                    return nodePath.resolve(
+                                        process.cwd(),
+                                        realName.replace("*", result[1]),
+                                    );
                                 }
                             }
 

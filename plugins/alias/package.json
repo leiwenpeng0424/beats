@@ -2,12 +2,12 @@
     "name": "@nfts/plugin-alias",
     "version": "0.0.2",
     "main": "./npm/index.cjs",
-    "module": "./npm/index.mjs",
+    "module": "./npm/index.js",
     "types": "./npm/index.d.ts",
     "exports": {
         "./package.json": "./package.json",
         ".": {
-            "import": "./npm/index.mjs",
+            "import": "./npm/index.js",
             "require": "./npm/index.cjs",
             "types": "./npm/index.d.ts"
         }

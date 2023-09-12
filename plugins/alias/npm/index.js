@@ -1,4 +1,25 @@
-import * as path from 'node:path';
+'use strict';
+
+var path = require('node:path');
+
+function _interopNamespaceDefault(e) {
+    var n = Object.create(null);
+    if (e) {
+        Object.keys(e).forEach(function (k) {
+            if (k !== 'default') {
+                var d = Object.getOwnPropertyDescriptor(e, k);
+                Object.defineProperty(n, k, d.get ? d : {
+                    enumerable: true,
+                    get: function () { return e[k]; }
+                });
+            }
+        });
+    }
+    n.default = e;
+    return Object.freeze(n);
+}
+
+var path__namespace = /*#__PURE__*/_interopNamespaceDefault(path);
 
 var __async = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
@@ -57,7 +78,7 @@ function alias({ alias: alias2 }) {
           const moduleId = resolve(id);
           if (moduleId) {
             const resolution = yield this.resolve(
-              path.resolve(process.cwd(), moduleId),
+              path__namespace.resolve(process.cwd(), moduleId),
               importer,
               {
                 skipSelf: true
@@ -72,4 +93,5 @@ function alias({ alias: alias2 }) {
   };
 }
 
-export { alias, aliasToModulePath };
+exports.alias = alias;
+exports.aliasToModulePath = aliasToModulePath;
