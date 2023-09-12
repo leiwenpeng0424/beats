@@ -1,5 +1,11 @@
 # @nfts/plugin-styles
 
+## 0.0.3
+
+### Patch Changes
+
+-   Replace styles
+
 ## 0.0.2
 
 ### Patch Changes

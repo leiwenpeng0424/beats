@@ -1,5 +1,17 @@
 # wqnl
 
+## 0.0.5
+
+### Patch Changes
+
+-   Replace styles
+-   Updated dependencies
+    -   @nfts/plugin-alias@0.0.3
+    -   @nfts/plugin-cleanup@0.0.3
+    -   @nfts/plugin-esbuild@0.0.3
+    -   @nfts/plugin-progress@0.0.3
+    -   @nfts/plugin-styles@0.0.3
+
 ## 0.0.4
 
 ### Patch Changes
