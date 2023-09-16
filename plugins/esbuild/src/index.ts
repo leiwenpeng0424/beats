@@ -118,7 +118,6 @@ export default function esbuild({
             jsxFragmentFactory:
                 tsConfigJson?.compilerOptions?.jsxFragmentFactory,
             jsxImportSource: tsConfigJson?.compilerOptions?.jsxImportSource,
-
             paths: tsConfigJson?.compilerOptions?.paths,
             preserveValueImports:
                 tsConfigJson?.compilerOptions?.preserveValueImports,
@@ -131,7 +130,6 @@ export default function esbuild({
         name: "esbuild",
         buildStart() {
             tsErrors.length = 0;
-            // TODO: 使用 incremental program 性能优化
             program = createCompilerProgram(
                 {
                     emitDeclarationOnly: true,
@@ -150,6 +148,7 @@ export default function esbuild({
             if (!loader) {
                 return null;
             }
+
             const sourceFile = program?.getSourceFile(id);
 
             if (sourceFile) {

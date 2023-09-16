@@ -5,7 +5,8 @@
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
     "scripts": {
-        "build": "wqnl --clean --sourcemap"
+        "build": "wqnl --clean --sourcemap",
+        "dev": "wqnl --watch --clean --sourcemap"
     },
     "devDependencies": {
         "@types/react": "^18.2.15",
@@ -20,3 +21,4 @@
         "react": "^18.2.0"
     }
 }
+

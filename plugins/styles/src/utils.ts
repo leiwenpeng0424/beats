@@ -13,9 +13,7 @@ export function exportCssWithInject(
     return [
         `import inject from "${runtime}";`,
         `inject(\`${css}\`);`,
-        `export default ${
-            cssModuleEnabled ? JSON.stringify(cssInJson) : "{}"
-        };`,
+        cssModuleEnabled ? `export default ${JSON.stringify(cssInJson)}` : "",
     ].join("\n\r");
 }
 

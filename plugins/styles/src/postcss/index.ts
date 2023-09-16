@@ -39,7 +39,6 @@ export default class PostcssTransformer extends Transformer {
         _plugins.push(postcssUrl({}));
         _plugins.push(
             autoprefixer({
-                // Always throw error, when option value is not valid.
                 ignoreUnknownVersions: false,
             }),
         );
@@ -80,6 +79,8 @@ export default class PostcssTransformer extends Transformer {
         const deps = this.manager.depsById.get(id) ?? new Set<string>();
 
         for (const message of messages) {
+            console.log(message);
+
             if (message.type === "warning") {
                 ctx.warn({
                     message: message.text,

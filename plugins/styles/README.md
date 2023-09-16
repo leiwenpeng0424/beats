@@ -1,13 +1,6 @@
-# Beats
+# @nfts/plugin-styles
 
-`Base on Rollup and TypeScript`
+## Features
 
-## Docs
-
-[中文](./docs/zh-CN.md) | [English](./docs/en-US.md)
-
-## Todo
-
--   [] css style support.
--   [] executable bin file generate.
--   [] esbuild plugin enhancement.
+- postcss support
+- less support

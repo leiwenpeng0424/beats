@@ -100,12 +100,12 @@ class TransformerManager {
     });
   }
   isSupported(extname) {
-    const transformerSupportedIndex = this.transformers.findIndex(
-      (v) => v.test(extname)
-    );
     if (extname === ".css") {
       return true;
     }
+    const transformerSupportedIndex = this.transformers.findIndex(
+      (v) => v.test(extname)
+    );
     return transformerSupportedIndex !== this.transformers.length - 1;
   }
 }
@@ -202,7 +202,7 @@ function exportCssWithInject(css, cssInJson, cssModuleEnabled) {
   return [
     `import inject from "${runtime}";`,
     `inject(\`${css}\`);`,
-    `export default ${cssModuleEnabled ? JSON.stringify(cssInJson) : "{}"};`
+    cssModuleEnabled ? `export default ${JSON.stringify(cssInJson)}` : ""
   ].join("\n\r");
 }
 function cssMinify(css, id) {
@@ -262,7 +262,6 @@ class PostcssTransformer extends Transformer {
       _plugins.push(postcssUrl({}));
       _plugins.push(
         autoprefixer({
-          // Always throw error, when option value is not valid.
           ignoreUnknownVersions: false
         })
       );
@@ -293,6 +292,7 @@ class PostcssTransformer extends Transformer {
       this.manager.cssById.set(id, css);
       const deps = (_c = this.manager.depsById.get(id)) != null ? _c : /* @__PURE__ */ new Set();
       for (const message of messages) {
+        console.log(message);
         if (message.type === "warning") {
           ctx.warn({
             message: message.text,

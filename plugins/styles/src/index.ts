@@ -7,7 +7,7 @@ import LessTransformer from "@/less";
 import PostcssTransformer from "@/postcss";
 import { createFilter } from "@rollup/pluginutils";
 import nodePath from "node:path";
-import { Plugin } from "rollup";
+import { type Plugin } from "rollup";
 
 export function styles(
     options: TransformerOptions = DefaultTransformerOptions,

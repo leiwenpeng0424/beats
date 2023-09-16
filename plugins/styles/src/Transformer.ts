@@ -46,6 +46,7 @@ export class TransformerManager {
         options: TransformerOptions = DefaultTransformerOptions,
     ): Promise<TransformResult> {
         const extname = nodePath.extname(id);
+
         let res: TransformResult = {
             code,
             map: { mappings: "" as const },
@@ -74,14 +75,14 @@ export class TransformerManager {
     }
 
     public isSupported(extname: string) {
-        const transformerSupportedIndex = this.transformers.findIndex((v) =>
-            v.test(extname),
-        );
-
         // `.css` is supported by default.
         if (extname === ".css") {
             return true;
         }
+
+        const transformerSupportedIndex = this.transformers.findIndex((v) =>
+            v.test(extname),
+        );
 
         return transformerSupportedIndex !== this.transformers.length - 1;
     }

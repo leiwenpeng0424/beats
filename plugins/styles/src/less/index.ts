@@ -59,4 +59,3 @@ export default class LessTransformer extends Transformer {
         };
     }
 }
-

@@ -31,18 +31,19 @@
         "@types/postcss-import": "^14.0.0",
         "@types/postcss-url": "^10.0.0",
         "rollup": "^3.26.3",
-        "typescript": "5.1.6",
+        "typescript": "^5.1.6",
         "vitest": "^0.33.0"
     },
     "dependencies": {
-        "@rollup/pluginutils": "^5.0.2",
-        "autoprefixer": "^10.4.15",
-        "cssnano": "^6.0.1",
-        "less": "^4.2.0",
-        "postcss": "^8.4.26",
-        "postcss-import": "^15.1.0",
-        "postcss-load-config": "^4.0.1",
-        "postcss-modules": "^6.0.0",
-        "postcss-url": "^10.1.3"
+        "@rollup/pluginutils": "5.0.2",
+        "autoprefixer": "10.4.15",
+        "cssnano": "6.0.1",
+        "less": "4.2.0",
+        "postcss": "8.4.26",
+        "postcss-import": "15.1.0",
+        "postcss-load-config": "4.0.1",
+        "postcss-modules": "6.0.0",
+        "postcss-url": "10.1.3"
     }
 }
+
