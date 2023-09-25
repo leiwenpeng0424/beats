@@ -1,3 +1,5 @@
 **/node_modules/
 **/.declaretions/
 **/tsconfig.tsbuildinfo
+
+**/.DS_Store
