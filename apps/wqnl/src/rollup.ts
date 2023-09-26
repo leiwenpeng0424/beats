@@ -353,7 +353,34 @@ export async function startBundle({
     if (config.bundle) {
         bundles = config.bundle.reduce((options, bundle) => {
             const { input: bundleInput, ...otherProps } = bundle;
-            const outfile = otherProps.file;
+            const outFile = otherProps.file;
+
+            const pathReWrite = (id: string) => {
+                const result = /^externals:(.+)/.exec(id);
+                if (result) {
+                    const alias = Object.entries(paths).find((s) =>
+                        s[0].startsWith("externals"),
+                    );
+
+                    if (alias && outFile) {
+                        const [, realNames] = alias;
+                        const [realName] = realNames;
+
+                        const relativePath = nodePath.relative(
+                            nodePath.dirname(outFile),
+                            nodePath.resolve(
+                                cwd(),
+                                realName.replace("*", result[1]),
+                            ),
+                        );
+
+                        return relativePath;
+                    }
+                }
+
+                return id;
+            };
+
             const option = {
                 input:
                     bundleInput ||
@@ -364,26 +391,7 @@ export async function startBundle({
                     {
                         ...otherProps,
                         sourcemap,
-                        paths: function (id) {
-                            const result = /^externals:(.+)/.exec(id);
-                            if (result) {
-                                const alias = Object.entries(paths).find((s) =>
-                                    s[0].startsWith("externals"),
-                                );
-
-                                if (alias) {
-                                    const [, realNames] = alias;
-                                    const [realName] = realNames;
-
-                                    return nodePath.resolve(
-                                        process.cwd(),
-                                        realName.replace("*", result[1]),
-                                    );
-                                }
-                            }
-
-                            return id;
-                        },
+                        paths: pathReWrite,
                     },
                 ],
                 ...rollupOptionWithoutInputOutput,
@@ -403,7 +411,11 @@ export async function startBundle({
                 options[i] = Object.assign({}, options[i], {
                     output: [
                         ...(options[i].output as TRollupOptions[]),
-                        { ...otherProps, sourcemap },
+                        {
+                            ...otherProps,
+                            sourcemap,
+                            paths: pathReWrite,
+                        },
                     ],
                 });
             }
@@ -411,6 +423,8 @@ export async function startBundle({
             return options;
         }, [] as TRollupOptions[]);
     }
+
+    console.log(bundles[0].output);
 
     if (watch) {
         await watch_(bundles, { config, pkgJson });

@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 var nodePath = require('node:path');
 
 function bundleProgress() {
@@ -48,4 +50,5 @@ function bundleProgress() {
   };
 }
 
-module.exports = bundleProgress;
+exports.default = bundleProgress;
+//# sourceMappingURL=index.cjs.map

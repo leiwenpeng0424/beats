@@ -18,6 +18,7 @@ const esFormatFileRegexp = (name: string) =>
  */
 function getFormatFromFileName(output: string): ModuleFormat {
     const basename = nodePath.basename(output);
+
     if (esFormatFileRegexp(basename)) {
         return "esm";
     }
@@ -233,3 +234,4 @@ export async function tryReadConfig({
         };
     }
 }
+

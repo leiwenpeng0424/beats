@@ -1,4 +1,4 @@
-import { log } from 'externals:stream';
+import { log } from '../libs/stream';
 
 const a = 1;
 

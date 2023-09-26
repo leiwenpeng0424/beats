@@ -695,29 +695,34 @@ function startBundle(_0) {
     if (config.bundle) {
       bundles = config.bundle.reduce((options, bundle2) => {
         const _a2 = bundle2, { input: bundleInput } = _a2, otherProps = __objRest(_a2, ["input"]);
-        otherProps.file;
+        const outFile = otherProps.file;
+        const pathReWrite = (id) => {
+          const result = /^externals:(.+)/.exec(id);
+          if (result) {
+            const alias2 = Object.entries(paths).find(
+              (s) => s[0].startsWith("externals")
+            );
+            if (alias2 && outFile) {
+              const [, realNames] = alias2;
+              const [realName] = realNames;
+              const relativePath = nodePath.relative(
+                nodePath.dirname(outFile),
+                nodePath.resolve(
+                  cwd(),
+                  realName.replace("*", result[1])
+                )
+              );
+              return relativePath;
+            }
+          }
+          return id;
+        };
         const option = __spreadValues$2({
           input: bundleInput || (cliInput ? normalizeCliInput(cliInput) : input),
           output: [
             __spreadProps$1(__spreadValues$2({}, otherProps), {
               sourcemap,
-              paths: function(id) {
-                const result = /^externals:(.+)/.exec(id);
-                if (result) {
-                  const alias2 = Object.entries(paths).find(
-                    (s) => s[0].startsWith("externals")
-                  );
-                  if (alias2) {
-                    const [, realNames] = alias2;
-                    const [realName] = realNames;
-                    return nodePath.resolve(
-                      process.cwd(),
-                      realName.replace("*", result[1])
-                    );
-                  }
-                }
-                return id;
-              }
+              paths: pathReWrite
             })
           ]
         }, rollupOptionWithoutInputOutput);
@@ -733,13 +738,17 @@ function startBundle(_0) {
           options[i] = Object.assign({}, options[i], {
             output: [
               ...options[i].output,
-              __spreadProps$1(__spreadValues$2({}, otherProps), { sourcemap })
+              __spreadProps$1(__spreadValues$2({}, otherProps), {
+                sourcemap,
+                paths: pathReWrite
+              })
             ]
           });
         }
         return options;
       }, []);
     }
+    console.log(bundles[0].output);
     if (watch2) {
       yield watch_(bundles, { config, pkgJson });
     } else {
@@ -833,7 +842,7 @@ var __async = (__this, __arguments, generator) => {
     step((generator = generator.apply(__this, __arguments)).next());
   });
 };
-function cli(args) {
+function run(args) {
   return __async(this, null, function* () {
     var _a;
     const [, ..._args] = args;
@@ -860,7 +869,7 @@ function cli(args) {
     });
   });
 }
-cli(process.argv.slice(1)).then(() => {
+run(process.argv.slice(1)).then(() => {
   process.exit(0);
 }).catch((e) => {
   console.error(e);

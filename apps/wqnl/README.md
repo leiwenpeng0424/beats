@@ -8,6 +8,5 @@
 
 ## Todo
 
--   [] css style support.
--   [] executable bin file generate.
--   [] esbuild plugin enhancement.
+-   [ ] css样式支持。
+-   [ ] 'externals:*'模块路径重写。

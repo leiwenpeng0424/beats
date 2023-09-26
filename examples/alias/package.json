@@ -2,9 +2,9 @@
     "name": "example-alias",
     "version": "1.0.0",
     "description": "",
-    "main": "npm/index.js",
-    "module": "npm/index.mjs",
-    "types": "npm/index.d.ts",
+    "main": "./npm/index.cjs",
+    "module": "./npm/index.mjs",
+    "types": "./npm/index.d.ts",
     "scripts": {
         "build": "wqnl --clean --sourcemap"
     },

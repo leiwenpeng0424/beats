@@ -47,3 +47,4 @@ function bundleProgress() {
 }
 
 export { bundleProgress as default };
+//# sourceMappingURL=index.mjs.map

@@ -1,14 +1,14 @@
 {
     "name": "@nfts/plugin-styles",
     "version": "0.0.3",
-    "main": "./npm/index.js",
+    "main": "./npm/index.cjs",
     "module": "./npm/index.mjs",
     "types": "./npm/index.d.ts",
     "exports": {
         "./package.json": "./package.json",
         ".": {
             "import": "./npm/index.mjs",
-            "require": "./npm/index.js",
+            "require": "./npm/index.cjs",
             "types": "./npm/index.d.ts"
         }
     },
@@ -46,4 +46,3 @@
         "postcss-url": "10.1.3"
     }
 }
-

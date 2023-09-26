@@ -8,7 +8,7 @@ import { json as Json, colors, parser } from "@nfts/nodeutils";
 import type { IPackageJson } from "@nfts/pkg-json";
 import nodePath from "node:path";
 
-async function cli(args: string[]) {
+async function run(args: string[]) {
     const [, ..._args] = args;
 
     const pkgJson = Json.readJSONSync<IPackageJson>(CONSTANTS.packageJson);
@@ -47,7 +47,7 @@ async function cli(args: string[]) {
     });
 }
 
-cli(process.argv.slice(1))
+run(process.argv.slice(1))
     .then(() => {
         process.exit(0);
     })

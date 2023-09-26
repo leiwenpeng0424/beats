@@ -2,7 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var externals_stream = require('/Users/leiwenpeng/Developer/github/beats/examples/alias/libs/stream');
+var externals_stream = require('../libs/stream');
 
 const a = 1;
 
@@ -16,4 +16,4 @@ function App() {
 }
 
 exports.default = App;
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.cjs.map
