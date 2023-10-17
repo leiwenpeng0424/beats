@@ -1,11 +1,11 @@
 import { type IPathObject } from "@nfts/tsc-json";
-import { type Plugin } from "rollup";
 import * as path from "node:path";
+import { type Plugin } from "rollup";
 
 export type RollupAliasOptions = { alias: IPathObject };
 
 /**
- * Map alias to realpath.
+ * Map alias to real path.
  * @param alias
  * @returns
  */

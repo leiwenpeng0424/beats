@@ -11,7 +11,7 @@ import nodePath from "node:path";
 import type { ModuleFormat, Plugin, RollupOptions } from "rollup";
 
 const esFormatFileRegexp = (name: string) =>
-    /((.+)\.mjs)|((.+)\.esm?\.js)/g.test(name);
+    /((.+)\.m?js)|((.+)\.esm?\.js)/g.test(name);
 
 /**
  * @param output
@@ -234,4 +234,3 @@ export async function tryReadConfig({
         };
     }
 }
-

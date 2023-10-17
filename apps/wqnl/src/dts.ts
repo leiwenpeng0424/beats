@@ -1,13 +1,5 @@
 import * as CONSTANTS from "@/constants";
 import log from "@/log";
-import { resolveDtsEntryFromEntry } from "@/utils";
-import {
-    Extractor,
-    ExtractorConfig,
-    ExtractorLogLevel,
-    ExtractorMessage,
-} from "@microsoft/api-extractor";
-import { file as File, colors, ms } from "@nfts/nodeutils";
 import nodeFsPromise from "node:fs/promises";
 import nodePath from "node:path";
 import ts, {
@@ -16,6 +8,14 @@ import ts, {
     sys,
     type CompilerOptions,
 } from "typescript";
+import { file as File, colors, ms } from "@nfts/nodeutils";
+import { resolveDtsEntryFromEntry } from "@/utils";
+import {
+    Extractor,
+    ExtractorConfig,
+    ExtractorLogLevel,
+    ExtractorMessage,
+} from "@microsoft/api-extractor";
 
 export function createCompilerProgram(
     tsConfigCompilerOptions: CompilerOptions,

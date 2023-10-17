@@ -424,8 +424,6 @@ export async function startBundle({
         }, [] as TRollupOptions[]);
     }
 
-    console.log(bundles[0].output);
-
     if (watch) {
         await watch_(bundles, { config, pkgJson });
     } else {

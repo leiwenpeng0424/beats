@@ -1,4 +1,3 @@
 #!/usr/bin/env node
 
-require("../npm/index.js");
-
+require("../npm/index.cjs");

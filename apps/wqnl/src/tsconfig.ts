@@ -1,5 +1,5 @@
-import type { ITSConfigJson } from "@nfts/tsc-json";
 import log from "@/log";
+import type { ITSConfigJson } from "@nfts/tsc-json";
 import {
     parseJsonSourceFileConfigFileContent,
     readJsonConfigFile,

@@ -1,8 +1,8 @@
 {
     "name": "wqnl",
     "version": "0.0.5",
-    "main": "./npm/index.js",
-    "module": "./npm/index.mjs",
+    "main": "./npm/index.cjs",
+    "module": "./npm/index.js",
     "types": "./npm/index.d.ts",
     "bin": {
         "wqnl": "bin/wqnl"
@@ -17,10 +17,8 @@
     },
     "scripts": {
         "dev": "npm run start",
-        "start": "beats --watch --sourcemap",
-        "build": "beats --clean --sourcemap --debug --verbose",
-        "dev:local": "node --trace-warnings npm/index.js --watch",
-        "build:local": "node --trace-warnings npm/index.js --clean",
+        "dev:local": "node --trace-warnings npm/index.cjs --watch",
+        "build:local": "node --trace-warnings npm/index.cjs --clean",
         "test": "vitest --watch false",
         "typecheck": "tsc --noEmit",
         "prepublishOnly": "pnpm typecheck && pnpm build:local && pnpm test"
@@ -33,6 +31,7 @@
     "license": "MIT",
     "packageManager": "pnpm@8.5.1",
     "devDependencies": {
+        "@nfts/beats": "^0.0.14",
         "@types/node": "^20.4.2",
         "prettier": "^2.8.8",
         "vitest": "^0.33.0"

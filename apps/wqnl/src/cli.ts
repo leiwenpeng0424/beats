@@ -1,12 +1,12 @@
-import { tryReadConfig, type CLIOptions } from "@/configuration";
 import * as CONSTANTS from "@/constants";
 import loadEnv from "@/env";
 import log from "@/log";
-import { startBundle } from "@/rollup";
-import { loadTsConfigJson } from "@/tsconfig";
-import { json as Json, colors, parser } from "@nfts/nodeutils";
-import type { IPackageJson } from "@nfts/pkg-json";
 import nodePath from "node:path";
+import type { IPackageJson } from "@nfts/pkg-json";
+import { json as Json, colors, parser } from "@nfts/nodeutils";
+import { loadTsConfigJson } from "@/tsconfig";
+import { startBundle } from "@/rollup";
+import { tryReadConfig, type CLIOptions } from "@/configuration";
 
 async function run(args: string[]) {
     const [, ..._args] = args;

@@ -2,7 +2,7 @@
     "name": "@nfts/plugin-cleanup",
     "version": "0.0.3",
     "main": "./npm/index.cjs",
-    "module": "./npm/index.mjs",
+    "module": "./npm/index.js",
     "types": "./npm/index.d.ts",
     "scripts": {
         "build:local": "node --trace-warnings ../../apps/wqnl/npm/index.js --clean --debug",
